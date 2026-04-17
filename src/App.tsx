@@ -754,25 +754,31 @@ function OnboardingPage() {
 
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
-      let teamId = existingTeam?.team?.id
+      if (!user) throw new Error('Not authenticated')
+
+      let teamId = isAddingNewTeam ? null : existingTeam?.team?.id
+      
       if (!teamId) {
-        const newTeam = await blink.db.teams.create({ name: data.teamName })
+        const newTeam = await blink.db.teams.create({ 
+          name: data.teamName,
+          userId: user.id
+        })
         teamId = newTeam.id
       }
 
       const newSeason = await blink.db.seasons.create({
-        team_id: teamId,
+        teamId: teamId,
         name: data.seasonName,
-        start_date: data.startDate,
-        end_date: data.endDate,
-        priority_concepts: JSON.stringify(data.concepts),
+        startDate: data.startDate,
+        endDate: data.endDate,
+        priorityConcepts: JSON.stringify(data.concepts),
       })
 
       // Add user as owner of the new team/season
       await blink.db.seasonMembers.create({
         id: `member_${crypto.randomUUID().slice(0, 8)}`,
-        season_id: newSeason.id,
-        user_id: user!.id,
+        seasonId: newSeason.id,
+        userId: user!.id,
         role: 'owner',
       })
 
@@ -850,8 +856,8 @@ function OnboardingPage() {
       // 1. Add user to season members
       await blink.db.seasonMembers.create({
         id: `member_${crypto.randomUUID().slice(0, 8)}`,
-        season_id: inviteData.seasonId,
-        user_id: user.id,
+        seasonId: inviteData.seasonId,
+        userId: user.id,
         role: inviteData.role
       })
 
