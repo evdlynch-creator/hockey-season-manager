@@ -204,7 +204,7 @@ export default function GamesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [tab, setTab] = useState<TabValue>('all')
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const { data: rawGames = [], isLoading } = useGames()
   const { types: gameTypes, getType } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)

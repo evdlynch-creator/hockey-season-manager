@@ -632,7 +632,7 @@ export default function OpponentsPage() {
   const { data: analytics, isLoading } = useFilteredAnalytics()
   const { data: rawGames = [] } = useGames()
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const { types } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)
   const allGames = useMemo(() => filterGamesByMode(rawGames, types, mode), [rawGames, types, mode])

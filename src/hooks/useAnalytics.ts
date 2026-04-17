@@ -145,7 +145,7 @@ export function applyViewModeFilter(
 
 export function useFilteredAnalytics() {
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const { types } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)
   const query = useAnalytics()

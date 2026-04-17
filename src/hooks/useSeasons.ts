@@ -6,7 +6,7 @@ import type { Season, Practice, Game } from '../types'
 
 export function useSeasons() {
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
 
   return useQuery({
     queryKey: ['seasons', teamId],
@@ -31,7 +31,7 @@ export interface CreateSeasonInput {
 export function useCreateSeason() {
   const queryClient = useQueryClient()
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const [, setSeasonState] = useSeasonState(teamId)
 
   return useMutation({
@@ -72,7 +72,7 @@ export interface UpdateSeasonInput {
 export function useUpdateSeason() {
   const queryClient = useQueryClient()
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
 
   return useMutation({
     mutationFn: async (input: UpdateSeasonInput) => {
@@ -95,7 +95,7 @@ export function useUpdateSeason() {
 export function useDeleteSeason() {
   const queryClient = useQueryClient()
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const [, setSeasonState] = useSeasonState(teamId)
 
   return useMutation({
@@ -143,7 +143,7 @@ export function useUpdateTeamName() {
 
   return useMutation({
     mutationFn: async (name: string) => {
-      if (!teamData?.team.id) throw new Error('No team')
+      if (!teamData?.team?.id) throw new Error('No team')
       await blink.db.teams.update(teamData.team.id, { name })
     },
     onSuccess: () => {

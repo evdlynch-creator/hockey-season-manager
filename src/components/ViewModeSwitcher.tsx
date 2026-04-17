@@ -14,7 +14,7 @@ const ITEMS: { value: ViewMode; label: string; short: string; icon: typeof Globe
 
 export function ViewModeSwitcher({ collapsed = false }: { collapsed?: boolean }) {
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const { mode, setMode } = useViewMode(teamId)
 
   if (collapsed) {

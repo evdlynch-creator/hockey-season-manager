@@ -193,7 +193,7 @@ function DashboardPage() {
   const { data: teamData, isLoading, isFetching, isSuccess } = useTeam()
   const { data: practices = [] } = usePractices()
   const { data: rawGames = [] } = useGames()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const { types: gameTypes } = useGameTypes(teamId)
   const { mode: viewMode } = useViewMode(teamId)
   const games = filterGamesByMode(rawGames, gameTypes, viewMode)
@@ -206,7 +206,7 @@ function DashboardPage() {
     }
   }, [teamData, isSuccess, isFetching, authLoading, user, navigate])
 
-  if (authLoading || isLoading || !teamData) return <LoadingOverlay show />
+  if (authLoading || isLoading || !teamData?.team) return <LoadingOverlay show />
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

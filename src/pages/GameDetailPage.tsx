@@ -57,7 +57,7 @@ export default function GameDetailPage() {
   const { data: game, isLoading: gameLoading } = useGame(gameId)
   const { data: review } = useGameReview(gameId)
   const { data: teamData } = useTeam()
-  const { getType, setType } = useGameTypes(teamData?.team.id)
+  const { getType, setType } = useGameTypes(teamData?.team?.id)
   const gameType: GameType = getType(gameId)
 
   // Score form state
@@ -224,9 +224,9 @@ export default function GameDetailPage() {
           </div>
           <Select
             value={gameType}
-            disabled={!teamData?.team.id}
+            disabled={!teamData?.team?.id}
             onValueChange={(v) => {
-              if (!teamData?.team.id) return
+              if (!teamData?.team?.id) return
               setType(gameId, v as GameType)
               toast.success(`Tagged as ${v}`)
             }}

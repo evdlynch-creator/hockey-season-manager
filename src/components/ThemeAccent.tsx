@@ -61,7 +61,7 @@ const TOURNAMENT_HSL: Hsl = { h: 43, s: 96, l: 56 }
 
 export function ThemeAccent() {
   const { data: teamData } = useTeam()
-  const teamId = teamData?.team.id
+  const teamId = teamData?.team?.id
   const [prefs] = useTeamPreferences(teamId)
   const { mode } = useViewMode(teamId)
 
