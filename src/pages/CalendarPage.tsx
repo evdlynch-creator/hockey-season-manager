@@ -73,7 +73,7 @@ function MiniMonth({
       <div className="flex items-center justify-between mb-2 px-0.5 gap-3">
         <h2 className="text-base font-semibold truncate">
           {view === 'week' ? (
-            <span className="text-primary tabular-nums">
+            <span className="text-white tabular-nums">
               {format(wkStart, 'MM/dd/yyyy')} – {format(wkEnd, 'MM/dd/yyyy')}
             </span>
           ) : (
