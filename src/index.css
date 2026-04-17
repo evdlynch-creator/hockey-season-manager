@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Blink UI Theme CSS — MUST come before @tailwind directives
+   ───────────────────────────────────────────────────────────────────────────── */
+@import '@blinkdotnew/ui/styles';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    height: 100%;
+  }
+
+  #root {
+    min-height: 100%;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body {
+    min-height: 100%;
+    min-height: 100dvh;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
+  }
+}
+
+/* ── blink.new-inspired palette ───────────────────────────────────────────────
+   Deep near-black charcoal background, warm off-white text, amber primary.
+   These unlayered :root{} rules override @blinkdotnew/ui theme tokens.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Background surfaces */
+  --background: 0 0% 5.5%;
+  --foreground: 0 0% 93%;
+
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 93%;
+
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 93%;
+
+  /* Primary: warm amber — blink.new's signature orange-ish */
+  --primary: 38 92% 50%;
+  --primary-foreground: 0 0% 7%;
+
+  /* Secondary surface */
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 75%;
+
+  /* Muted */
+  --muted: 0 0% 13%;
+  --muted-foreground: 0 0% 48%;
+
+  /* Accent: subtle lifted surface for hover states */
+  --accent: 0 0% 14%;
+  --accent-foreground: 0 0% 93%;
+
+  /* Destructive */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+
+  /* Borders & inputs */
+  --border: 0 0% 15%;
+  --input: 0 0% 12%;
+  --ring: 38 92% 50%;
+
+  /* Charts */
+  --chart-1: 38 92% 50%;
+  --chart-2: 199 89% 48%;
+  --chart-3: 142 71% 45%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 291 70% 50%;
+
+  /* Sidebar — slightly deeper than main background */
+  --sidebar: 0 0% 3.5%;
+  --sidebar-foreground: 0 0% 78%;
+  --sidebar-primary: 38 92% 50%;
+  --sidebar-primary-foreground: 0 0% 7%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 93%;
+  --sidebar-border: 0 0% 12%;
+  --sidebar-ring: 38 92% 50%;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+
+  /* Shadows — heavier since dark bg needs depth */
+  --shadow-2xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-xs:  0 1px 4px rgba(0, 0, 0, 0.5);
+  --shadow-sm:  0 1px 6px rgba(0, 0, 0, 0.55);
+  --shadow:     0 2px 8px rgba(0, 0, 0, 0.55);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 16px 48px rgba(0, 0, 0, 0.65);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.7);
+
+  --radius: 0.5rem;
+  --tracking-normal: -0.011em;
+  --spacing: 0.25rem;
+}
+
+/* Dark-mode overrides — same palette since the app is always dark */
+:root.dark,
+.theme-linear.dark,
+.theme-glass.dark,
+.theme-midnight.dark,
+.theme-minimal.dark {
+  --background: 0 0% 5.5%;
+  --foreground: 0 0% 93%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 93%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 93%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 0 0% 7%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 75%;
+  --muted: 0 0% 13%;
+  --muted-foreground: 0 0% 48%;
+  --accent: 0 0% 14%;
+  --accent-foreground: 0 0% 93%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 15%;
+  --input: 0 0% 12%;
+  --ring: 38 92% 50%;
+  --chart-1: 38 92% 50%;
+  --chart-2: 199 89% 48%;
+  --chart-3: 142 71% 45%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 291 70% 50%;
+  --sidebar: 0 0% 3.5%;
+  --sidebar-foreground: 0 0% 78%;
+  --sidebar-primary: 38 92% 50%;
+  --sidebar-primary-foreground: 0 0% 7%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 93%;
+  --sidebar-border: 0 0% 12%;
+  --sidebar-ring: 38 92% 50%;
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
