@@ -212,10 +212,14 @@ function DashboardPage() {
   }
   if (!teamData) return <LoadingOverlay show />
 
-  // Suspicious state: current team has no season AND we found orphan
-  // candidates the user can prove ownership of. Surface the recovery
-  // UI so they can claim the original team and clean up the duplicate.
-  if (!teamData.season && orphanCandidates.length > 0) {
+  // Suspicious state: current team has no season AND we found at least
+  // one *other* team the user can prove they own (not just the current
+  // empty team itself). Surface the recovery UI so they can claim the
+  // original team and optionally delete the duplicate.
+  const hasRecoverableOther = orphanCandidates.some(
+    (c) => c.team.id !== teamData.team.id && c.evidence !== 'already_owned_empty',
+  )
+  if (!teamData.season && hasRecoverableOther) {
     return <NoTeamScreen />
   }
 
