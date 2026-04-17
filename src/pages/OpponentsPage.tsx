@@ -15,8 +15,7 @@ import {
 } from 'recharts'
 import { format, parseISO, isAfter } from 'date-fns'
 import { useFilteredAnalytics, filterGamesByMode, buildOpponentInsights } from '@/hooks/useAnalytics'
-import { InsightsList } from '@/components/InsightsStrip'
-import { Lightbulb } from 'lucide-react'
+import { InsightsStrip } from '@/components/InsightsStrip'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes, useViewMode } from '@/hooks/usePreferences'
@@ -442,26 +441,17 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
       </div>
 
       {/* Top insights vs this opponent */}
-      <Card className="border-border bg-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Lightbulb className="w-4 h-4 text-primary" />
-            Top Insights vs. {stats.name}
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Pulled from your ratings in games against {stats.name}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {insights.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic text-center py-2">
+      {insights.length > 0 ? (
+        <InsightsStrip insights={insights} limit={3} />
+      ) : (
+        <Card className="border-border/50 bg-card">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground italic text-center">
               Review at least one game vs. {stats.name} to see tailored insights.
             </p>
-          ) : (
-            <InsightsList insights={insights} />
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Coaching plan */}
       <CoachingPlan stats={stats} />

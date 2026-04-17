@@ -257,7 +257,9 @@ export function buildOpponentInsights(
   const games = analytics.games.filter(g => g.opponent === opponentName)
   const allowed = new Set(games.map(g => g.id))
   const reviews = analytics.reviews.filter(r => allowed.has(r.gameId))
-  const byConcept = buildByConcept(games, analytics.practices, analytics.segments, reviews)
+  // Build a concept summary from ONLY this opponent's games + reviews — pass empty
+  // practices/segments so trend insights are not influenced by season-wide practice data.
+  const byConcept = buildByConcept(games, [], [], reviews)
   return buildInsightsCore(
     { games, reviews, byConcept },
     {
@@ -266,7 +268,7 @@ export function buildOpponentInsights(
       minConceptRatings: 2,
       minGamesForDifferential: 3,
       trendThreshold: 0.4,
-      max: 4,
+      max: 3,
     },
   )
 }
