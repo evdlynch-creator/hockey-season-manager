@@ -253,9 +253,11 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
     return []
   }
 
-  // Season win rate baseline (excluding ties from denominator? No — use all decided games)
+  // Season win rate: wins / all completed games (ties are included in the denominator
+  // and counted as non-wins). All "win rate" values reported in insights use this same
+  // denominator so the lift comparisons are apples-to-apples.
   const seasonWins = completedGames.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
-  const seasonWinPct = completedGames.length ? seasonWins / completedGames.length : 0
+  const seasonWinPct = seasonWins / completedGames.length
 
   // ── Concept correlations ───────────────────────────────────────────────────
   type ConceptStat = {
