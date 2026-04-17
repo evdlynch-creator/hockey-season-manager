@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
-  format, addMonths, subMonths, addDays,
+  format, addMonths, subMonths, addDays, addWeeks,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   isSameMonth, isSameDay, isToday, parseISO, getISOWeek,
 } from 'date-fns'
@@ -55,46 +55,42 @@ function MiniMonth({
   return (
     <div>
       {/* Month header */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h2 className="text-2xl font-semibold text-white">
+      <div className="flex items-center justify-between mb-2 px-0.5">
+        <h2 className="text-base font-semibold text-white">
           {format(monthCursor, 'MMMM')}{' '}
           <span className="text-primary">{format(monthCursor, 'yyyy')}</span>
         </h2>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={() => setMonthCursor(subMonths(monthCursor, 1))}
-            className="w-8 h-8 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+            className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
             aria-label="Previous month"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setMonthCursor(addMonths(monthCursor, 1))}
-            className="w-8 h-8 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+            className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
             aria-label="Next month"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Weekday header */}
-      <div className="grid grid-cols-8 gap-0 text-[11px] uppercase tracking-wider font-medium text-white/40 px-0.5 mb-1">
-        <div className="text-center">CW</div>
+      <div className="grid grid-cols-7 gap-0 text-[10px] uppercase tracking-wider font-medium text-white/40 mb-0.5">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <div key={i} className={cn('text-center', (i === 5 || i === 6) && 'text-white/30')}>{d}</div>
         ))}
       </div>
 
       {/* Date grid */}
-      <div className="space-y-1">
+      <div className="space-y-0">
         {weeks.map(week => {
           const weekNum = getISOWeek(week[0])
           return (
-            <div key={weekNum + '_' + week[0].toISOString()} className="grid grid-cols-8 gap-0 items-center">
-              <div className="text-center text-[11px] text-white/30 tabular-nums">
-                {weekNum}
-              </div>
+            <div key={weekNum + '_' + week[0].toISOString()} className="grid grid-cols-7 gap-0 items-center">
               {week.map(day => {
                 const isCurrentMonth = isSameMonth(day, monthCursor)
                 const selected = isSameDay(day, cursor)
@@ -108,7 +104,7 @@ function MiniMonth({
                     key={day.toISOString()}
                     onClick={() => setCursor(day)}
                     className={cn(
-                      'relative aspect-square flex items-center justify-center rounded-full text-sm tabular-nums transition-colors group',
+                      'relative aspect-square flex items-center justify-center rounded-full text-[11px] tabular-nums transition-colors group',
                       !isCurrentMonth && 'text-white/25',
                       isCurrentMonth && !selected && !today && (isWeekend ? 'text-white/60' : 'text-white/85'),
                       today && !selected && 'text-primary font-semibold',
@@ -118,7 +114,7 @@ function MiniMonth({
                   >
                     {format(day, 'd')}
                     {hasEvent && !selected && (
-                      <span className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
+                      <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-primary" />
                     )}
                   </button>
                 )
@@ -235,40 +231,55 @@ export default function CalendarPage() {
     }
   }
 
-  const agendaDays = useMemo(() => {
+  const zones = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const result: { label: string; date: Date; events: CalendarEvent[] }[] = []
-    const allDates = [...eventsByDate.keys()].sort()
-    const futureDates = allDates
-      .filter(k => parseISO(k) >= today)
-      .slice(0, 6)
+    const tomorrow = addDays(today, 1)
+    const endOfThisWeek = endOfWeek(today, { weekStartsOn: 1 })
+    const startOfNextWeek = addDays(endOfThisWeek, 1)
+    const endOfNextWeek = endOfWeek(addWeeks(today, 1), { weekStartsOn: 1 })
+    const endOfThisMonth = endOfMonth(today)
+    const endOfNextMonth = endOfMonth(addMonths(today, 1))
 
-    const todayKey = format(today, 'yyyy-MM-dd')
-    if (!futureDates.includes(todayKey)) futureDates.unshift(todayKey)
+    type Zone = { id: string; label: string; sub: string; days: { date: Date; label: string; events: CalendarEvent[] }[] }
+    const zoneList: Zone[] = [
+      { id: 'today', label: 'Today', sub: format(today, 'EEEE, MMM d'), days: [] },
+      { id: 'thisWeek', label: 'This Week', sub: 'Rest of the week', days: [] },
+      { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MMM d') + ' – ' + format(endOfNextWeek, 'MMM d'), days: [] },
+      { id: 'thisMonth', label: 'Later This Month', sub: format(today, 'MMMM yyyy'), days: [] },
+      { id: 'nextMonth', label: 'Next Month', sub: format(addMonths(today, 1), 'MMMM yyyy'), days: [] },
+    ]
 
-    for (const key of futureDates.slice(0, 6)) {
+    const sortedKeys = [...eventsByDate.keys()].sort()
+    for (const key of sortedKeys) {
       const d = parseISO(key)
-      let label: string
-      if (isSameDay(d, today)) label = 'TODAY'
-      else if (isSameDay(d, addDays(today, 1))) label = 'TOMORROW'
-      else label = format(d, 'EEEE').toUpperCase()
+      if (d < today) continue
+      const events = eventsByDate.get(key) ?? []
+      const dayLabel = isSameDay(d, today)
+        ? 'Today'
+        : isSameDay(d, tomorrow)
+        ? 'Tomorrow'
+        : format(d, 'EEE, MMM d')
+      const day = { date: d, label: dayLabel, events }
 
-      result.push({
-        label,
-        date: d,
-        events: eventsByDate.get(key) ?? [],
-      })
+      if (isSameDay(d, today)) zoneList[0].days.push(day)
+      else if (d <= endOfThisWeek) zoneList[1].days.push(day)
+      else if (d <= endOfNextWeek) zoneList[2].days.push(day)
+      else if (d <= endOfThisMonth) zoneList[3].days.push(day)
+      else if (d <= endOfNextMonth) zoneList[4].days.push(day)
     }
-    return result
+
+    return zoneList
   }, [eventsByDate])
 
-  const selectedDayKey = format(cursor, 'yyyy-MM-dd')
-  const selectedDayEvents = eventsByDate.get(selectedDayKey) ?? []
+  const totalUpcoming = useMemo(
+    () => zones.reduce((acc, z) => acc + z.days.reduce((a, d) => a + d.events.length, 0), 0),
+    [zones]
+  )
 
   return (
     <div className="min-h-dvh w-full bg-background">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Page header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -284,39 +295,78 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        {/* Mini month */}
-        <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:p-5 mb-6">
-          <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} />
-        </div>
+        {/* Two-column on md+ : compact calendar left, agenda right */}
+        <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+          {/* Mini month — narrow */}
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-3">
+            <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} />
+          </div>
 
-        {/* Agenda */}
-        <div className="space-y-6">
-          {selectedDayEvents.length > 0 && !agendaDays.some(a => isSameDay(a.date, cursor)) && (
-            <AgendaSection
-              label={format(cursor, 'EEEE').toUpperCase()}
-              date={cursor}
-              events={selectedDayEvents}
-              onOpen={openEvent}
-            />
-          )}
-          {agendaDays.map(section => (
-            <AgendaSection
-              key={section.label + section.date.toISOString()}
-              label={section.label}
-              date={section.date}
-              events={section.events}
-              onOpen={openEvent}
-              selectedId={isSameDay(section.date, cursor) ? selectedDayEvents[0]?.data.id : undefined}
-            />
-          ))}
-          {agendaDays.length === 0 && (
-            <div className="text-center py-12 rounded-xl bg-sidebar border border-sidebar-border">
-              <CalendarDays className="w-10 h-10 text-white/20 mx-auto mb-3" />
-              <p className="text-sm text-white/40">No upcoming events</p>
-            </div>
-          )}
+          {/* Agenda zones */}
+          <div className="space-y-6 min-w-0">
+            {totalUpcoming === 0 ? (
+              <div className="text-center py-12 rounded-xl bg-sidebar border border-sidebar-border">
+                <CalendarDays className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                <p className="text-sm text-white/40">No upcoming events</p>
+              </div>
+            ) : (
+              zones.map(zone => (
+                <ZoneBlock
+                  key={zone.id}
+                  label={zone.label}
+                  sub={zone.sub}
+                  days={zone.days}
+                  onOpen={openEvent}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function ZoneBlock({
+  label,
+  sub,
+  days,
+  onOpen,
+}: {
+  label: string
+  sub: string
+  days: { date: Date; label: string; events: CalendarEvent[] }[]
+  onOpen: (ev: CalendarEvent) => void
+}) {
+  const eventCount = days.reduce((a, d) => a + d.events.length, 0)
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-3 px-1">
+        <div>
+          <h2 className="text-lg font-semibold text-white">{label}</h2>
+          <p className="text-xs text-white/40">{sub}</p>
+        </div>
+        <span className="text-xs text-white/40 tabular-nums">
+          {eventCount} {eventCount === 1 ? 'event' : 'events'}
+        </span>
+      </div>
+      {eventCount === 0 ? (
+        <div className="rounded-lg bg-sidebar/50 border border-sidebar-border px-4 py-3">
+          <p className="text-sm text-white/30 italic">Nothing scheduled</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {days.map(day => (
+            <AgendaSection
+              key={day.date.toISOString()}
+              label={day.label}
+              date={day.date}
+              events={day.events}
+              onOpen={onOpen}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
