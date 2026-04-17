@@ -505,11 +505,13 @@ function OnboardingPage() {
       const teamId = `team_${crypto.randomUUID().slice(0, 8)}`
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
+      console.log('🟢 Creating team with payload:', { id: teamId, name: data.teamName, userId: user.id })
       await blink.db.teams.create({
         id: teamId,
         name: data.teamName,
         userId: user.id
       })
+      console.log('🟢 Team created. Creating season...')
 
       await blink.db.seasons.create({
         id: seasonId,
@@ -527,8 +529,15 @@ function OnboardingPage() {
       toast.success('Season setup complete!', { description: "You're ready to start coaching." })
       navigate({ to: '/' })
     },
-    onError: (error) => {
-      toast.error('Failed to set up season', { description: error.message })
+    onError: (error: any) => {
+      console.error('🔴 Season setup failed:', error)
+      console.error('🔴 Error name:', error?.name)
+      console.error('🔴 Error code:', error?.code)
+      console.error('🔴 Error status:', error?.status)
+      console.error('🔴 Error context:', error?.context)
+      console.error('🔴 Original error:', error?.context?.originalError)
+      console.error('🔴 Stack:', error?.stack)
+      toast.error('Failed to set up season', { description: `${error?.name || 'Error'}: ${error?.message}` })
     }
   })
 
