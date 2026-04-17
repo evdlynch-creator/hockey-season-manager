@@ -5,6 +5,21 @@ export interface Team {
   createdAt: string
 }
 
+export type TeamMemberRole = 'owner' | 'coach'
+export type TeamMemberStatus = 'active' | 'pending'
+
+export interface TeamMember {
+  id: string
+  teamId: string
+  userId?: string | null
+  email: string
+  role: TeamMemberRole
+  status: TeamMemberStatus
+  invitedBy?: string | null
+  invitedByName?: string | null
+  createdAt: string
+}
+
 export interface Season {
   id: string
   teamId: string

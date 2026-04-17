@@ -7,9 +7,9 @@ import { setupCounter } from './counter.ts'
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <section id="center">
   <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src=${viteLogo} class="vite" alt="Vite logo" />
+    <img id="main-hero-img" class="base" width="170" height="179">
+    <img id="main-ts-logo" class="framework" alt="TypeScript logo"/>
+    <img id="main-vite-logo-hero" class="vite" alt="Vite logo" />
   </div>
   <div>
     <h1>Get started</h1>
@@ -28,13 +28,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <ul>
       <li>
         <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src=${viteLogo} alt="" />
+          <img id="main-vite-logo-docs" class="logo" alt="" />
           Explore Vite
         </a>
       </li>
       <li>
         <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
+          <img id="main-ts-logo-docs" class="button-icon" alt="">
           Learn more
         </a>
       </li>
@@ -56,5 +56,12 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <div class="ticks"></div>
 <section id="spacer"></section>
 `
+
+const appEl = document.querySelector<HTMLDivElement>('#app')!;
+(appEl.querySelector('#main-hero-img') as HTMLImageElement).setAttribute('src', heroImg);
+(appEl.querySelector('#main-ts-logo') as HTMLImageElement).setAttribute('src', typescriptLogo);
+(appEl.querySelector('#main-vite-logo-hero') as HTMLImageElement).setAttribute('src', viteLogo);
+(appEl.querySelector('#main-vite-logo-docs') as HTMLImageElement).setAttribute('src', viteLogo);
+(appEl.querySelector('#main-ts-logo-docs') as HTMLImageElement).setAttribute('src', typescriptLogo);
 
 setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)

@@ -6,10 +6,14 @@ import {
   Button, Badge, Card, CardHeader, CardTitle, CardContent,
   Input, Textarea, Field, FieldLabel,
   EmptyState, toast, Separator,
+  Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin } from 'lucide-react'
+import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
+import { useTeam } from '@/hooks/useTeam'
+import { useGameTypes } from '@/hooks/usePreferences'
+import type { GameType } from '@/hooks/usePreferences'
 import { cn } from '@/lib/utils'
 
 const CONCEPT_FIELDS: { key: string; label: string }[] = [
@@ -52,6 +56,9 @@ export default function GameDetailPage() {
 
   const { data: game, isLoading: gameLoading } = useGame(gameId)
   const { data: review } = useGameReview(gameId)
+  const { data: teamData } = useTeam()
+  const { getType, setType } = useGameTypes(teamData?.team.id)
+  const gameType: GameType = getType(gameId)
 
   // Score form state
   const [goalsFor, setGoalsFor] = useState<string>('')
@@ -174,6 +181,15 @@ export default function GameDetailPage() {
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge className="bg-primary/10 text-primary border-primary/20 border">{game.status}</Badge>
+            {gameType === 'tournament' && (
+              <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border">Tournament</Badge>
+            )}
+            {gameType === 'exhibition' && (
+              <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border">Exhibition</Badge>
+            )}
+            {gameType === 'league' && (
+              <Badge variant="outline" className="text-muted-foreground border-border">League</Badge>
+            )}
             <span className="text-xs text-muted-foreground">{dateStr}</span>
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3" />
@@ -195,6 +211,37 @@ export default function GameDetailPage() {
       </div>
 
       <Separator />
+
+      {/* Game Type Selector */}
+      <Card className="border-border bg-card">
+        <CardContent className="p-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 text-sm">
+            <Tag className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">Game Type</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              · used to filter dashboards & analytics
+            </span>
+          </div>
+          <Select
+            value={gameType}
+            disabled={!teamData?.team.id}
+            onValueChange={(v) => {
+              if (!teamData?.team.id) return
+              setType(gameId, v as GameType)
+              toast.success(`Tagged as ${v}`)
+            }}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="league">League</SelectItem>
+              <SelectItem value="tournament">Tournament</SelectItem>
+              <SelectItem value="exhibition">Exhibition</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
 
       {/* Score Panel */}
       <Card className="border-border bg-card">
