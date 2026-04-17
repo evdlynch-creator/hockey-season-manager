@@ -308,7 +308,6 @@ function DashboardPage() {
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}
             </Badge>
-            <span>{teamData.season?.startDate} — {teamData.season?.endDate}</span>
           </div>
         </div>
         <div className="flex gap-2">
