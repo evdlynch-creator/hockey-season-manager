@@ -771,6 +771,7 @@ function OnboardingPage() {
 
       const newSeason = await blink.db.seasons.create({
         teamId: teamId,
+        userId: user.id,
         name: data.seasonName,
         startDate: data.startDate,
         endDate: data.endDate,

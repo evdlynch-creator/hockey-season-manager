@@ -126,9 +126,13 @@ function CreateGameDialog({
 
   const mutation = useMutation({
     mutationFn: async (data: CreateForm) => {
+      const { user } = await blink.auth.me()
+      if (!user) throw new Error('Not authenticated')
+
       await blink.db.games.create({
         id: crypto.randomUUID(),
         seasonId,
+        userId: user.id,
         opponent: data.opponent,
         date: data.date,
         location: data.location,

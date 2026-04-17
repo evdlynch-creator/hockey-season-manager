@@ -162,9 +162,13 @@ export default function PracticeDetailPage() {
           link: data.link ?? '',
         })
       } else {
+        const { user } = await blink.auth.me()
+        if (!user) throw new Error('Not authenticated')
+
         await blink.db.practiceSegments.create({
           id: crypto.randomUUID(),
           practiceId,
+          userId: user.id,
           type: data.type,
           name: data.name ?? '',
           primaryConcept: data.primaryConcept,

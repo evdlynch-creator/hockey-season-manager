@@ -37,10 +37,14 @@ export function useCreateSeason() {
   return useMutation({
     mutationFn: async (input: CreateSeasonInput) => {
       if (!teamId) throw new Error('No team')
+      const { user } = await blink.auth.me()
+      if (!user) throw new Error('Not authenticated')
+
       const id = `season_${crypto.randomUUID().slice(0, 8)}`
       await blink.db.seasons.create({
         id,
         teamId,
+        userId: user.id,
         name: input.name,
         startDate: input.startDate,
         endDate: input.endDate,
@@ -48,15 +52,12 @@ export function useCreateSeason() {
       })
 
       // Add the creator as the owner of the season
-      const { user } = await blink.auth.me()
-      if (user) {
-        await blink.db.seasonMembers.create({
-          id: `member_${crypto.randomUUID().slice(0, 8)}`,
-          seasonId: id,
-          userId: user.id,
-          role: 'owner',
-        })
-      }
+      await blink.db.seasonMembers.create({
+        id: `member_${crypto.randomUUID().slice(0, 8)}`,
+        seasonId: id,
+        userId: user.id,
+        role: 'owner',
+      })
       
       return id
     },

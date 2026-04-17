@@ -14,8 +14,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BlinkProvider
-        projectId={import.meta.env.VITE_BLINK_PROJECT_ID || 'blue-line-iq-qpy3h1ap'}
-        publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY || 'blnk_pk_cJpfpBNGg6PlOjdD6tzwKIJbjL0eh6CN'}
+        projectId={import.meta.env.VITE_BLINK_PROJECT_ID}
+        publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY}
         auth={{ mode: isInIframe ? 'headless' : 'managed' }}
       >
         <BlinkUIProvider theme="linear" darkMode="dark">
