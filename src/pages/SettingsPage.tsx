@@ -52,6 +52,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTeam } from '../hooks/useTeam'
 import { useAuth } from '../hooks/useAuth'
 import { useSeasons, useCreateSeason, useUpdateSeason, useDeleteSeason, useUpdateTeamName } from '../hooks/useSeasons'
+import { useDeleteTeam } from '../hooks/useTeams'
 import {
   useTeamPreferences,
   useNotificationPreferences,
@@ -64,6 +65,7 @@ import { blink } from '../blink/client'
 import { CONCEPTS, type Season } from '../types'
 import { format, parseISO, isValid } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useNavigate } from '@tanstack/react-router'
 
 const AGE_GROUPS = ['U8', 'U10', 'U12', 'U13', 'U14', 'U15', 'U16', 'U18', 'Junior', 'Senior', 'Adult']
 const TEAM_LEVELS = ['House', 'Tier 3', 'Tier 2', 'Tier 1', 'AA', 'AAA', 'Prep', 'Junior A', 'Other']
@@ -86,9 +88,10 @@ function parsePriority(json: string | undefined | null): string[] {
 
 export default function SettingsPage() {
   const { user } = useAuth()
-  const { data: teamData, isLoading } = useTeam()
+  const { data: teamData, isLoading, switchTeam } = useTeam()
   const team = teamData?.team
   const activeSeason = teamData?.season
+  const teams = teamData?.teams ?? []
 
   if (isLoading) {
     return (
@@ -120,7 +123,8 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="team" className="w-full">
         <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-secondary/40 p-1">
-          <TabsTrigger value="team" className="gap-2"><Users className="w-4 h-4" /> Team</TabsTrigger>
+          <TabsTrigger value="team" className="gap-2"><Users className="w-4 h-4" /> Active Team</TabsTrigger>
+          <TabsTrigger value="teams" className="gap-2"><Users className="w-4 h-4" /> Manage Teams</TabsTrigger>
           <TabsTrigger value="seasons" className="gap-2"><CalendarRange className="w-4 h-4" /> Seasons</TabsTrigger>
           <TabsTrigger value="notifications" className="gap-2"><Bell className="w-4 h-4" /> Notifications</TabsTrigger>
           <TabsTrigger value="account" className="gap-2"><UserCircle className="w-4 h-4" /> Account</TabsTrigger>
@@ -131,6 +135,10 @@ export default function SettingsPage() {
 
         <TabsContent value="team" className="mt-6">
           <TeamSettings team={team} activeSeason={activeSeason ?? null} />
+        </TabsContent>
+
+        <TabsContent value="teams" className="mt-6">
+          <TeamsSettings teams={teams} currentTeamId={team.id} onSwitch={switchTeam} />
         </TabsContent>
 
         <TabsContent value="seasons" className="mt-6">
@@ -916,5 +924,118 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
         </AlertDialogContent>
       </AlertDialog>
     </Card>
+  )
+}
+
+/* ---------------- Teams Management ---------------- */
+
+function TeamsSettings({
+  teams,
+  currentTeamId,
+  onSwitch,
+}: {
+  teams: { id: string; name: string }[]
+  currentTeamId: string
+  onSwitch: (id: string) => void
+}) {
+  const navigate = useNavigate()
+  const deleteTeam = useDeleteTeam()
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Your Teams</h3>
+          <p className="text-sm text-muted-foreground">Manage and switch between your hockey teams.</p>
+        </div>
+        <Button className="gap-2" onClick={() => navigate({ to: '/onboarding' })}>
+          <Plus className="w-4 h-4" /> Add New Team
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {teams.map((t) => {
+          const isSelected = t.id === currentTeamId
+          return (
+            <Card key={t.id} className={cn('border-border/50', isSelected && 'border-primary/40 bg-primary/5')}>
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={cn(
+                    "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
+                    isSelected ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+                  )}>
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="font-semibold text-foreground truncate">{t.name}</p>
+                    {isSelected && (
+                      <p className="text-[10px] text-primary font-bold uppercase tracking-wider mt-0.5">
+                        Currently Selected
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {!isSelected ? (
+                    <Button variant="outline" size="sm" onClick={() => onSwitch(t.id)}>
+                      Switch to Team
+                    </Button>
+                  ) : (
+                    <Badge className="bg-primary/10 text-primary border-primary/20 pointer-events-none">
+                      Active
+                    </Badge>
+                  )}
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    onClick={() => setConfirmDelete(t)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              Delete {confirmDelete?.name}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the team <span className="font-semibold text-foreground">{confirmDelete?.name}</span> and all its seasons, practices, and games. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteTeam.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteTeam.isPending}
+              onClick={async (e) => {
+                e.preventDefault()
+                if (!confirmDelete) return
+                try {
+                  await deleteTeam.mutateAsync(confirmDelete.id)
+                  toast.success('Team deleted')
+                  setConfirmDelete(null)
+                } catch {
+                  toast.error('Could not delete team')
+                }
+              }}
+            >
+              {deleteTeam.isPending ? 'Deleting…' : 'Delete Team'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

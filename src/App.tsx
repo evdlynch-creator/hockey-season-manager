@@ -29,6 +29,7 @@ import {
   RouterProvider,
   Outlet,
   useNavigate,
+  useSearch,
 } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -711,39 +712,42 @@ function OnboardingPage() {
   const { user, isLoading: authLoading } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const search = useSearch({ from: onboardingRoute.fullPath }) as { mode?: string }
   const { data: existingTeam, isFetching: teamFetching, isSuccess: teamSuccess } = useTeam()
 
-  // Only redirect away if BOTH team and season already exist.
-  const hasTeam = !!existingTeam?.team
+  const isAddingNewTeam = search.mode === 'new_team'
+
+  // Only redirect away if BOTH team and season already exist AND we aren't explicitly adding a new team.
+  const hasTeam = !isAddingNewTeam && !!existingTeam?.team
   const hasSeason = !!existingTeam?.season
 
   useEffect(() => {
-    if (!authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
+    if (!isAddingNewTeam && !authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
       navigate({ to: '/', replace: true })
     }
-  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate])
+  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate, isAddingNewTeam])
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       concepts: [],
-      teamName: existingTeam?.team.name ?? '',
+      teamName: hasTeam ? existingTeam?.team.name : '',
     }
   })
 
   const selectedConcepts = watch('concepts')
 
   useEffect(() => {
-    if (existingTeam?.team.name) {
+    if (hasTeam && existingTeam?.team.name) {
       setValue('teamName', existingTeam.team.name)
     }
-  }, [existingTeam?.team.name, setValue])
+  }, [hasTeam, existingTeam?.team.name, setValue])
 
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
       if (!user) throw new Error('Not authenticated')
 
-      let teamId = existingTeam?.team.id
+      let teamId = hasTeam ? existingTeam?.team.id : null
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
       if (!teamId) {
@@ -766,7 +770,11 @@ function OnboardingPage() {
 
       return { teamId, seasonId }
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      // If we added a new team, make it the selected one
+      if (isAddingNewTeam) {
+        localStorage.setItem('selected_team_id', data.teamId)
+      }
       await queryClient.refetchQueries({ queryKey: ['team'] })
       toast.success('Season setup complete!', { description: "You're ready to start coaching." })
       navigate({ to: '/', replace: true })

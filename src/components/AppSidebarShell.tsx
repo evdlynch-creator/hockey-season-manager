@@ -16,6 +16,12 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@blinkdotnew/ui'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import iqPlusLogoUrl from '@/assets/iq-plus-logo.svg'
@@ -32,10 +38,13 @@ import {
   LogOut,
   PanelLeft,
   ChevronsRight,
+  Plus,
+  ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
+import { useTeam } from '@/hooks/useTeam'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
 
@@ -94,6 +103,8 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
 
 export function AppSidebarShell() {
   const { user } = useAuth()
+  const { data: teamData, switchTeam } = useTeam()
+  const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false
     return localStorage.getItem(SIDEBAR_KEY) === 'true'
@@ -108,6 +119,8 @@ export function AppSidebarShell() {
   }, [])
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
+  const teams = teamData?.teams ?? []
+  const currentTeam = teamData?.team
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -159,6 +172,57 @@ export function AppSidebarShell() {
             </>
           )}
         </div>
+
+        {/* ── Team Switcher ──────────────────────────────── */}
+        {!collapsed && (
+          <div className="px-3 pt-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-full flex items-center justify-between gap-2 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 border border-sidebar-border transition-colors group">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                      <Users className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex flex-col text-left min-w-0">
+                      <span className="text-xs font-bold text-foreground truncate">{currentTeam?.name ?? 'Select Team'}</span>
+                      <span className="text-[10px] text-muted-foreground truncate uppercase tracking-tight">
+                        {teamData?.season?.name ?? 'No active season'}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[14.5rem] bg-popover border-border">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold px-3 py-2">
+                  Switch Team
+                </DropdownMenuLabel>
+                {teams.map((t) => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors',
+                      t.id === currentTeam?.id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    )}
+                    onClick={() => switchTeam(t.id)}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span className="flex-1 truncate">{t.name}</span>
+                    {t.id === currentTeam?.id && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer text-primary hover:bg-primary/5"
+                  onClick={() => navigate({ to: '/onboarding', search: { mode: 'new_team' } })}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create New Team</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
 
         {/* ── Nav (only this section scrolls) ───────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">

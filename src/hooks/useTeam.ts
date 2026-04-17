@@ -41,22 +41,46 @@ function useSeasonStateRevision() {
   return rev
 }
 
+const SELECTED_TEAM_KEY = 'selected_team_id'
+
+function getSelectedTeamId(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(SELECTED_TEAM_KEY)
+}
+
+function setSelectedTeamId(teamId: string | null) {
+  if (typeof window === 'undefined') return
+  if (teamId) {
+    localStorage.setItem(SELECTED_TEAM_KEY, teamId)
+  } else {
+    localStorage.removeItem(SELECTED_TEAM_KEY)
+  }
+}
+
 export function useTeam() {
   const { user } = useAuth()
   const seasonStateRev = useSeasonStateRevision()
+  const queryClient = useQueryClient()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['team', user?.id, seasonStateRev],
     queryFn: async () => {
       if (!user) return null
 
       const teams = (await blink.db.teams.list({
         where: { userId: user.id },
-        limit: 1,
+        orderBy: { createdAt: 'desc' },
       })) as Team[]
 
-      const team = teams[0] ?? null
-      if (!team) return null
+      if (teams.length === 0) return { teams: [], team: null, season: null }
+
+      let selectedId = getSelectedTeamId()
+      let team = teams.find((t) => t.id === selectedId) ?? teams[0]
+
+      // Update stored ID if it was missing or stale
+      if (team.id !== selectedId) {
+        setSelectedTeamId(team.id)
+      }
 
       const seasons = (await blink.db.seasons.list({
         where: { teamId: team.id },
@@ -76,8 +100,18 @@ export function useTeam() {
         season = seasons.find((s) => !archivedSeasonIds.includes(s.id)) ?? null
       }
 
-      return { team, season }
+      return { teams, team, season }
     },
     enabled: !!user,
   })
+
+  const switchTeam = async (teamId: string) => {
+    setSelectedTeamId(teamId)
+    await queryClient.invalidateQueries({ queryKey: ['team'] })
+    await queryClient.invalidateQueries({ queryKey: ['practices'] })
+    await queryClient.invalidateQueries({ queryKey: ['games'] })
+    await queryClient.invalidateQueries({ queryKey: ['analytics'] })
+  }
+
+  return { ...query, switchTeam }
 }
