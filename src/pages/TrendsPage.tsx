@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Separator, EmptyState, Badge,
 } from '@blinkdotnew/ui'
-import { TrendingUp, Trophy, Target, Activity } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Activity, CalendarRange } from 'lucide-react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
@@ -53,9 +53,84 @@ function heatmapColor(value: number | null): string {
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
+type WindowMode = 'all' | 'last1' | 'last3' | 'last5' | 'last10' | 'month'
+
+const WINDOW_OPTIONS: { value: WindowMode; label: string }[] = [
+  { value: 'all', label: 'Full season' },
+  { value: 'last1', label: 'Last game' },
+  { value: 'last3', label: 'Last 3' },
+  { value: 'last5', label: 'Last 5' },
+  { value: 'last10', label: 'Last 10' },
+  { value: 'month', label: 'By month' },
+]
+
 export default function TrendsPage() {
   const { data: teamData } = useTeam()
-  const { data: analytics, isLoading } = useFilteredAnalytics()
+  const { data: rawAnalytics, isLoading } = useFilteredAnalytics()
+  const [windowMode, setWindowMode] = useState<WindowMode>('all')
+  const [selectedMonth, setSelectedMonth] = useState<string>('')
+
+  // Months represented in the data (YYYY-MM, newest first)
+  const availableMonths = useMemo(() => {
+    if (!rawAnalytics) return []
+    const set = new Set<string>()
+    rawAnalytics.games.forEach(g => g.date && set.add(g.date.slice(0, 7)))
+    CONCEPTS.forEach(c =>
+      rawAnalytics.byConcept[c].timeline.forEach(t => set.add(t.date.slice(0, 7))),
+    )
+    return [...set].sort().reverse()
+  }, [rawAnalytics])
+
+  // Auto-select most recent month when entering month mode
+  useEffect(() => {
+    if (windowMode === 'month' && !selectedMonth && availableMonths.length) {
+      setSelectedMonth(availableMonths[0])
+    }
+  }, [windowMode, selectedMonth, availableMonths])
+
+  // Apply window filter on top of game-type filter
+  const analytics = useMemo(() => {
+    if (!rawAnalytics) return null
+    const completed = rawAnalytics.games
+      .filter(g => g.goalsFor != null && g.goalsAgainst != null && !!g.date)
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    let inRange: (date: string) => boolean = () => true
+    if (windowMode === 'month') {
+      const m = selectedMonth || availableMonths[0]
+      inRange = m ? (d: string) => d.startsWith(m) : () => false
+    } else if (windowMode !== 'all') {
+      const n =
+        windowMode === 'last1' ? 1 :
+        windowMode === 'last3' ? 3 :
+        windowMode === 'last5' ? 5 : 10
+      const win = completed.slice(-n)
+      if (!win.length) {
+        inRange = () => false
+      } else {
+        const start = win[0].date
+        const end = win[win.length - 1].date
+        inRange = (d: string) => d >= start && d <= end
+      }
+    }
+
+    const games = rawAnalytics.games.filter(g => g.date && inRange(g.date))
+    const byConcept = {} as typeof rawAnalytics.byConcept
+    CONCEPTS.forEach(c => {
+      const orig = rawAnalytics.byConcept[c]
+      const timeline = orig.timeline.filter(t => inRange(t.date))
+      const ratings: number[] = []
+      timeline.forEach(t => {
+        if (t.gameRating != null) ratings.push(t.gameRating)
+        if (t.practiceAvg != null) ratings.push(t.practiceAvg)
+      })
+      const latestAvg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null
+      const firstAvg = ratings.length ? ratings[0] : 0
+      const trend = latestAvg != null ? latestAvg - firstAvg : 0
+      byConcept[c] = { ...orig, timeline, latestAvg, trend }
+    })
+    return { ...rawAnalytics, games, byConcept }
+  }, [rawAnalytics, windowMode, selectedMonth, availableMonths])
 
   // Goals trend data
   const goalsData = useMemo(() => {
@@ -169,9 +244,50 @@ export default function TrendsPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Season Trends</h1>
-        <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Season Trends</h1>
+          <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground mr-1">
+            <CalendarRange className="w-3.5 h-3.5" />
+            Window
+          </div>
+          <div className="flex flex-wrap items-center gap-1 rounded-md border border-border/60 bg-card p-1">
+            {WINDOW_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setWindowMode(opt.value)}
+                className={cn(
+                  'px-2.5 py-1 text-[11px] font-semibold rounded transition-colors',
+                  windowMode === opt.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {windowMode === 'month' && (
+            availableMonths.length ? (
+              <select
+                value={selectedMonth || availableMonths[0]}
+                onChange={e => setSelectedMonth(e.target.value)}
+                className="h-7 rounded-md border border-border/60 bg-card px-2 text-[11px] font-semibold text-foreground hover:bg-secondary/60 transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {availableMonths.map(m => (
+                  <option key={m} value={m}>
+                    {format(parseISO(`${m}-01`), 'MMM yyyy')}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-[11px] text-muted-foreground italic">No months yet</span>
+            )
+          )}
+        </div>
       </div>
 
       <Separator />
