@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@blinkdotnew/ui'
+import logoUrl from '@/assets/blue-line-iq-logo.png'
 import {
   LayoutDashboard,
   Calendar,
@@ -122,12 +123,18 @@ export function AppSidebarShell() {
             collapsed && 'justify-center px-2'
           )}
         >
-          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-black shrink-0 tracking-tight">
-            BL
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <span className="block font-bold text-sm truncate text-foreground tracking-tight">Blue Line IQ</span>
+          {collapsed ? (
+            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-black shrink-0 tracking-tight">
+              BL
+            </div>
+          ) : (
+            <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+              <img
+                src={logoUrl}
+                alt="Blue Line IQ"
+                className="h-7 w-auto object-contain object-left select-none"
+                draggable={false}
+              />
               <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
             </div>
           )}
