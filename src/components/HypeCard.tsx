@@ -192,7 +192,7 @@ export function HypeCard({
               </div>
               <span className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-primary">
-                  {nextGame ? 'Pre-game hype' : 'Coaching points'}
+                  Coaching points
                 </span>
                 <span className="text-base font-bold tracking-tight">{hype.headline}</span>
               </span>
