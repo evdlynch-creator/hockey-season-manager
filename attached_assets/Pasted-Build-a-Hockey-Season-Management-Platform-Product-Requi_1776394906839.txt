@@ -1,0 +1,323 @@
+Build a Hockey Season Management Platform
+
+Product Requirements Document (PRD) — MVP (Final)
+1. Product Overview
+Product Name
+
+Inside Edge: Hockey Season Manager
+
+Objective
+
+Build a web application that allows hockey coaches to:
+
+Plan and store practices
+Log games and coach feedback
+Track team progress across key concepts
+Review past performance to improve future practices and games
+Core Value Proposition
+
+Help coaches understand if what they practice is improving game performance — and what to adjust.
+
+2. Scope
+Included (MVP)
+Authentication (email/password)
+Single team + single active season
+Multi-coach collaboration (shared team)
+Calendar (Practices + Games)
+Practice Management (segments + attachments)
+Post-Practice Feedback (segment ratings)
+Game Logging + Persistent Game Reviews
+Opponent History + Rematch Review
+Concept Tracking System
+Concept Dashboard (Weekly / Monthly / Season + Overall)
+Team-Season Home Page
+Practice duplication
+Search & filtering
+Excluded (MVP)
+Player-level tracking
+External integrations (GameSheet, TeamSnap)
+AI recommendations (except optional chatbot for season planning)
+Video analysis
+Drill marketplace
+Advanced analytics/graphs
+3. Users
+Primary User
+Hockey coach (youth/travel)
+Runs 1–3 practices per week
+Collaboration Model
+One team per season
+Multiple coaches can access/edit the same team
+4. Core Entities
+User
+Team
+Season
+Phase (optional)
+Practice
+PracticeSegment
+Game
+GameReview
+Opponent (derived)
+ConceptProgress (derived)
+5. Core Features
+5.1 Authentication
+Email/password login
+Each user tied to one team-season (MVP)
+5.2 Team-Season Setup
+
+Coach defines:
+
+Season start date
+Season end date
+3–5 priority concepts
+Optional phases
+5.3 Season Phases (Optional)
+Behavior
+Coaches can manually create phases
+Each phase includes:
+Name
+Start date
+End date
+Subjects (free text topics)
+Rules
+Practices and games are automatically associated with a phase based on date
+Phases are optional but recommended
+Future (not required now)
+Chatbot can assist in generating phases
+5.4 Calendar
+View
+Week view only
+Capabilities
+Create/edit/delete:
+Practices
+Games
+Constraints
+No drag-and-drop
+No recurring events
+Entries are manual
+5.5 Practice Management
+Practice Fields
+id
+date
+title
+notes
+status:
+draft
+scheduled
+completed
+reviewed
+Practice Segments
+
+Each practice contains multiple segments.
+
+Segment Fields
+type:
+Skating
+Skill
+Systems
+Small Area
+primary_concept (required)
+secondary_concept (optional)
+Concept List (Fixed)
+Breakouts
+Forecheck
+Defensive Zone
+Transition
+Passing
+Skating
+Attachments
+
+Each segment supports:
+
+One external link (URL)
+One PDF upload
+Notes
+
+(No preview required)
+
+5.6 Practice Duplication
+Coach can duplicate an existing practice
+New practice is editable
+Used for reuse and iteration
+5.7 Post-Practice Feedback
+
+Each segment must store:
+
+Ratings (1–5)
+
+Understanding
+
+Do players understand positioning and intent?
+
+Execution
+
+Are players performing the skill correctly?
+
+Game Transfer
+
+Is this showing up in games?
+
+Notes
+Optional per segment
+5.8 Game Management
+Game Fields
+id
+date
+opponent (string)
+home/away
+goals_for
+goals_against
+penalties (optional)
+shots_for (optional)
+shots_against (optional)
+status:
+scheduled
+completed
+reviewed
+5.9 Game Review (Persisted)
+Ratings (1–5)
+Breakouts
+Forecheck
+Defensive Zone
+Transition
+Passing
+Skating
+Notes
+What worked
+What didn’t
+General notes
+Opponent notes
+5.10 Opponent History
+Rules
+Opponents matched by exact name
+Coaches should select existing names to avoid duplicates
+Stored Per Opponent
+Games played
+Scores
+Ratings
+Notes
+Tendencies
+5.11 Rematch Review
+Behavior
+
+If upcoming game exists vs prior opponent:
+
+Show:
+
+Previous scores
+Previous notes
+Concept ratings
+Opponent tendencies
+Rule
+
+Only visible when upcoming game exists
+Not persistent in dashboard
+
+5.12 Concept Tracking
+Concepts
+Breakouts
+Forecheck
+Defensive Zone
+Transition
+Passing
+Skating
+Metrics per Concept
+Understanding (practice)
+Execution (practice)
+Game Transfer (practice)
+Game Performance (game)
+5.13 Concept Dashboard
+Time Views
+Weekly
+Monthly
+Season
+Overall View (ALWAYS visible)
+Overall concept scores
+Strongest concept
+Weakest concept
+Most improved
+Composite team score (optional)
+Concept Cards
+
+Each concept displays:
+
+Understanding %
+Execution %
+Game Transfer %
+Trend (↑ ↓ →)
+5.14 Calculation Rules
+Ratings stored as integers (1–5)
+Converted to % using:
+(score / 5) * 100
+Aggregation
+Simple average
+Missing values excluded
+Trend Logic
+Up: +5% or more
+Down: -5% or more
+Flat: within ±5%
+Weighting
+Practice: 60%
+Game: 40%
+5.15 Insights (Rules-Based)
+
+System generates:
+
+Strongest concept
+Weakest concept
+Most improved
+Declining concept
+Practice vs Game gap
+5.16 Search & Filtering
+
+Minimum filters:
+
+Date range
+Concept
+Opponent
+Practice vs Game
+5.17 Team-Season Home Page (Required)
+
+Displays:
+
+Upcoming practices
+Upcoming games
+Current week summary
+Quick link to dashboard
+Rematch prep card (if applicable)
+6. Data Model (Simplified)
+
+Include timestamps on all:
+
+created_at
+updated_at
+7. Non-Functional Requirements
+Mobile responsive
+Fast load (<2s)
+Simple UI
+Secure PDF uploads
+Clean card-based layout
+8. Assumptions and Constraints
+One team + one active season per user (MVP)
+Authentication required
+Week view only calendar
+Fixed concept taxonomy
+One primary + one secondary concept per segment
+One link + one PDF per segment
+Opponent matching via exact string
+Ratings are 1–5 integers
+Missing data excluded from averages
+No external integrations in MVP
+9. Success Metrics
+≥2 practices logged per week
+≥80% of practices reviewed
+≥1 game logged per week
+Weekly dashboard usage
+Rematch review usage before games
+Final Developer Assessment
+
+This PRD is now:
+
+Unambiguous
+Scoped correctly for MVP
+Buildable without guessing
+Flexible for future expansion

@@ -40,10 +40,11 @@ import GameDetailPage from './pages/GameDetailPage'
 import CalendarPage from './pages/CalendarPage'
 import ConceptsPage from './pages/ConceptsPage'
 import TrendsPage from './pages/TrendsPage'
+import OpponentsPage from './pages/OpponentsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { format, isAfter, parseISO } from 'date-fns'
-import { ClipboardList, Swords } from 'lucide-react'
+import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
 
 const CONCEPTS = [
   'Breakouts',
@@ -119,7 +120,7 @@ const gameDetailRoute = createRoute({
 const opponentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/opponents',
-  component: () => <PlaceholderPage title="Opponents" />,
+  component: OpponentsPage,
 })
 
 const conceptsRoute = createRoute({
@@ -400,47 +401,79 @@ function DashboardPage() {
 
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Target className="w-4 h-4 text-primary" />
-              Rematch Prep
-            </CardTitle>
-            <CardDescription className="text-xs">Opponents you've played before.</CardDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Target className="w-4 h-4 text-primary" />
+                  Rematch Prep
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">Upcoming games vs. teams you've faced before.</CardDescription>
+              </div>
+              <button
+                onClick={() => navigate({ to: '/opponents' })}
+                className="text-[11px] text-primary hover:underline flex items-center gap-0.5 shrink-0 mt-1"
+              >
+                Full history <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {rematchGames.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No rematches coming up.</p>
             ) : (
               rematchGames.map(g => {
                 const past = completedGames.filter(c => c.opponent === g.opponent)
-                const lastGame = past[past.length - 1]
-                const result = lastGame && lastGame.goalsFor != null && lastGame.goalsAgainst != null
-                  ? Number(lastGame.goalsFor) > Number(lastGame.goalsAgainst) ? 'W'
-                    : Number(lastGame.goalsFor) < Number(lastGame.goalsAgainst) ? 'L' : 'T'
+                const sortedPast = [...past].sort((a, b) => b.date.localeCompare(a.date))
+                const lastGame = sortedPast[0]
+                const gf = lastGame?.goalsFor != null ? Number(lastGame.goalsFor) : null
+                const ga = lastGame?.goalsAgainst != null ? Number(lastGame.goalsAgainst) : null
+                const result = gf != null && ga != null
+                  ? (gf > ga ? 'W' : gf < ga ? 'L' : 'T')
                   : null
+                const allWins = past.filter(c => Number(c.goalsFor) > Number(c.goalsAgainst)).length
+                const allLosses = past.filter(c => Number(c.goalsFor) < Number(c.goalsAgainst)).length
                 return (
-                  <button
+                  <div
                     key={g.id}
-                    onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
-                    className="w-full flex items-center gap-3 p-2 rounded-md bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
+                    className="rounded-md bg-secondary/30 border border-border/40 overflow-hidden"
                   >
-                    <Swords className="w-4 h-4 text-primary shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">vs. {g.opponent}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(g.date), 'EEE, MMM d')} · {past.length} prior meeting{past.length !== 1 ? 's' : ''}
-                      </p>
+                    <button
+                      onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
+                      className="w-full flex items-start gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
+                    >
+                      <Swords className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold text-foreground truncate">vs. {g.opponent}</p>
+                          {result && (
+                            <Badge className={cn(
+                              'shrink-0 text-[10px] px-1.5 py-0 h-4',
+                              result === 'W' && 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border',
+                              result === 'L' && 'bg-red-600/20 text-red-400 border-red-600/30 border',
+                              result === 'T' && 'bg-secondary',
+                            )}>
+                              Last: {result} {gf != null && ga != null ? `${gf}–${ga}` : ''}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {format(parseISO(g.date), 'EEE, MMM d')} · {g.location === 'home' ? 'Home' : 'Away'}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {past.length} prior meeting{past.length !== 1 ? 's' : ''} · Record: {allWins}W {allLosses}L
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                    </button>
+                    <div className="flex border-t border-border/30">
+                      <button
+                        onClick={() => navigate({ to: '/opponents' })}
+                        className="flex-1 py-1.5 text-[10px] text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors font-medium uppercase tracking-wide"
+                      >
+                        View scout notes
+                      </button>
                     </div>
-                    {result && (
-                      <Badge className={cn(
-                        'shrink-0 text-[10px]',
-                        result === 'W' && 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border',
-                        result === 'L' && 'bg-red-600/20 text-red-400 border-red-600/30 border',
-                        result === 'T' && 'bg-secondary',
-                      )}>
-                        Last: {result}
-                      </Badge>
-                    )}
-                  </button>
+                  </div>
                 )
               })
             )}
