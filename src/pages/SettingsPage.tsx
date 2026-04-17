@@ -56,6 +56,7 @@ import {
   useTeamPreferences,
   useNotificationPreferences,
   useSeasonState,
+  useRecentColors,
   type TeamPreferences,
   type NotificationPreferences,
 } from '../hooks/usePreferences'
@@ -154,8 +155,54 @@ export default function SettingsPage() {
 
 /* ---------------- Team ---------------- */
 
+const PRESET_COLORS: { name: string; value: string }[] = [
+  { name: 'Amber', value: '#f59e0b' },
+  { name: 'Red', value: '#ef4444' },
+  { name: 'Crimson', value: '#b91c1c' },
+  { name: 'Orange', value: '#f97316' },
+  { name: 'Yellow', value: '#eab308' },
+  { name: 'Green', value: '#22c55e' },
+  { name: 'Forest', value: '#15803d' },
+  { name: 'Teal', value: '#14b8a6' },
+  { name: 'Sky', value: '#0ea5e9' },
+  { name: 'Blue', value: '#3b82f6' },
+  { name: 'Navy', value: '#1d4ed8' },
+  { name: 'Indigo', value: '#6366f1' },
+  { name: 'Purple', value: '#a855f7' },
+  { name: 'Pink', value: '#ec4899' },
+  { name: 'Slate', value: '#64748b' },
+  { name: 'Black', value: '#111827' },
+]
+
+function ColorSwatch({
+  color,
+  selected,
+  onClick,
+  title,
+}: {
+  color: string
+  selected?: boolean
+  onClick: () => void
+  title?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title ?? color}
+      style={{ backgroundColor: color }}
+      className={cn(
+        'h-7 w-7 rounded-md border transition-all hover:scale-110',
+        selected ? 'border-foreground ring-2 ring-foreground/20' : 'border-border/60',
+      )}
+      aria-label={title ?? color}
+    />
+  )
+}
+
 function TeamSettings({ team, activeSeason }: { team: { id: string; name: string }; activeSeason: Season | null }) {
   const [teamPrefs, setTeamPrefs] = useTeamPreferences(team.id)
+  const [recentColors, setRecentColors] = useRecentColors(team.id)
   const updateTeamName = useUpdateTeamName()
   const updateSeason = useUpdateSeason()
 
@@ -205,6 +252,14 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
       }
       await Promise.all(promises)
       setTeamPrefs(prefs)
+      // Track the chosen color in recents (skip if it's a preset, dedup, max 8).
+      const chosen = prefs.primaryColor.toLowerCase()
+      const isPreset = PRESET_COLORS.some((p) => p.value.toLowerCase() === chosen)
+      if (chosen && !isPreset) {
+        setRecentColors((prev) => ({
+          colors: [chosen, ...prev.colors.filter((c) => c.toLowerCase() !== chosen)].slice(0, 8),
+        }))
+      }
       toast.success('Team settings saved')
     } catch {
       toast.error('Could not save team settings')
@@ -245,22 +300,73 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
               {TEAM_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </Field>
-          <Field>
+          <Field className="md:col-span-2">
             <FieldLabel>Primary Team Color</FieldLabel>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={prefs.primaryColor}
-                onChange={(e) => setPrefs((p) => ({ ...p, primaryColor: e.target.value }))}
-                className="h-9 w-14 rounded-md border border-input bg-background cursor-pointer"
-              />
-              <Input
-                value={prefs.primaryColor}
-                onChange={(e) => setPrefs((p) => ({ ...p, primaryColor: e.target.value }))}
-                className="font-mono text-xs"
-              />
+            <FieldDescription>Used as a visual accent across the app.</FieldDescription>
+
+            <div className="mt-2 space-y-3">
+              <div>
+                <p className="text-[10px] uppercase font-semibold tracking-widest text-muted-foreground mb-1.5">
+                  Presets
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {PRESET_COLORS.map((c) => (
+                    <ColorSwatch
+                      key={c.value}
+                      color={c.value}
+                      title={c.name}
+                      selected={prefs.primaryColor.toLowerCase() === c.value.toLowerCase()}
+                      onClick={() => setPrefs((p) => ({ ...p, primaryColor: c.value }))}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {recentColors.colors.length > 0 && (
+                <div>
+                  <p className="text-[10px] uppercase font-semibold tracking-widest text-muted-foreground mb-1.5">
+                    Recently used
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentColors.colors.map((c) => (
+                      <ColorSwatch
+                        key={c}
+                        color={c}
+                        selected={prefs.primaryColor.toLowerCase() === c.toLowerCase()}
+                        onClick={() => setPrefs((p) => ({ ...p, primaryColor: c }))}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-[10px] uppercase font-semibold tracking-widest text-muted-foreground mb-1.5">
+                  Custom
+                </p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={prefs.primaryColor}
+                    onChange={(e) => setPrefs((p) => ({ ...p, primaryColor: e.target.value }))}
+                    className="h-9 w-14 rounded-md border border-input bg-background cursor-pointer"
+                  />
+                  <Input
+                    value={prefs.primaryColor}
+                    onChange={(e) => setPrefs((p) => ({ ...p, primaryColor: e.target.value }))}
+                    className="font-mono text-xs max-w-[140px]"
+                    placeholder="#000000"
+                  />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Preview</span>
+                    <span
+                      className="inline-block h-5 w-12 rounded"
+                      style={{ backgroundColor: prefs.primaryColor }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-            <FieldDescription>Used as a visual accent for your team.</FieldDescription>
           </Field>
         </div>
 

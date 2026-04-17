@@ -100,6 +100,13 @@ export function useNotificationPreferences(teamId?: string) {
   )
 }
 
+export function useRecentColors(teamId?: string) {
+  return usePersistedJson<{ colors: string[] }>(
+    teamId ? `recent-colors:${teamId}` : null,
+    { colors: [] },
+  )
+}
+
 export function useSeasonState(teamId?: string) {
   return usePersistedJson<SeasonState>(teamId ? `season-state:${teamId}` : null, DEFAULT_SEASON_STATE)
 }
