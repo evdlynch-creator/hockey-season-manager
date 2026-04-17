@@ -20,7 +20,7 @@ import {
   AlertDialogTrigger,
 } from '@blinkdotnew/ui'
 import { Rocket, RefreshCw, ShieldAlert, CheckCircle2, Trash2, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import {
   useOrphanTeams,
@@ -29,6 +29,7 @@ import {
   type OrphanTeamCandidate,
 } from '../hooks/useTeamRecovery'
 import { format, parseISO, isValid } from 'date-fns'
+import { clearDriftEvent, readLatestDriftEvent, normalizeEmail, type DriftEvent } from '../lib/identity'
 
 function shortHash(input: string): string {
   if (!input) return '—'
@@ -165,6 +166,29 @@ export function NoTeamScreen() {
   const queryClient = useQueryClient()
   const orphanQuery = useOrphanTeams()
   const [busyTeamId, setBusyTeamId] = useState<string | null>(null)
+  const [drift, setDrift] = useState<DriftEvent | null>(null)
+
+  // Surface the most recent identity-drift event (Task #20) so the user
+  // understands why their team briefly disappeared. We only show drift
+  // events from the last 5 minutes AND only when the event email matches
+  // the currently signed-in email — otherwise a prior account's drift
+  // could leak across a quick account switch on the same browser. We also
+  // auto-consume stale events so they don't haunt later navigations.
+  useEffect(() => {
+    const evt = readLatestDriftEvent()
+    if (!evt) return
+    const fresh = Date.now() - evt.detectedAt < 5 * 60 * 1000
+    const myEmail = normalizeEmail(user?.email ?? '')
+    if (!fresh) {
+      clearDriftEvent()
+      return
+    }
+    if (myEmail && normalizeEmail(evt.email) !== myEmail) {
+      // Belongs to a different identity — don't surface.
+      return
+    }
+    setDrift(evt)
+  }, [user?.email])
 
   const orphans = orphanQuery.data ?? []
   const hasOrphans = orphans.length > 0
@@ -203,6 +227,31 @@ export function NoTeamScreen() {
               </span>
             </div>
           </div>
+
+          {drift && (
+            <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-4 text-sm flex gap-3">
+              <ShieldAlert className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+              <div className="space-y-1 flex-1">
+                <p className="font-medium text-foreground">Your sign-in session was reissued</p>
+                <p className="text-muted-foreground">
+                  The workspace just gave your account a new internal session id, even
+                  though your email is the same. We tried to restore your team
+                  automatically — if it didn't reattach, pick it from the list below.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  clearDriftEvent()
+                  setDrift(null)
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground self-start"
+                aria-label="Dismiss notice"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-4 text-sm flex gap-3">
             <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
