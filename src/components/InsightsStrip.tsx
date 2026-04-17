@@ -60,9 +60,10 @@ interface InsightsStripProps {
   insights: Insight[]
   limit?: number
   onViewAll?: () => void
+  title?: string
 }
 
-export function InsightsStrip({ insights, limit = 3, onViewAll }: InsightsStripProps) {
+export function InsightsStrip({ insights, limit = 3, onViewAll, title = 'Top Insights' }: InsightsStripProps) {
   const top = insights.slice(0, limit)
   if (!top.length) return null
   return (
@@ -70,7 +71,7 @@ export function InsightsStrip({ insights, limit = 3, onViewAll }: InsightsStripP
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-4 h-4 text-primary" />
-          <p className="text-sm font-semibold text-foreground">Top Insights</p>
+          <p className="text-sm font-semibold text-foreground">{title}</p>
         </div>
         {onViewAll && (
           <button

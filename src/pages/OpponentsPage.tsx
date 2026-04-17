@@ -7,7 +7,7 @@ import {
 import {
   Users, Swords, TrendingUp, TrendingDown, Minus,
   ChevronRight, Calendar, Trophy,
-  ShieldAlert, ShieldCheck, ClipboardCopy, Sparkles,
+  ShieldAlert, ShieldCheck, ClipboardCopy, Sparkles, Lightbulb,
 } from 'lucide-react'
 import {
   ResponsiveContainer, RadarChart, PolarGrid,
@@ -442,13 +442,16 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
 
       {/* Top insights vs this opponent */}
       {insights.length > 0 ? (
-        <InsightsStrip insights={insights} limit={3} />
+        <InsightsStrip insights={insights} limit={3} title={`Top Insights vs. ${stats.name}`} />
       ) : (
         <Card className="border-border/50 bg-card">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground italic text-center">
-              Review at least one game vs. {stats.name} to see tailored insights.
-            </p>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Lightbulb className="w-4 h-4" />
+              <p className="text-sm italic">
+                Review at least one game vs. {stats.name} to see tailored insights.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
