@@ -187,7 +187,7 @@ function AgendaSection({
     <div className="space-y-2">
       <div className="flex items-baseline gap-2 px-1">
         <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
-        <span className="text-xs text-white/40 tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
+        <span className="text-xs text-primary tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
       </div>
       <div className="space-y-1">
         {events.length === 0 ? (
@@ -283,9 +283,9 @@ export default function CalendarPage() {
     const endOfThisMonth = endOfMonth(today)
     const endOfNextMonth = endOfMonth(addMonths(today, 1))
 
-    type Zone = { id: string; label: string; sub: string; days: { date: Date; label: string; events: CalendarEvent[] }[] }
+    type Zone = { id: string; label: string; sub: string; compact?: boolean; days: { date: Date; label: string; events: CalendarEvent[] }[] }
     const zoneList: Zone[] = [
-      { id: 'today', label: 'Today', sub: format(today, 'MM/dd/yyyy'), days: [] },
+      { id: 'today', label: 'Today', sub: format(today, 'MM/dd/yyyy'), compact: true, days: [] },
       { id: 'thisWeek', label: 'This Week', sub: 'Rest of the week', days: [] },
       { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MM/dd/yyyy') + ' – ' + format(endOfNextWeek, 'MM/dd/yyyy'), days: [] },
       { id: 'thisMonth', label: 'Later This Month', sub: format(today, 'MMMM yyyy'), days: [] },
@@ -359,6 +359,7 @@ export default function CalendarPage() {
                   sub={zone.sub}
                   days={zone.days}
                   onOpen={openEvent}
+                  compact={zone.compact}
                 />
               ))
             )}
@@ -374,11 +375,13 @@ function ZoneBlock({
   sub,
   days,
   onOpen,
+  compact,
 }: {
   label: string
   sub: string
   days: { date: Date; label: string; events: CalendarEvent[] }[]
   onOpen: (ev: CalendarEvent) => void
+  compact?: boolean
 }) {
   const eventCount = days.reduce((a, d) => a + d.events.length, 0)
   return (
@@ -386,7 +389,7 @@ function ZoneBlock({
       <div className="flex items-baseline justify-between mb-3 px-1">
         <div>
           <h2 className="text-lg font-semibold text-white">{label}</h2>
-          <p className="text-xs text-white/40">{sub}</p>
+          <p className="text-xs text-primary tabular-nums">{sub}</p>
         </div>
         <span className="text-xs text-white/40 tabular-nums">
           {eventCount} {eventCount === 1 ? 'event' : 'events'}
@@ -395,6 +398,24 @@ function ZoneBlock({
       {eventCount === 0 ? (
         <div className="rounded-lg bg-sidebar/50 border border-sidebar-border px-4 py-3">
           <p className="text-sm text-white/30 italic">Nothing scheduled</p>
+        </div>
+      ) : compact ? (
+        <div className="space-y-1">
+          {days.flatMap(day => day.events).map(ev => (
+            <button
+              key={ev.data.id}
+              onClick={() => onOpen(ev)}
+              className="w-full text-left rounded-lg p-3 transition-colors flex items-start gap-3 hover:bg-white/5"
+            >
+              <Circle className={cn('w-2.5 h-2.5 shrink-0 mt-1.5 fill-current', eventDotClass(ev))} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-white/50 truncate">
+                  {ev.kind === 'practice' ? 'Practice' : `Game · ${ev.data.location === 'home' ? 'Home' : 'Away'}`}
+                </p>
+                <p className="text-base font-semibold text-white/95 truncate">{eventTitle(ev)}</p>
+              </div>
+            </button>
+          ))}
         </div>
       ) : (
         <div className="space-y-4">
