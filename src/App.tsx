@@ -383,7 +383,7 @@ function DashboardPage() {
                 </div>
                 <p className="font-semibold text-sm text-foreground">{nextEvent.data.title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(parseISO(nextEvent.data.date), 'EEE, MMM d')}
+                  {format(parseISO(nextEvent.data.date), 'MM/dd/yyyy')}
                 </p>
               </button>
             ) : (
@@ -397,7 +397,7 @@ function DashboardPage() {
                 </div>
                 <p className="font-semibold text-sm text-foreground">vs. {nextEvent.data.opponent}</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(parseISO(nextEvent.data.date), 'EEE, MMM d')} · {nextEvent.data.location === 'home' ? 'Home' : 'Away'}
+                  {format(parseISO(nextEvent.data.date), 'MM/dd/yyyy')} · {nextEvent.data.location === 'home' ? 'Home' : 'Away'}
                 </p>
               </button>
             )}
@@ -432,7 +432,7 @@ function DashboardPage() {
                       <ClipboardList className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{ev.data.title}</p>
-                        <p className="text-xs text-muted-foreground">{format(parseISO(ev.data.date), 'EEE, MMM d')}</p>
+                        <p className="text-xs text-muted-foreground">{format(parseISO(ev.data.date), 'MM/dd/yyyy')}</p>
                       </div>
                     </button>
                   ) : (
@@ -444,7 +444,7 @@ function DashboardPage() {
                       <Swords className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">vs. {ev.data.opponent}</p>
-                        <p className="text-xs text-muted-foreground">{format(parseISO(ev.data.date), 'EEE, MMM d')} · {ev.data.location === 'home' ? 'Home' : 'Away'}</p>
+                        <p className="text-xs text-muted-foreground">{format(parseISO(ev.data.date), 'MM/dd/yyyy')} · {ev.data.location === 'home' ? 'Home' : 'Away'}</p>
                       </div>
                     </button>
                   )

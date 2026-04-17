@@ -138,7 +138,7 @@ export default function TrendsPage() {
     return analytics.games
       .filter(g => g.goalsFor != null && g.goalsAgainst != null)
       .map(g => ({
-        label: g.date ? format(parseISO(g.date), 'MMM d') : '',
+        label: g.date ? format(parseISO(g.date), 'MM/dd') : '',
         opponent: g.opponent,
         'Goals For': Number(g.goalsFor),
         'Goals Against': Number(g.goalsAgainst),
@@ -158,7 +158,7 @@ export default function TrendsPage() {
         else if (gf < ga) l++
         else t++
         return {
-          label: g.date ? format(parseISO(g.date), 'MMM d') : '',
+          label: g.date ? format(parseISO(g.date), 'MM/dd') : '',
           Wins: w,
           Losses: l,
           Ties: t,
@@ -450,7 +450,7 @@ export default function TrendsPage() {
                 <div className="flex items-center gap-1 pl-[140px] mb-2">
                   {heatmapRows[0]?.dates.map(d => (
                     <div key={d} className="w-10 text-center text-[9px] text-muted-foreground font-medium tabular-nums">
-                      {format(parseISO(d), 'M/d')}
+                      {format(parseISO(d), 'MM/dd')}
                     </div>
                   ))}
                 </div>
@@ -468,7 +468,7 @@ export default function TrendsPage() {
                             c.value == null ? 'text-muted-foreground/40' : 'text-white'
                           )}
                           style={{ backgroundColor: heatmapColor(c.value) }}
-                          title={`${row.concept} · ${format(parseISO(c.date), 'MMM d')}: ${c.value?.toFixed(1) ?? 'No rating'}`}
+                          title={`${row.concept} · ${format(parseISO(c.date), 'MM/dd/yyyy')}: ${c.value?.toFixed(1) ?? 'No rating'}`}
                         >
                           {c.value != null ? c.value.toFixed(1) : '—'}
                         </div>

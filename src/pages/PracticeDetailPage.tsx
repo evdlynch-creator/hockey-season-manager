@@ -116,7 +116,7 @@ export default function PracticeDetailPage() {
   const { data: segments = [], isLoading: segsLoading } = usePracticeSegments(practiceId)
 
   const dateStr = practice?.date
-    ? format(new Date(practice.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')
+    ? format(new Date(practice.date + 'T00:00:00'), 'MM/dd/yyyy')
     : '—'
 
   // Mark complete

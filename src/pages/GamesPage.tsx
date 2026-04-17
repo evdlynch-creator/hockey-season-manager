@@ -71,7 +71,7 @@ function ResultBadge({ game }: { game: Game }) {
 
 function GameCard({ game, type }: { game: Game; type: GameType }) {
   const navigate = useNavigate()
-  const dateStr = game.date ? format(new Date(game.date + 'T00:00:00'), 'MMM d, yyyy') : '—'
+  const dateStr = game.date ? format(new Date(game.date + 'T00:00:00'), 'MM/dd/yyyy') : '—'
 
   return (
     <Card className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"

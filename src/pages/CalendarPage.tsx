@@ -65,24 +65,18 @@ function MiniMonth({
   const goPrev = () => setMonthCursor(view === 'week' ? addDays(monthCursor, -7) : subMonths(monthCursor, 1))
   const goNext = () => setMonthCursor(view === 'week' ? addDays(monthCursor, 7) : addMonths(monthCursor, 1))
 
+  const wkStart = startOfWeek(monthCursor, { weekStartsOn: 1 })
+  const wkEnd = addDays(wkStart, 6)
   const headerLabel = view === 'week'
-    ? (() => {
-        const wkStart = startOfWeek(monthCursor, { weekStartsOn: 1 })
-        const wkEnd = addDays(wkStart, 6)
-        const sameMonth = isSameMonth(wkStart, wkEnd)
-        return sameMonth
-          ? `${format(wkStart, 'MMM d')} – ${format(wkEnd, 'd')}`
-          : `${format(wkStart, 'MMM d')} – ${format(wkEnd, 'MMM d')}`
-      })()
-    : format(monthCursor, 'MMMM')
+    ? `${format(wkStart, 'MM/dd/yyyy')} – ${format(wkEnd, 'MM/dd/yyyy')}`
+    : `${format(monthCursor, 'MMMM')} ${format(monthCursor, 'yyyy')}`
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-2 px-0.5 gap-3">
         <h2 className="text-base font-semibold text-white truncate">
-          {headerLabel}{' '}
-          <span className="text-primary">{format(monthCursor, 'yyyy')}</span>
+          {headerLabel}
         </h2>
         <div className="flex items-center gap-2 shrink-0">
           {/* View toggle */}
@@ -193,7 +187,7 @@ function AgendaSection({
     <div className="space-y-2">
       <div className="flex items-baseline gap-2 px-1">
         <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
-        <span className="text-xs text-white/40 tabular-nums">{format(date, 'dd/MM/yyyy')}</span>
+        <span className="text-xs text-white/40 tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
       </div>
       <div className="space-y-1">
         {events.length === 0 ? (
@@ -291,9 +285,9 @@ export default function CalendarPage() {
 
     type Zone = { id: string; label: string; sub: string; days: { date: Date; label: string; events: CalendarEvent[] }[] }
     const zoneList: Zone[] = [
-      { id: 'today', label: 'Today', sub: format(today, 'EEEE, MMM d'), days: [] },
+      { id: 'today', label: 'Today', sub: format(today, 'MM/dd/yyyy'), days: [] },
       { id: 'thisWeek', label: 'This Week', sub: 'Rest of the week', days: [] },
-      { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MMM d') + ' – ' + format(endOfNextWeek, 'MMM d'), days: [] },
+      { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MM/dd/yyyy') + ' – ' + format(endOfNextWeek, 'MM/dd/yyyy'), days: [] },
       { id: 'thisMonth', label: 'Later This Month', sub: format(today, 'MMMM yyyy'), days: [] },
       { id: 'nextMonth', label: 'Next Month', sub: format(addMonths(today, 1), 'MMMM yyyy'), days: [] },
     ]
@@ -307,7 +301,7 @@ export default function CalendarPage() {
         ? 'Today'
         : isSameDay(d, tomorrow)
         ? 'Tomorrow'
-        : format(d, 'EEE, MMM d')
+        : format(d, 'MM/dd/yyyy')
       const day = { date: d, label: dayLabel, events }
 
       if (isSameDay(d, today)) zoneList[0].days.push(day)
