@@ -31,6 +31,7 @@ import {
   UserCog,
   LogOut,
   PanelLeft,
+  ChevronsRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link, useLocation } from '@tanstack/react-router'
@@ -226,6 +227,25 @@ export function AppSidebarShell() {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Expand sidebar (collapsed only) */}
+          {collapsed && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                  onClick={toggle}
+                  aria-label="Expand sidebar"
+                >
+                  <ChevronsRight className="h-4 w-4 shrink-0" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expand sidebar</TooltipContent>
+            </Tooltip>
           )}
 
           {/* Sign out */}
