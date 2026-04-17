@@ -106,7 +106,7 @@ export function useTeam() {
 
       return { teams, team, season }
     },
-    enabled: !!user,
+    enabled: !!user || isDemoMode(),
   })
 
   const switchTeam = async (teamId: string) => {

@@ -3,6 +3,7 @@ import { useTeam } from './useTeam'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import type { SeasonRole } from '../types'
+import { isDemoMode } from './useDemoData'
 
 export function usePermissions() {
   const { user } = useAuth()
@@ -10,8 +11,9 @@ export function usePermissions() {
   const seasonId = teamData?.season?.id
 
   return useQuery({
-    queryKey: ['permissions', seasonId, user?.id],
+    queryKey: ['permissions', seasonId, user?.id, isDemoMode()],
     queryFn: async () => {
+      if (isDemoMode()) return 'owner' as SeasonRole
       if (!user || !seasonId) return null
 
       // Check if user is a member of the season

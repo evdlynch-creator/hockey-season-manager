@@ -2,14 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { blink } from '../blink/client'
 import { useTeam } from './useTeam'
 import type { SeasonMember, Invitation, SeasonRole } from '../types'
+import { DEMO_MEMBERS, DEMO_INVITATIONS, isDemoMode } from './useDemoData'
 
 export function useCoachingStaff() {
   const { data: teamData } = useTeam()
   const seasonId = teamData?.season?.id
 
   const staffQuery = useQuery({
-    queryKey: ['coaching-staff', seasonId],
+    queryKey: ['coaching-staff', seasonId, isDemoMode()],
     queryFn: async () => {
+      if (isDemoMode()) {
+        return { members: DEMO_MEMBERS, invitations: DEMO_INVITATIONS }
+      }
       if (!seasonId) return []
       
       // Fetch members and resolve emails
@@ -24,7 +28,7 @@ export function useCoachingStaff() {
 
       return { members, invitations }
     },
-    enabled: !!seasonId,
+    enabled: !!seasonId || isDemoMode(),
   })
 
   return staffQuery

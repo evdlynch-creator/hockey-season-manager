@@ -49,7 +49,7 @@ import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { useFilteredAnalytics, filterGamesByMode, buildInsights } from './hooks/useAnalytics'
 import { useGameTypes, useViewMode } from './hooks/usePreferences'
-import { useDemoMode } from './hooks/useDemoData'
+import { useDemoMode, isDemoMode } from './hooks/useDemoData'
 import { HypeCard } from './components/HypeCard'
 import { InsightsStrip } from './components/InsightsStrip'
 import { format, isAfter, parseISO } from 'date-fns'
@@ -201,13 +201,15 @@ function DashboardPage() {
   const { data: analytics } = useFilteredAnalytics()
   const navigate = useNavigate()
 
+  const demoActive = isDemoMode()
+
   useEffect(() => {
-    if (!authLoading && user && isSuccess && !isFetching && !teamData) {
+    if (!authLoading && !demoActive && user && isSuccess && !isFetching && !teamData?.team) {
       navigate({ to: '/onboarding', replace: true })
     }
-  }, [teamData, isSuccess, isFetching, authLoading, user, navigate])
+  }, [teamData, isSuccess, isFetching, authLoading, user, navigate, demoActive])
 
-  if (authLoading || isLoading || !teamData?.team) return <LoadingOverlay show />
+  if ((authLoading && !demoActive) || isLoading || !teamData?.team) return <LoadingOverlay show />
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

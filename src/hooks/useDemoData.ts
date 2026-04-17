@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Team, Season, Practice, PracticeSegment, Game, GameReview } from '../types'
+import type { Team, Season, Practice, PracticeSegment, Game, GameReview, SeasonMember, Invitation } from '../types'
 import { subDays, format } from 'date-fns'
 
 const DEMO_TEAM_ID = 'demo-team'
@@ -176,6 +176,39 @@ export const DEMO_REVIEWS: GameReview[] = [
     passingRating: 2,
     skatingRating: 3,
     notes: 'Slow start and never recovered. D-zone was a mess.',
+    createdAt: new Date().toISOString(),
+  }
+]
+
+export const DEMO_MEMBERS: SeasonMember[] = [
+  {
+    id: 'demo-mem-1',
+    seasonId: DEMO_SEASON_ID,
+    userId: 'demo-user',
+    role: 'owner',
+    displayName: 'Head Coach (Demo)',
+    email: 'coach@blackhawks.demo',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-mem-2',
+    seasonId: DEMO_SEASON_ID,
+    userId: 'demo-asst-1',
+    role: 'assistant',
+    displayName: 'Assistant Coach',
+    email: 'asst@blackhawks.demo',
+    createdAt: new Date().toISOString(),
+  }
+]
+
+export const DEMO_INVITATIONS: Invitation[] = [
+  {
+    id: 'demo-inv-1',
+    seasonId: DEMO_SEASON_ID,
+    email: 'scout@nhl.com',
+    role: 'viewer',
+    token: 'demo-token-1',
+    status: 'pending',
     createdAt: new Date().toISOString(),
   }
 ]
