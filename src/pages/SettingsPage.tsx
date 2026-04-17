@@ -913,7 +913,7 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Leave this team</p>
               <p className="text-xs text-muted-foreground">
-                You'll lose access to {/* team name lookup */} this team's data immediately. Anything
+                You'll lose access to this team's data immediately. Anything
                 you've already entered stays on the team.
               </p>
             </div>
