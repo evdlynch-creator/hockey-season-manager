@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
+  <!-- Blue accent shadow behind Q -->
+  <path d="M82 22 L94 22 L94 58 L106 58 L106 70 L82 70 Z" fill="#3BB0FF" />
+  <!-- Blue plus -->
+  <path d="M96 8 L112 8 L112 18 L122 18 L122 30 L112 30 L112 40 L96 40 L96 30 L86 30 L86 18 L96 18 Z" fill="#3BB0FF" />
+  <!-- I (black, italic slant) -->
+  <path d="M14 14 L36 14 L30 66 L8 66 Z" fill="#0A0A0A" />
+  <!-- Q outer (black) -->
+  <path d="M40 14 L92 14 L86 66 L46 66 Q34 66 36 54 L40 14 Z" fill="#0A0A0A" />
+  <!-- Q inner cutout (white ring) -->
+  <path d="M50 24 L82 24 L77 56 L52 56 Q46 56 47 50 L50 24 Z" fill="#FFFFFF" />
+  <!-- Q center square (black dot) -->
+  <rect x="58" y="32" width="16" height="16" fill="#0A0A0A" />
+  <!-- Q tail (black diagonal) -->
+  <path d="M70 56 L86 56 L82 70 L66 70 Z" fill="#0A0A0A" />
+</svg>

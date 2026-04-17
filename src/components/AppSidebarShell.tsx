@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from '@blinkdotnew/ui'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
+import iqPlusLogoUrl from '@/assets/iq-plus-logo.svg'
 import {
   LayoutDashboard,
   Calendar,
@@ -124,9 +125,12 @@ export function AppSidebarShell() {
           )}
         >
           {collapsed ? (
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-black shrink-0 tracking-tight">
-              BL
-            </div>
+            <img
+              src={iqPlusLogoUrl}
+              alt="Blue Line IQ"
+              className="h-8 w-8 object-contain shrink-0 select-none"
+              draggable={false}
+            />
           ) : (
             <div className="flex-1 min-w-0 flex flex-col gap-0.5">
               <img
