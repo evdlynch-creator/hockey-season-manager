@@ -51,6 +51,7 @@ import { useGameTypes, useViewMode } from './hooks/usePreferences'
 import { HypeCard } from './components/HypeCard'
 import { InsightsStrip } from './components/InsightsStrip'
 import { NoTeamScreen } from './components/NoTeamScreen'
+import { SessionReissuedBanner } from './components/SessionReissuedBanner'
 import { useOrphanTeams } from './hooks/useTeamRecovery'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
@@ -317,6 +318,7 @@ function DashboardPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fade-in">
+      <SessionReissuedBanner />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">{teamData.team.name}</h1>

@@ -51,6 +51,18 @@ export function useAuth() {
           email: nextEmail || null,
         })
 
+        // Production identity probe (Task #22): when a user first signs in,
+        // emit a single, very visible line that's easy to copy/screenshot
+        // and compare across browsers, devices, and days. If the same email
+        // ever shows two different IDs here, that's a confirmed production
+        // identity-stability problem (vs. an iframe-only one).
+        if (transitionSource === 'initial-sign-in' && nextId && nextEmail) {
+          console.log(
+            `%c[identity-probe] email=${nextEmail} userId=${nextId} env=${import.meta.env.MODE}`,
+            'background:#1e40af;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold',
+          )
+        }
+
         // Record + detect identity drift for the same email.
         if (nextId && nextEmail) {
           const { drifted, previousUserId } = recordIdentitySeen(nextEmail, nextId)
