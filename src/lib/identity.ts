@@ -18,7 +18,7 @@
  * a parsing error.
  */
 
-const PROJECT_ID = (import.meta as any).env?.VITE_BLINK_PROJECT_ID as string | undefined
+const PROJECT_ID: string | undefined = import.meta.env.VITE_BLINK_PROJECT_ID
 
 const HISTORY_KEY_PREFIX = 'identity-history'
 const DRIFT_FLAG_KEY_PREFIX = 'identity-drift'

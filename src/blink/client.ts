@@ -9,6 +9,40 @@ const proxyConfig = isInIframe
   : {}
 
 /**
+ * Boot-time source classification (Task #20 diagnostics).
+ *
+ * Logs which signal is about to bootstrap the Blink session so every
+ * auth transition can be attributed at glance:
+ *   - `url-fragment`: tokens are present in the page URL (managed-mode
+ *     OAuth redirect)
+ *   - `stored-tokens`: tokens already exist in localStorage (revisit)
+ *   - `parent-window`: iframe will request tokens from the workspace
+ *     parent via postMessage (handled by the SDK + our guard below)
+ *   - `none`: no tokens anywhere — the SDK will redirect to the auth
+ *     page (managed) or stay anonymous (headless+no parent)
+ */
+function logBootSource() {
+  if (typeof window === 'undefined') return
+  const hash = window.location.hash || ''
+  const hasUrlTokens = /access_token=/.test(hash) || /refresh_token=/.test(hash)
+  const stored = readStoredTokens()
+  const localValid = isAccessTokenStillValid(stored)
+  const local = decodeJwt(stored?.access_token)
+  let source: 'url-fragment' | 'stored-tokens' | 'parent-window' | 'none'
+  if (hasUrlTokens) source = 'url-fragment'
+  else if (localValid) source = 'stored-tokens'
+  else if (isInIframe) source = 'parent-window'
+  else source = 'none'
+  console.log('[auth-source] boot', {
+    source,
+    isInIframe,
+    storedUserId: local.userId,
+    storedEmail: local.email,
+    storedValid: localValid,
+  })
+}
+
+/**
  * Iframe-only identity-stability guard (Task #20).
  *
  * The Blink SDK installs its own `message` listener in `setupParentWindowListener`
@@ -67,13 +101,23 @@ function installIframeIdentityGuard() {
       const sameEmail = localEmail === incomingEmail
       const differentUser = local.userId !== incoming.userId
       if (sameEmail && differentUser) {
-        console.warn(
-          '[identity-guard] Suppressing parent-window token: same email, different user.id',
-          { email: localEmail, localUserId: local.userId, incomingUserId: incoming.userId },
-        )
+        console.warn('[auth-source] parent-window token SUPPRESSED', {
+          reason: 'same-email-different-userid',
+          email: localEmail,
+          localUserId: local.userId,
+          incomingUserId: incoming.userId,
+        })
         // Block the SDK's listener from seeing this message so it doesn't
         // overwrite our tokens.
         event.stopImmediatePropagation()
+      } else {
+        console.log('[auth-source] parent-window token ACCEPTED', {
+          email: incomingEmail,
+          incomingUserId: incoming.userId,
+          localUserId: local.userId,
+          sameEmail,
+          differentUser,
+        })
       }
     },
     // Use capture phase so we run before the SDK's bubble-phase listener.
@@ -81,6 +125,7 @@ function installIframeIdentityGuard() {
   )
 }
 
+logBootSource()
 installIframeIdentityGuard()
 
 export const blink = createClient({

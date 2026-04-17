@@ -35,6 +35,22 @@ export function useAuth() {
         lastUserIdRef.current = nextId
         setUser(state.user ?? null)
 
+        // Per-transition source attribution. We can't read the SDK's
+        // private `parentWindowTokens` ref, so source is inferred from
+        // observable state at the moment of the transition.
+        const transitionSource: 'initial-sign-in' | 'account-switch' | 'sign-out' =
+          previousId === null
+            ? 'initial-sign-in'
+            : nextId === null
+              ? 'sign-out'
+              : 'account-switch'
+        console.log('[auth-source] state change', {
+          source: transitionSource,
+          previousUserId: previousId,
+          currentUserId: nextId,
+          email: nextEmail || null,
+        })
+
         // Record + detect identity drift for the same email.
         if (nextId && nextEmail) {
           const { drifted, previousUserId } = recordIdentitySeen(nextEmail, nextId)
