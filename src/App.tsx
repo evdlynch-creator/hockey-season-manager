@@ -641,17 +641,7 @@ function OnboardingPage() {
         await blink.db.teams.create({
           id: teamId,
           name: data.teamName,
-          userId: user.id
-        })
-
-        const userEmail = (user as any).email?.toLowerCase?.() ?? ''
-        await blink.db.teamMembers.create({
-          id: `tm_${crypto.randomUUID().slice(0, 8)}`,
-          teamId,
           userId: user.id,
-          email: userEmail,
-          role: 'owner',
-          status: 'active',
         })
       }
 
