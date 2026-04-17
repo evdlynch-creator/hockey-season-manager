@@ -108,14 +108,16 @@ function OrphanRow({ candidate, busyTeamId, setBusyTeamId }: OrphanRowProps) {
         <span>{candidate.gameCount} game{candidate.gameCount === 1 ? '' : 's'}</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" onClick={handleClaim} disabled={isBusy} className="gap-2">
-          {isBusy && claim.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <CheckCircle2 className="w-4 h-4" />
-          )}
-          This is mine — claim it
-        </Button>
+        {candidate.evidence !== 'already_owned_empty' && (
+          <Button size="sm" onClick={handleClaim} disabled={isBusy} className="gap-2">
+            {isBusy && claim.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
+            This is mine — claim it
+          </Button>
+        )}
         {candidate.isEmpty && (
           <AlertDialog>
             <AlertDialogTrigger asChild>

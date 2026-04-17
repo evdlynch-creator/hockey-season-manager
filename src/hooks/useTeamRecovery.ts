@@ -11,7 +11,7 @@ export interface OrphanTeamCandidate {
   lastActivity: string | null
   isEmpty: boolean
   /** How we know this user has a claim on the team. */
-  evidence: 'owner_email_match' | 'legacy_team_userid'
+  evidence: 'owner_email_match' | 'legacy_team_userid' | 'already_owned_empty'
 }
 
 interface AuthorizationContext {
@@ -95,7 +95,7 @@ export function useOrphanTeams() {
         myMemberships.filter((m) => m.userId === user.id).map((m) => m.teamId),
       )
 
-      const evidenceMap = new Map<string, 'owner_email_match' | 'legacy_team_userid'>()
+      const evidenceMap = new Map<string, OrphanTeamCandidate['evidence']>()
       for (const row of ownerRowsByEmail) {
         if (!knownTeamIds.has(row.teamId)) {
           evidenceMap.set(row.teamId, 'owner_email_match')
@@ -104,6 +104,15 @@ export function useOrphanTeams() {
       for (const t of legacyTeams) {
         if (!knownTeamIds.has(t.id) && !evidenceMap.has(t.id)) {
           evidenceMap.set(t.id, 'legacy_team_userid')
+        }
+      }
+      // Also surface teams I already own — but only if they may be empty
+      // duplicates from past identity-drift incidents. We tag them as
+      // 'already_owned_empty' so the UI offers Delete (no Claim) and we
+      // verify emptiness when computing counts below.
+      for (const teamId of knownTeamIds) {
+        if (!evidenceMap.has(teamId)) {
+          evidenceMap.set(teamId, 'already_owned_empty')
         }
       }
       if (evidenceMap.size === 0) return []
@@ -122,7 +131,7 @@ export function useOrphanTeams() {
         if (t) teamById.set(t.id, t)
       }
 
-      const enriched = await Promise.all(
+      const enrichedAll = await Promise.all(
         Array.from(evidenceMap.entries())
           .map(([teamId, evidence]) => ({ teamId, evidence }))
           .filter(({ teamId }) => teamById.has(teamId))
@@ -171,7 +180,11 @@ export function useOrphanTeams() {
           }),
       )
 
-      return enriched
+      // Already-owned teams are only relevant in recovery as cleanup
+      // candidates — drop the ones that have actual data.
+      return enrichedAll.filter(
+        (c) => c.evidence !== 'already_owned_empty' || c.isEmpty,
+      )
     },
     enabled: !!user,
   })
