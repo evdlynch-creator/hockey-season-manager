@@ -18,7 +18,8 @@ import {
   toast,
   EmptyState
 } from '@blinkdotnew/ui'
-import { LayoutDashboard, LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
+import { LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
+import logoUrl from '@/assets/blue-line-iq-logo.png'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { useState, useEffect } from 'react'
 import {
@@ -925,12 +926,12 @@ function EmbeddedSignInForm() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-2xl shadow-primary/20">
-            <LayoutDashboard className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">
-            Inside<span className="text-primary">Edge</span>
-          </h1>
+          <img
+            src={logoUrl}
+            alt="Blue Line IQ"
+            className="h-12 w-auto mb-4 select-none"
+            draggable={false}
+          />
           <p className="text-muted-foreground mt-2 text-sm text-center">
             {mode === 'signin' ? 'Sign in to your coaching account' : 'Create your coaching account'}
           </p>
@@ -1021,12 +1022,12 @@ export default function App() {
         </div>
 
         <div className="mb-10 flex flex-col items-center animate-fade-in">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-primary/20">
-            <LayoutDashboard className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-5xl font-black tracking-tight sm:text-6xl text-foreground">
-            Inside<span className="text-primary">Edge</span>
-          </h1>
+          <img
+            src={logoUrl}
+            alt="Blue Line IQ"
+            className="h-20 sm:h-24 w-auto mb-2 select-none"
+            draggable={false}
+          />
           <p className="text-muted-foreground mt-4 max-w-md text-base leading-relaxed">
             The platform built for hockey coaches who demand precision, tracking, and continuous improvement.
           </p>
