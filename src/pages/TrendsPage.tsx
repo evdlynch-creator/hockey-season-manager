@@ -3,7 +3,7 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Separator, EmptyState, Badge,
 } from '@blinkdotnew/ui'
-import { TrendingUp, Trophy, Target, Activity, CalendarRange } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Activity } from 'lucide-react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
@@ -250,10 +250,6 @@ export default function TrendsPage() {
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground mr-1">
-            <CalendarRange className="w-3.5 h-3.5" />
-            Window
-          </div>
           <div className="flex flex-wrap items-center gap-1 rounded-md border border-border/60 bg-card p-1">
             {WINDOW_OPTIONS.map(opt => (
               <button
