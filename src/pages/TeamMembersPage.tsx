@@ -11,7 +11,6 @@ import {
   Field,
   FieldLabel,
   FieldDescription,
-  EmptyState,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -45,6 +44,7 @@ import {
   useRevokeInvite,
   useRemoveMember,
 } from '../hooks/useTeamMembers'
+import { NoTeamScreen } from '../components/NoTeamScreen'
 import type { TeamMember } from '../types'
 
 function initialsOf(email: string): string {
@@ -82,14 +82,7 @@ export default function TeamMembersPage() {
   }
 
   if (!teamData?.team) {
-    return (
-      <div className="p-8 max-w-3xl mx-auto">
-        <EmptyState
-          title="No team yet"
-          description="Finish onboarding to invite other coaches."
-        />
-      </div>
-    )
+    return <NoTeamScreen />
   }
 
   const owner = members.find((m) => m.role === 'owner') ?? null

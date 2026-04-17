@@ -50,6 +50,7 @@ import { useFilteredAnalytics, filterGamesByMode, buildInsights } from './hooks/
 import { useGameTypes, useViewMode } from './hooks/usePreferences'
 import { HypeCard } from './components/HypeCard'
 import { InsightsStrip } from './components/InsightsStrip'
+import { NoTeamScreen } from './components/NoTeamScreen'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
 
@@ -199,13 +200,15 @@ function DashboardPage() {
   const { data: analytics } = useFilteredAnalytics()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!authLoading && user && isSuccess && !isFetching && !teamData) {
-      navigate({ to: '/onboarding', replace: true })
-    }
-  }, [teamData, isSuccess, isFetching, authLoading, user, navigate])
+  if (authLoading || isLoading) return <LoadingOverlay show />
 
-  if (authLoading || isLoading || !teamData) return <LoadingOverlay show />
+  // No team for this identity. Show an explicit recovery/setup screen
+  // instead of silently redirecting into onboarding — a transient empty
+  // result must never create a duplicate team.
+  if (user && isSuccess && !isFetching && !teamData) {
+    return <NoTeamScreen />
+  }
+  if (!teamData) return <LoadingOverlay show />
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

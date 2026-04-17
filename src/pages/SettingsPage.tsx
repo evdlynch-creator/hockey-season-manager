@@ -62,6 +62,7 @@ import {
   type NotificationPreferences,
 } from '../hooks/usePreferences'
 import { blink } from '../blink/client'
+import { NoTeamScreen } from '../components/NoTeamScreen'
 import { CONCEPTS, type Season } from '../types'
 import { format, parseISO, isValid } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -100,14 +101,7 @@ export default function SettingsPage() {
   }
 
   if (!team) {
-    return (
-      <div className="p-8 max-w-3xl mx-auto">
-        <EmptyState
-          title="No team yet"
-          description="Finish onboarding to access settings."
-        />
-      </div>
-    )
+    return <NoTeamScreen />
   }
 
   return (

@@ -89,17 +89,24 @@ interface MemberQueryClause {
 async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution> {
   const myEmail = normalizeEmail(user.email ?? '')
 
-  // 1. Memberships I'm linked to via userId, plus pending invites matching my email.
+  // 1. Memberships I'm linked to via userId, plus ANY membership row whose
+  //    email matches mine. The email match catches two cases at once:
+  //     - Pending invites I haven't claimed yet.
+  //     - Orphaned owner rows whose userId points at a previous session
+  //       identity (e.g. the workspace iframe was reissued a fresh user.id).
+  //    Both cases get re-linked to the current user.id below.
   const orClauses: MemberQueryClause[] = [{ userId: user.id }]
-  if (myEmail) orClauses.push({ email: myEmail, status: 'pending' })
+  if (myEmail) orClauses.push({ email: myEmail })
 
   let memberships = (await blink.db.teamMembers.list({
     where: orClauses.length === 1 ? orClauses[0] : { OR: orClauses },
   })) as TeamMember[]
 
-  // 2. Auto-claim pending memberships matching my email.
+  // 2. Reclaim memberships matching my email whose userId isn't me yet.
+  //    Pending rows also get flipped to active. Owner-role rows keep their
+  //    role — we just re-attach the identity.
   const claimable = memberships.filter(
-    (m) => m.status === 'pending' && normalizeEmail(m.email) === myEmail,
+    (m) => normalizeEmail(m.email) === myEmail && m.userId !== user.id,
   )
   if (claimable.length > 0) {
     const now = new Date().toISOString()
@@ -107,14 +114,18 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
       claimable.map((m) =>
         blink.db.teamMembers.update(m.id, {
           userId: user.id,
-          status: 'active',
+          status: m.status === 'pending' ? 'active' : m.status,
           updatedAt: now,
         }),
       ),
     )
     memberships = memberships.map((m) =>
       claimable.find((c) => c.id === m.id)
-        ? { ...m, userId: user.id, status: 'active' }
+        ? {
+            ...m,
+            userId: user.id,
+            status: m.status === 'pending' ? 'active' : m.status,
+          }
         : m,
     )
   }
