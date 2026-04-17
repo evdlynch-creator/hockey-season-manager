@@ -10,22 +10,60 @@ export interface OrphanTeamCandidate {
   gameCount: number
   lastActivity: string | null
   isEmpty: boolean
+  /** How we know this user has a claim on the team. */
+  evidence: 'owner_email_match' | 'legacy_team_userid'
 }
 
-function normalizeEmail(raw: string): string {
-  return raw.trim().toLowerCase()
+interface AuthorizationContext {
+  userId: string
+  email: string
+}
+
+function normalizeEmail(raw: string | null | undefined): string {
+  return (raw ?? '').trim().toLowerCase()
 }
 
 /**
- * Lists every team the SDK can see that the current user has no membership
- * for. Used by the no-team recovery screen to surface orphaned teams the
- * user might want to claim (e.g. teams whose owner row points at a stale
- * session identity that doesn't match the current user.id, OR teams whose
- * owner row never got created at all).
+ * Server-side-style authorization check for ownership-changing actions.
+ * Re-fetches evidence at call time (i.e. *not* trusting client state) and
+ * accepts the user as entitled to the team only when ONE of:
+ *   (a) an owner teamMembers row exists with email == current user's email
+ *       (proof of email ownership, even if userId has drifted), OR
+ *   (b) teams.userId == current user.id (legacy ownership pointer for
+ *       teams created before the multi-coach refactor).
  *
- * For each candidate we also include season/practice/game counts so the
- * user can identify their team and so the screen can offer a "delete this
- * empty team" action when nothing was ever entered.
+ * Returns the authorizing evidence string or throws.
+ */
+async function assertAuthorizedForTeam(
+  teamId: string,
+  ctx: AuthorizationContext,
+): Promise<'owner_email_match' | 'legacy_team_userid'> {
+  const myEmail = normalizeEmail(ctx.email)
+
+  if (myEmail) {
+    const ownerRows = (await blink.db.teamMembers.list({
+      where: { teamId, role: 'owner', email: myEmail },
+      limit: 1,
+    })) as TeamMember[]
+    if (ownerRows.length > 0) return 'owner_email_match'
+  }
+
+  const teams = (await blink.db.teams.list({
+    where: { id: teamId },
+    limit: 1,
+  })) as Team[]
+  if (teams.length === 1 && teams[0].userId === ctx.userId) {
+    return 'legacy_team_userid'
+  }
+
+  throw new Error('Not authorized to modify this team')
+}
+
+/**
+ * Lists orphan teams the current user can prove ownership of. We do NOT
+ * list every team the SDK can see — only teams that are tied to this
+ * user's email or legacy user.id and that the user has no active
+ * membership for.
  */
 export function useOrphanTeams() {
   const { user } = useAuth()
@@ -33,39 +71,78 @@ export function useOrphanTeams() {
     queryKey: ['orphanTeams', user?.id],
     queryFn: async (): Promise<OrphanTeamCandidate[]> => {
       if (!user) return []
-      const myEmail = normalizeEmail(user.email ?? '')
+      const myEmail = normalizeEmail(user.email)
 
-      const [allTeams, myMemberships] = await Promise.all([
-        blink.db.teams.list({}) as Promise<Team[]>,
-        blink.db.teamMembers.list({
-          where: myEmail
-            ? { OR: [{ userId: user.id }, { email: myEmail }] }
-            : { userId: user.id },
-        }) as Promise<TeamMember[]>,
-      ])
-      const knownTeamIds = new Set(myMemberships.map((m) => m.teamId))
+      // Evidence A: I am the owner of these teams by email.
+      const ownerRowsByEmail = myEmail
+        ? ((await blink.db.teamMembers.list({
+            where: { email: myEmail, role: 'owner' },
+          })) as TeamMember[])
+        : []
 
-      const orphans = allTeams.filter((t) => !knownTeamIds.has(t.id))
-      if (orphans.length === 0) return []
+      // Evidence B: legacy teams where teams.userId == my id.
+      const legacyTeams = (await blink.db.teams.list({
+        where: { userId: user.id },
+      })) as Team[]
+
+      // What I currently belong to (so I can exclude non-orphans).
+      const myMemberships = (await blink.db.teamMembers.list({
+        where: myEmail
+          ? { OR: [{ userId: user.id }, { email: myEmail }] }
+          : { userId: user.id },
+      })) as TeamMember[]
+      const knownTeamIds = new Set(
+        myMemberships.filter((m) => m.userId === user.id).map((m) => m.teamId),
+      )
+
+      const evidenceMap = new Map<string, 'owner_email_match' | 'legacy_team_userid'>()
+      for (const row of ownerRowsByEmail) {
+        if (!knownTeamIds.has(row.teamId)) {
+          evidenceMap.set(row.teamId, 'owner_email_match')
+        }
+      }
+      for (const t of legacyTeams) {
+        if (!knownTeamIds.has(t.id) && !evidenceMap.has(t.id)) {
+          evidenceMap.set(t.id, 'legacy_team_userid')
+        }
+      }
+      if (evidenceMap.size === 0) return []
+
+      // Hydrate team rows (legacyTeams already loaded; fetch the rest).
+      const legacyById = new Map(legacyTeams.map((t) => [t.id, t]))
+      const teamsToFetch = Array.from(evidenceMap.keys()).filter((id) => !legacyById.has(id))
+      const fetched = await Promise.all(
+        teamsToFetch.map(async (id) => {
+          const rows = (await blink.db.teams.list({ where: { id }, limit: 1 })) as Team[]
+          return rows[0] ?? null
+        }),
+      )
+      const teamById = new Map<string, Team>(legacyById)
+      for (const t of fetched) {
+        if (t) teamById.set(t.id, t)
+      }
 
       const enriched = await Promise.all(
-        orphans.map(async (team) => {
-          const seasons = (await blink.db.seasons.list({
-            where: { teamId: team.id },
-          })) as Season[]
+        Array.from(evidenceMap.entries())
+          .map(([teamId, evidence]) => ({ teamId, evidence }))
+          .filter(({ teamId }) => teamById.has(teamId))
+          .map(async ({ teamId, evidence }) => {
+            const team = teamById.get(teamId)!
+            const seasons = (await blink.db.seasons.list({
+              where: { teamId },
+            })) as Season[]
 
-          let practiceCount = 0
-          let gameCount = 0
-          let lastActivity: string | null = team.createdAt ?? null
+            let practiceCount = 0
+            let gameCount = 0
+            let lastActivity: string | null = team.createdAt ?? null
 
-          if (seasons.length > 0) {
             const counts = await Promise.all(
               seasons.map(async (s) => {
                 const [practices, games] = await Promise.all([
                   blink.db.practices.list({ where: { seasonId: s.id } }) as Promise<Practice[]>,
                   blink.db.games.list({ where: { seasonId: s.id } }) as Promise<Game[]>,
                 ])
-                return { practices, games }
+                return { practices, games, season: s }
               }),
             )
             for (const c of counts) {
@@ -77,21 +154,21 @@ export function useOrphanTeams() {
               for (const g of c.games) {
                 if (!lastActivity || g.createdAt > lastActivity) lastActivity = g.createdAt
               }
+              if (!lastActivity || c.season.createdAt > lastActivity) {
+                lastActivity = c.season.createdAt
+              }
             }
-            for (const s of seasons) {
-              if (!lastActivity || s.createdAt > lastActivity) lastActivity = s.createdAt
-            }
-          }
 
-          return {
-            team,
-            seasonCount: seasons.length,
-            practiceCount,
-            gameCount,
-            lastActivity,
-            isEmpty: seasons.length === 0 || (practiceCount === 0 && gameCount === 0),
-          }
-        }),
+            return {
+              team,
+              seasonCount: seasons.length,
+              practiceCount,
+              gameCount,
+              lastActivity,
+              isEmpty: practiceCount === 0 && gameCount === 0,
+              evidence,
+            } as OrphanTeamCandidate
+          }),
       )
 
       return enriched
@@ -101,11 +178,9 @@ export function useOrphanTeams() {
 }
 
 /**
- * Re-attaches the current user as the owner of an orphan team.
- *  - If an owner membership row already exists, its userId is updated.
- *  - Otherwise a deterministic `tm_owner_${teamId}` row is created.
- *  - The team's own `userId` field is also updated so legacy queries
- *    (`teams.list({ where: { userId } })`) continue to work.
+ * Re-attaches the current user as the owner of an orphan team. Re-verifies
+ * authorization (owner-email match OR legacy teams.userId match) at call
+ * time before mutating.
  */
 export function useClaimTeam() {
   const queryClient = useQueryClient()
@@ -113,7 +188,9 @@ export function useClaimTeam() {
   return useMutation({
     mutationFn: async (teamId: string) => {
       if (!user) throw new Error('Not signed in')
-      const myEmail = normalizeEmail(user.email ?? '')
+      const myEmail = normalizeEmail(user.email)
+      await assertAuthorizedForTeam(teamId, { userId: user.id, email: myEmail })
+
       const now = new Date().toISOString()
 
       const ownerRows = (await blink.db.teamMembers.list({
@@ -166,14 +243,19 @@ export function useClaimTeam() {
 }
 
 /**
- * Deletes a team that has no real data. Used by the recovery screen to
- * clean up duplicate empty teams created during past identity-drift
- * incidents. Refuses to delete a team that has any practice or game.
+ * Deletes a team that has no real data. Re-verifies ownership and
+ * emptiness at call time. Refuses to delete a team with any practice
+ * or game.
  */
 export function useDeleteEmptyTeam() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   return useMutation({
     mutationFn: async (teamId: string) => {
+      if (!user) throw new Error('Not signed in')
+      const myEmail = normalizeEmail(user.email)
+      await assertAuthorizedForTeam(teamId, { userId: user.id, email: myEmail })
+
       const seasons = (await blink.db.seasons.list({
         where: { teamId },
       })) as Season[]
@@ -188,7 +270,6 @@ export function useDeleteEmptyTeam() {
         }
       }
 
-      // Cascade: seasons → memberships → team.
       await Promise.all(seasons.map((s) => blink.db.seasons.delete(s.id)))
       const members = (await blink.db.teamMembers.list({
         where: { teamId },

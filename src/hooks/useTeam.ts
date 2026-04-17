@@ -196,6 +196,49 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
     memberships = [...memberships, ...results.filter((m): m is TeamMember => !!m)]
   }
 
+  // 3b. Single-orphan auto-claim. If after the above I still have NO
+  //     memberships but exactly one team in the database has an owner
+  //     row whose email exactly matches mine (and it's not me), claim it
+  //     transparently. This handles the common identity-drift case
+  //     without forcing the user through the recovery UI.
+  if (memberships.length === 0 && myEmail) {
+    const ownerByEmail = (await blink.db.teamMembers.list({
+      where: { email: myEmail, role: 'owner' },
+    })) as TeamMember[]
+    const orphanTeamIds = Array.from(
+      new Set(ownerByEmail.filter((m) => m.userId !== user.id).map((m) => m.teamId)),
+    )
+    if (orphanTeamIds.length === 1) {
+      const teamId = orphanTeamIds[0]
+      const now = new Date().toISOString()
+      const ownerRows = (await blink.db.teamMembers.list({
+        where: { teamId, role: 'owner' },
+        limit: 1,
+      })) as TeamMember[]
+      if (ownerRows.length > 0) {
+        try {
+          await blink.db.teamMembers.update(ownerRows[0].id, {
+            userId: user.id,
+            email: myEmail,
+            status: 'active',
+            updatedAt: now,
+          })
+          memberships = [
+            ...memberships,
+            { ...ownerRows[0], userId: user.id, email: myEmail, status: 'active', updatedAt: now },
+          ]
+          try {
+            await blink.db.teams.update(teamId, { userId: user.id })
+          } catch (err) {
+            console.warn('[useTeam] auto-claim teams.userId update failed', teamId, err)
+          }
+        } catch (err) {
+          console.warn('[useTeam] single-orphan auto-claim failed', teamId, err)
+        }
+      }
+    }
+  }
+
   // 4. Load every team I have a membership for.
   const teamIds = Array.from(new Set(memberships.map((m) => m.teamId)))
   if (teamIds.length === 0) return { memberships, teams: [] }
