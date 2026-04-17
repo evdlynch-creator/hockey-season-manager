@@ -304,7 +304,7 @@ function DashboardPage() {
     <div className="p-8 max-w-7xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">{teamData.team.name}</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{teamData.team?.name}</h1>
           <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}
@@ -731,23 +731,23 @@ function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       concepts: [],
-      teamName: hasTeam ? existingTeam?.team.name : '',
+      teamName: hasTeam ? existingTeam?.team?.name : '',
     }
   })
 
   const selectedConcepts = watch('concepts')
 
   useEffect(() => {
-    if (hasTeam && existingTeam?.team.name) {
-      setValue('teamName', existingTeam.team.name)
+    if (hasTeam && existingTeam?.team?.name) {
+      setValue('teamName', existingTeam.team?.name || '')
     }
-  }, [hasTeam, existingTeam?.team.name, setValue])
+  }, [hasTeam, existingTeam?.team?.name, setValue])
 
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
       if (!user) throw new Error('Not authenticated')
 
-      let teamId = hasTeam ? existingTeam?.team.id : null
+      let teamId = hasTeam ? existingTeam?.team?.id : null
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
       if (!teamId) {
@@ -802,7 +802,7 @@ function OnboardingPage() {
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-3xl">
-            {hasTeam ? `Start a new season for ${existingTeam?.team.name}` : 'Set up your season'}
+            {hasTeam ? `Start a new season for ${existingTeam?.team?.name}` : 'Set up your season'}
           </CardTitle>
           <CardDescription className="text-base">
             {hasTeam

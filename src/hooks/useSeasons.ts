@@ -143,8 +143,9 @@ export function useUpdateTeamName() {
 
   return useMutation({
     mutationFn: async (name: string) => {
-      if (!teamData?.team?.id) throw new Error('No team')
-      await blink.db.teams.update(teamData.team.id, { name })
+      const id = teamData?.team?.id
+      if (!id) throw new Error('No team')
+      await blink.db.teams.update(id, { name })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team'] })

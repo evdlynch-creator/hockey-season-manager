@@ -16,7 +16,7 @@ export default function TeamMembersPage() {
         </h1>
         <p className="text-muted-foreground mt-2">
           {teamData?.team
-            ? `Currently signed in as the head coach of ${teamData.team.name}.`
+            ? `Currently signed in as the head coach of ${teamData.team?.name}.`
             : 'Set up a season to see your staff details.'}
         </p>
       </div>
