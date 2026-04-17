@@ -5,6 +5,7 @@
 import React, { createContext, useContext } from 'react'
 import { Shell } from '../Shell'
 import { AppSidebarShell } from '../components/AppSidebarShell'
+import { ThemeAccent } from '../components/ThemeAccent'
 
 export type SharedLayoutContextValue = {
   appName: string
@@ -37,6 +38,7 @@ export function SharedAppLayout({
 
   return (
     <SharedLayoutContext.Provider value={value}>
+      <ThemeAccent />
       <div className="flex min-h-dvh w-full flex-1 flex-col">
         <Shell appName={appName} sidebar={sidebar}>
           {children}
