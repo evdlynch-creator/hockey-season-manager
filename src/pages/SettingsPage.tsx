@@ -498,7 +498,7 @@ function SeasonsSettings({ teamId, activeSeasonId }: { teamId: string; activeSea
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">Archived</Badge>
                       )}
                     </div>
-                    <p className="hidden">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {s.startDate} — {s.endDate}
                     </p>
                     {concepts.length > 0 && (
