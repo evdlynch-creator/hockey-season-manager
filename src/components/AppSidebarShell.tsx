@@ -126,24 +126,12 @@ export function AppSidebarShell() {
           )}
         >
           {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggle}
-                  className="h-8 w-8 mx-auto flex items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
-                  aria-label="Expand sidebar"
-                >
-                  <img
-                    src={iqPlusLogoUrl}
-                    alt="Blue Line IQ"
-                    className="h-7 w-7 object-contain select-none"
-                    draggable={false}
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Expand sidebar</TooltipContent>
-            </Tooltip>
+            <img
+              src={iqPlusLogoUrl}
+              alt="Blue Line IQ"
+              className="h-7 w-7 mx-auto object-contain select-none"
+              draggable={false}
+            />
           ) : (
             <>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
