@@ -46,6 +46,7 @@ import SettingsPage from './pages/SettingsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { useAnalytics } from './hooks/useAnalytics'
+import { HypeCard } from './components/HypeCard'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
 
@@ -295,25 +296,13 @@ function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Season overview */}
-        <Card className="md:col-span-2 border-primary/10 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Rocket className="w-5 h-5 text-primary" />
-              Season Overview
-            </CardTitle>
-            <CardDescription>Priority concepts this season.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {JSON.parse(teamData.season?.priorityConcepts || '[]').map((concept: string) => (
-                <Badge key={concept} variant="secondary" className="px-3 py-1 bg-background border-border">
-                  {concept}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Coaching points / pre-game hype */}
+        <HypeCard
+          className="md:col-span-2"
+          nextGame={upcomingGames[0] ?? null}
+          allGames={analytics?.games ?? games}
+          allReviews={analytics?.reviews ?? []}
+        />
 
         {/* Next activity */}
         <Card className="border-border/50">
