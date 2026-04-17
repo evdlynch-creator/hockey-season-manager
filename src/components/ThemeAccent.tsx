@@ -39,8 +39,8 @@ function hexToHsl(hex: string): Hsl | null {
 const VARS = ['--primary', '--sidebar-primary', '--ring', '--sidebar-ring']
 const FG_VARS = ['--primary-foreground', '--sidebar-primary-foreground']
 
-const DEFAULT_HSL: Hsl = { h: 38, s: 92, l: 50 }
-const DEFAULT_FG = '0 0% 7%'
+const DEFAULT_HSL: Hsl = { h: 204, s: 84, l: 65 }
+const DEFAULT_FG = '240 10% 8%'
 
 function applyAccent(hsl: Hsl) {
   const root = document.documentElement
