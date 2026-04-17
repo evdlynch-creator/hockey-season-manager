@@ -46,6 +46,18 @@ export function useCreateSeason() {
         endDate: input.endDate,
         priorityConcepts: JSON.stringify(input.priorityConcepts),
       })
+
+      // Add the creator as the owner of the season
+      const { user } = await blink.auth.me()
+      if (user) {
+        await blink.db.seasonMembers.create({
+          id: `member_${crypto.randomUUID().slice(0, 8)}`,
+          seasonId: id,
+          userId: user.id,
+          role: 'owner',
+        })
+      }
+      
       return id
     },
     onSuccess: (newId) => {

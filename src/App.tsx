@@ -18,7 +18,7 @@ import {
   toast,
   EmptyState
 } from '@blinkdotnew/ui'
-import { LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
+import { LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity, Users } from 'lucide-react'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { useState, useEffect } from 'react'
@@ -712,86 +712,226 @@ function OnboardingPage() {
   const { user, isLoading: authLoading } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const search = useSearch({ from: onboardingRoute.fullPath }) as { mode?: string }
+  const search = useSearch({ from: onboardingRoute.fullPath }) as { mode?: string, invite?: string }
   const { data: existingTeam, isFetching: teamFetching, isSuccess: teamSuccess } = useTeam()
 
   const isAddingNewTeam = search.mode === 'new_team'
+  const inviteToken = search.invite
 
-  // Only redirect away if BOTH team and season already exist AND we aren't explicitly adding a new team.
-  const hasTeam = !isAddingNewTeam && !!existingTeam?.team
-  const hasSeason = !!existingTeam?.season
+  // Invite state
+  const [inviteData, setInviteData] = useState<{ id: string, seasonId: string, email: string, role: string, teamName: string, seasonName: string } | null>(null)
+  const [verifyingInvite, setVerifyingInvite] = useState(!!inviteToken)
 
-  useEffect(() => {
-    if (!isAddingNewTeam && !authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
-      navigate({ to: '/', replace: true })
-    }
-  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate, isAddingNewTeam])
-
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
+  const { register, handleSubmit, setValue, getValues, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       concepts: [],
-      teamName: hasTeam ? existingTeam?.team?.name : '',
+      teamName: '',
+      seasonName: '',
+      startDate: '',
+      endDate: '',
     }
   })
 
   const selectedConcepts = watch('concepts')
 
   useEffect(() => {
-    if (hasTeam && existingTeam?.team?.name) {
-      setValue('teamName', existingTeam.team?.name || '')
+    // Only redirect away if BOTH team and season already exist AND we aren't explicitly adding a new team or accepting an invite.
+    const hasTeam = !isAddingNewTeam && !inviteToken && !!existingTeam?.team
+    const hasSeason = !!existingTeam?.season
+
+    if (!isAddingNewTeam && !inviteToken && !authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
+      navigate({ to: '/', replace: true })
     }
-  }, [hasTeam, existingTeam?.team?.name, setValue])
+  }, [existingTeam, isAddingNewTeam, inviteToken, authLoading, user, teamSuccess, teamFetching, navigate])
+
+  useEffect(() => {
+    const hasTeam = !isAddingNewTeam && !inviteToken && !!existingTeam?.team
+    if (hasTeam && existingTeam?.team?.name) {
+      setValue('teamName', existingTeam.team.name || '')
+    }
+  }, [existingTeam, isAddingNewTeam, inviteToken, setValue])
 
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
-      if (!user) throw new Error('Not authenticated')
-
-      let teamId = hasTeam ? existingTeam?.team?.id : null
-      const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
-
+      let teamId = existingTeam?.team?.id
       if (!teamId) {
-        teamId = `team_${crypto.randomUUID().slice(0, 8)}`
-        await blink.db.teams.create({
-          id: teamId,
-          name: data.teamName,
-          userId: user.id,
-        })
+        const newTeam = await blink.db.teams.create({ name: data.teamName })
+        teamId = newTeam.id
       }
 
-      await blink.db.seasons.create({
-        id: seasonId,
-        teamId,
+      const newSeason = await blink.db.seasons.create({
+        team_id: teamId,
         name: data.seasonName,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        priorityConcepts: JSON.stringify(data.concepts)
+        start_date: data.startDate,
+        end_date: data.endDate,
+        priority_concepts: JSON.stringify(data.concepts),
       })
 
-      return { teamId, seasonId }
+      // Add user as owner of the new team/season
+      await blink.db.seasonMembers.create({
+        id: `member_${crypto.randomUUID().slice(0, 8)}`,
+        season_id: newSeason.id,
+        user_id: user!.id,
+        role: 'owner',
+      })
+
+      localStorage.setItem('selected_team_id', teamId)
+      return { teamId, seasonId: newSeason.id }
     },
-    onSuccess: async (data) => {
-      // If we added a new team, make it the selected one
-      if (isAddingNewTeam) {
-        localStorage.setItem('selected_team_id', data.teamId)
-      }
-      await queryClient.refetchQueries({ queryKey: ['team'] })
-      toast.success('Season setup complete!', { description: "You're ready to start coaching." })
+    onSuccess: async (data, variables) => {
+      await queryClient.invalidateQueries({ queryKey: ['team'] })
+      toast.success('Season setup complete!', { description: `Welcome to ${variables.seasonName}.` })
       navigate({ to: '/', replace: true })
     },
-    onError: (error: any) => {
-      console.error('Season setup failed:', error)
-      toast.error('Failed to set up season', { description: `${error?.name || 'Error'}: ${error?.message}` })
+    onError: (err) => {
+      console.error('Onboarding failed', err)
+      toast.error('Failed to set up season', { description: (err as any)?.message })
     }
   })
 
   const toggleConcept = (concept: string) => {
-    const current = selectedConcepts
-    if (current.includes(concept)) {
-      setValue('concepts', current.filter(c => c !== concept), { shouldValidate: true })
-    } else if (current.length < 5) {
-      setValue('concepts', [...current, concept], { shouldValidate: true })
+    const currentConcepts = getValues('concepts')
+    const isSelected = currentConcepts.includes(concept)
+    if (isSelected) {
+      setValue('concepts', currentConcepts.filter(c => c !== concept))
+    } else {
+      if (currentConcepts.length < 5) {
+        setValue('concepts', [...currentConcepts, concept])
+      } else {
+        toast.warn('You can select a maximum of 5 concepts.')
+      }
     }
+  }
+
+  useEffect(() => {
+    async function verifyInvite() {
+      if (!inviteToken || !user) return
+      try {
+        const invitations = await blink.db.invitations.list({
+          where: { token: inviteToken, status: 'pending' }
+        }) as Invitation[]
+
+        if (invitations.length === 0) {
+          toast.error('Invalid or expired invitation')
+          setVerifyingInvite(false)
+          return
+        }
+
+        const invite = invitations[0]
+        const season = await blink.db.seasons.get(invite.seasonId) as Season
+        const team = await blink.db.teams.get(season.teamId) as Team
+
+        setInviteData({
+          id: invite.id,
+          seasonId: invite.seasonId,
+          email: invite.email,
+          role: invite.role,
+          teamName: team.name,
+          seasonName: season.name
+        })
+      } catch (err) {
+        console.error('Invite verification failed', err)
+        toast.error('Failed to verify invitation')
+      } finally {
+        setVerifyingInvite(false)
+      }
+    }
+
+    if (inviteToken && user) {
+      verifyInvite()
+    }
+  }, [inviteToken, user])
+
+  const acceptInviteMutation = useMutation({
+    mutationFn: async () => {
+      if (!inviteData || !user) return
+      
+      // 1. Add user to season members
+      await blink.db.seasonMembers.create({
+        id: `member_${crypto.randomUUID().slice(0, 8)}`,
+        season_id: inviteData.seasonId,
+        user_id: user.id,
+        role: inviteData.role
+      })
+
+      // 2. Mark invite as accepted
+      await blink.db.invitations.update(inviteData.id, {
+        status: 'accepted'
+      })
+    },
+    onSuccess: async () => {
+      // Set the newly joined team as selected
+      const season = await blink.db.seasons.get(inviteData!.seasonId) as Season
+      localStorage.setItem('selected_team_id', season.teamId)
+      
+      await queryClient.invalidateQueries({ queryKey: ['team'] })
+      toast.success('Invitation accepted!', { description: `You have joined the coaching staff for ${inviteData?.teamName}.` })
+      navigate({ to: '/', replace: true })
+    }
+  })
+
+  // Only redirect away if BOTH team and season already exist AND we aren't explicitly adding a new team or accepting an invite.
+  const hasTeam = !isAddingNewTeam && !inviteToken && !!existingTeam?.team
+  const hasSeason = !!existingTeam?.season
+
+  useEffect(() => {
+    if (!isAddingNewTeam && !inviteToken && !authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
+      navigate({ to: '/', replace: true })
+    }
+  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate, isAddingNewTeam, inviteToken])
+
+  if (verifyingInvite) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground animate-pulse">Verifying invitation...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (inviteData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 animate-fade-in">
+        <Card className="w-full max-w-md border-primary/10 shadow-2xl shadow-primary/5">
+          <CardHeader className="text-center">
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Accept Invitation</CardTitle>
+            <CardDescription className="text-base">
+              You've been invited to join the coaching staff for <span className="font-bold text-foreground">{inviteData.teamName}</span> as an <span className="font-bold text-foreground lowercase">{inviteData.role}</span>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="p-4 rounded-lg bg-secondary/20 border border-border/40 space-y-1">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Season</p>
+              <p className="font-semibold">{inviteData.seasonName}</p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button 
+                onClick={() => acceptInviteMutation.mutate()} 
+                className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20"
+                disabled={acceptInviteMutation.isPending}
+              >
+                {acceptInviteMutation.isPending ? 'Joining...' : 'Accept Invitation'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate({ to: '/', replace: true })} 
+                className="w-full"
+                disabled={acceptInviteMutation.isPending}
+              >
+                Not now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

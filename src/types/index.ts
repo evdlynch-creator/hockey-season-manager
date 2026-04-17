@@ -26,7 +26,30 @@ export interface Season {
   name: string
   startDate: string
   endDate: string
-  priorityConcepts: string
+  priorityConcepts: string // JSON string
+  createdAt: string
+}
+
+export type SeasonRole = 'owner' | 'assistant' | 'viewer'
+
+export interface SeasonMember {
+  id: string
+  seasonId: string
+  userId: string
+  role: SeasonRole
+  createdAt: string
+  // Joined from users table
+  email?: string
+  displayName?: string
+}
+
+export interface Invitation {
+  id: string
+  seasonId: string
+  email: string
+  role: SeasonRole
+  token: string
+  status: 'pending' | 'accepted'
   createdAt: string
 }
 
