@@ -14,7 +14,9 @@ import {
   PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip,
 } from 'recharts'
 import { format, parseISO, isAfter } from 'date-fns'
-import { useFilteredAnalytics, filterGamesByMode } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics, filterGamesByMode, buildOpponentInsights } from '@/hooks/useAnalytics'
+import { InsightsList } from '@/components/InsightsStrip'
+import { Lightbulb } from 'lucide-react'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes, useViewMode } from '@/hooks/usePreferences'
@@ -367,7 +369,12 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
 
 // ── Opponent detail panel ────────────────────────────────────────────────────
 
-function OpponentDetail({ stats }: { stats: OpponentStats }) {
+function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics: import('@/hooks/useAnalytics').SeasonAnalytics | null | undefined }) {
+  const insights = useMemo(
+    () => (analytics ? buildOpponentInsights(analytics, stats.name) : []),
+    [analytics, stats.name],
+  )
+
   const navigate = useNavigate()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -433,6 +440,28 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Top insights vs this opponent */}
+      <Card className="border-border bg-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Lightbulb className="w-4 h-4 text-primary" />
+            Top Insights vs. {stats.name}
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Pulled from your ratings in games against {stats.name}.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {insights.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic text-center py-2">
+              Review at least one game vs. {stats.name} to see tailored insights.
+            </p>
+          ) : (
+            <InsightsList insights={insights} />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Coaching plan */}
       <CoachingPlan stats={stats} />
@@ -776,7 +805,7 @@ export default function OpponentsPage() {
                     </p>
                   </div>
                 </div>
-                <OpponentDetail stats={selectedStats} />
+                <OpponentDetail stats={selectedStats} analytics={analytics} />
               </>
             ) : null}
           </div>

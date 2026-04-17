@@ -229,6 +229,14 @@ const MIN_CONCEPT_RATINGS = 3
 const MIN_GAMES_FOR_DIFFERENTIAL = 5
 const TREND_THRESHOLD = 0.5
 
+interface InsightOptions {
+  minHighGames?: number
+  minConceptRatings?: number
+  minGamesForDifferential?: number
+  trendThreshold?: number
+  max?: number
+}
+
 function gameResult(gf?: number, ga?: number): 'W' | 'L' | 'T' | null {
   if (gf == null || ga == null) return null
   if (gf > ga) return 'W'
@@ -236,7 +244,48 @@ function gameResult(gf?: number, ga?: number): 'W' | 'L' | 'T' | null {
   return 'T'
 }
 
+interface InsightSlice {
+  games: Game[]
+  reviews: GameReview[]
+  byConcept: Record<ConceptKey, ConceptSummary>
+}
+
+export function buildOpponentInsights(
+  analytics: SeasonAnalytics,
+  opponentName: string,
+): Insight[] {
+  const games = analytics.games.filter(g => g.opponent === opponentName)
+  const allowed = new Set(games.map(g => g.id))
+  const reviews = analytics.reviews.filter(r => allowed.has(r.gameId))
+  const byConcept = buildByConcept(games, analytics.practices, analytics.segments, reviews)
+  return buildInsightsCore(
+    { games, reviews, byConcept },
+    {
+      // Per-opponent samples are small; lower the gates so insights surface earlier.
+      minHighGames: 2,
+      minConceptRatings: 2,
+      minGamesForDifferential: 3,
+      trendThreshold: 0.4,
+      max: 4,
+    },
+  )
+}
+
 export function buildInsights(analytics: SeasonAnalytics): Insight[] {
+  return buildInsightsCore(
+    { games: analytics.games, reviews: analytics.reviews, byConcept: analytics.byConcept },
+    {},
+  )
+}
+
+function buildInsightsCore(slice: InsightSlice, options: InsightOptions): Insight[] {
+  const minHighGames = options.minHighGames ?? MIN_HIGH_GAMES
+  const minConceptRatings = options.minConceptRatings ?? MIN_CONCEPT_RATINGS
+  const minGamesForDifferential = options.minGamesForDifferential ?? MIN_GAMES_FOR_DIFFERENTIAL
+  const trendThreshold = options.trendThreshold ?? TREND_THRESHOLD
+  const max = options.max ?? 6
+
+  const analytics = slice
   const correlationInsights: Insight[] = []
   const bestLeverInsights: Insight[] = []
   const weakestInsights: Insight[] = []
@@ -309,7 +358,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
       ratingCount: count,
     })
 
-    if (high >= MIN_HIGH_GAMES) {
+    if (high >= minHighGames) {
       const pct = Math.round((highW / high) * 100)
       const lift = highW / high - seasonWinPct
       const tone: InsightTone = lift >= 0.1 ? 'positive' : lift <= -0.1 ? 'negative' : 'neutral'
@@ -332,7 +381,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   }
 
   // ── Best lever (concept whose high-rating win rate most exceeds baseline) ─
-  const eligibleLevers = conceptStats.filter(s => s.highGames >= MIN_HIGH_GAMES)
+  const eligibleLevers = conceptStats.filter(s => s.highGames >= minHighGames)
   if (eligibleLevers.length) {
     const best = eligibleLevers.reduce((a, b) =>
       (b.highWinPct - seasonWinPct) > (a.highWinPct - seasonWinPct) ? b : a,
@@ -350,7 +399,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   }
 
   // ── Weakest concept (lowest season-average rating, ≥ 3 ratings) ──────────
-  const ratedConcepts = conceptStats.filter(s => s.ratingCount >= MIN_CONCEPT_RATINGS)
+  const ratedConcepts = conceptStats.filter(s => s.ratingCount >= minConceptRatings)
   if (ratedConcepts.length) {
     const weakest = ratedConcepts.reduce((a, b) => (b.avgRating < a.avgRating ? b : a))
     weakestInsights.push({
@@ -365,11 +414,11 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   // ── Trending up / down (use existing concept summaries) ───────────────────
   const conceptsWithTrend = CONCEPTS
     .map(c => ({ concept: c, summary: analytics.byConcept[c] }))
-    .filter(x => x.summary.gamePoints + x.summary.practicePoints >= MIN_CONCEPT_RATINGS)
+    .filter(x => x.summary.gamePoints + x.summary.practicePoints >= minConceptRatings)
 
   if (conceptsWithTrend.length) {
     const up = conceptsWithTrend.reduce((a, b) => (b.summary.trend > a.summary.trend ? b : a))
-    if (up.summary.trend >= TREND_THRESHOLD) {
+    if (up.summary.trend >= trendThreshold) {
       trendUpInsights.push({
         id: 'trending-up',
         kind: 'trending-up',
@@ -380,7 +429,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
     }
 
     const down = conceptsWithTrend.reduce((a, b) => (b.summary.trend < a.summary.trend ? b : a))
-    if (down.summary.trend <= -TREND_THRESHOLD) {
+    if (down.summary.trend <= -trendThreshold) {
       trendDownInsights.push({
         id: 'trending-down',
         kind: 'trending-down',
@@ -392,7 +441,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   }
 
   // ── Goal differential signal (overall review average vs goal diff) ───────
-  if (analytics.reviews.length >= MIN_GAMES_FOR_DIFFERENTIAL) {
+  if (analytics.reviews.length >= minGamesForDifferential) {
     const perGame: { avg: number; diff: number }[] = []
     for (const review of analytics.reviews) {
       const game = gameById.get(review.gameId)
@@ -406,7 +455,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
       const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
       perGame.push({ avg, diff: Number(game.goalsFor) - Number(game.goalsAgainst) })
     }
-    if (perGame.length >= MIN_GAMES_FOR_DIFFERENTIAL) {
+    if (perGame.length >= minGamesForDifferential) {
       const sorted = [...perGame].sort((a, b) => a.avg - b.avg)
       const half = Math.floor(sorted.length / 2)
       const lowHalf = sorted.slice(0, half)
@@ -436,24 +485,23 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
     correlationInsights,
   ]
 
-  const MAX = 6
   const ordered: Insight[] = []
   // Pass 1: take up to one from each family in priority order
   for (const fam of families) {
-    if (ordered.length >= MAX) break
+    if (ordered.length >= max) break
     if (fam.length) ordered.push(fam[0])
   }
   // Pass 2: fill remaining slots from leftover correlations (most varied family)
   const seen = new Set(ordered.map(i => i.id))
   for (const fam of families) {
     for (const item of fam) {
-      if (ordered.length >= MAX) break
+      if (ordered.length >= max) break
       if (!seen.has(item.id)) {
         ordered.push(item)
         seen.add(item.id)
       }
     }
-    if (ordered.length >= MAX) break
+    if (ordered.length >= max) break
   }
 
   return ordered
