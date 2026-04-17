@@ -56,7 +56,7 @@ function PracticeConceptChips({ practiceId }: { practiceId: string }) {
 function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplicate: (p: Practice) => void }) {
   const navigate = useNavigate()
   const dateStr = practice.date
-    ? format(new Date(practice.date + 'T00:00:00'), 'MM/dd/yyyy')
+    ? format(new Date(practice.date + 'T00:00:00'), 'MMM d, yyyy')
     : '—'
 
   return (

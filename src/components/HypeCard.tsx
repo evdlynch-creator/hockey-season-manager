@@ -46,7 +46,7 @@ function buildHype({ nextGame, allGames, allReviews }: Args): {
     const opponentReviews = allReviews.filter(r => opponentGames.some(g => g.id === r.gameId))
 
     const headline = `vs. ${nextGame.opponent}`
-    const sub = `${format(parseISO(nextGame.date), 'MM/dd/yyyy')} · ${
+    const sub = `${format(parseISO(nextGame.date), 'EEE, MMM d')} · ${
       nextGame.location === 'home' ? 'Home ice' : 'On the road'
     }`
 

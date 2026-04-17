@@ -97,7 +97,7 @@ export default function GameDetailPage() {
     }
   }, [review])
 
-  const dateStr = game?.date ? format(new Date(game.date + 'T00:00:00'), 'MM/dd/yyyy') : '—'
+  const dateStr = game?.date ? format(new Date(game.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy') : '—'
 
   const saveScore = useMutation({
     mutationFn: async () => {

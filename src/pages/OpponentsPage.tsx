@@ -201,7 +201,7 @@ function planToText(stats: OpponentStats, plan: CoachingPlanData): string {
   if (plan.observations.length) {
     lines.push('STYLE OF PLAY (running notes):')
     plan.observations.forEach((o) => {
-      const d = format(parseISO(o.date), 'MM/dd/yyyy')
+      const d = format(parseISO(o.date), 'MMM d, yyyy')
       lines.push(`  ${d} — ${o.note}`)
     })
   }
@@ -350,7 +350,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
                   {plan.observations.map((o) => (
                     <li key={o.gameId} className="text-xs">
                       <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">
-                        {format(parseISO(o.date), 'MM/dd/yyyy')}
+                        {format(parseISO(o.date), 'MMM d, yyyy')}
                       </p>
                       <p className="text-foreground leading-relaxed">{o.note}</p>
                     </li>
@@ -393,7 +393,7 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-primary mb-0.5">Rematch upcoming</p>
             <p className="text-xs text-muted-foreground">
-              {format(parseISO(stats.nextGame.date), 'MM/dd/yyyy')} ·{' '}
+              {format(parseISO(stats.nextGame.date), 'EEEE, MMM d')} ·{' '}
               {stats.nextGame.location === 'home' ? 'Home' : 'Away'}
             </p>
           </div>
@@ -531,7 +531,7 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
                     <div className="shrink-0">{result ? resultBadge(result) : <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">TBD</Badge>}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground">
-                        {format(parseISO(g.date), 'MM/dd/yyyy')} · {g.location === 'home' ? 'Home' : 'Away'}
+                        {format(parseISO(g.date), 'EEE, MMM d, yyyy')} · {g.location === 'home' ? 'Home' : 'Away'}
                       </p>
                       {gf != null && ga != null && (
                         <p className="text-[11px] text-muted-foreground">{gf} – {ga}</p>
@@ -588,7 +588,7 @@ function OpponentListItem({
           </div>
           <p className="text-[11px] text-muted-foreground">
             {stats.games.length} game{stats.games.length !== 1 ? 's' : ''}
-            {stats.lastPlayed && ` · Last: ${format(parseISO(stats.lastPlayed), 'MM/dd/yyyy')}`}
+            {stats.lastPlayed && ` · Last: ${format(parseISO(stats.lastPlayed), 'MMM d')}`}
           </p>
         </div>
         <div className="text-right shrink-0">
