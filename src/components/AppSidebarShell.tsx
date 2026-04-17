@@ -123,11 +123,11 @@ export function AppSidebarShell() {
           )}
         >
           <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-black shrink-0 tracking-tight">
-            IE
+            BL
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <span className="block font-bold text-sm truncate text-foreground tracking-tight">Inside Edge</span>
+              <span className="block font-bold text-sm truncate text-foreground tracking-tight">Blue Line IQ</span>
               <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
             </div>
           )}

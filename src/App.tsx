@@ -74,7 +74,7 @@ type OnboardingData = z.infer<typeof onboardingSchema>
 
 const rootRoute = createRootRoute({
   component: () => (
-    <SharedAppLayout appName="Inside Edge">
+    <SharedAppLayout appName="Blue Line IQ">
       <Outlet />
     </SharedAppLayout>
   ),

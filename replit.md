@@ -1,6 +1,6 @@
-# Inside Edge Manager
+# Blue Line IQ
 
-A React + TypeScript + Vite sports management/analytics dashboard application.
+A React + TypeScript + Vite hockey coaching / season management & analytics dashboard application (formerly "Inside Edge Manager").
 
 ## Tech Stack
 
