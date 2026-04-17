@@ -23,7 +23,7 @@ src/
   main.tsx         - Entry point with providers
   blink/           - Blink SDK client configuration
   components/      - Reusable UI components
-  hooks/           - Custom React hooks (useAuth, useGames, usePractices, useTeam, useAnalytics)
+  hooks/           - Custom React hooks (useAuth, useGames, usePractices, useTeam, useSeasons, usePreferences, useAnalytics)
   layouts/         - Layout components
   pages/           - App views (GamesPage, PracticesPage, TrendsPage, CalendarPage, etc.)
   lib/             - Utility functions

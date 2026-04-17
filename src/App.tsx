@@ -42,6 +42,7 @@ import ConceptsPage from './pages/ConceptsPage'
 import TrendsPage from './pages/TrendsPage'
 import OpponentsPage from './pages/OpponentsPage'
 import TeamMembersPage from './pages/TeamMembersPage'
+import SettingsPage from './pages/SettingsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { useAnalytics } from './hooks/useAnalytics'
@@ -140,7 +141,7 @@ const trendsRoute = createRoute({
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
-  component: () => <PlaceholderPage title="Settings" />,
+  component: SettingsPage,
 })
 
 const teamMembersRoute = createRoute({
