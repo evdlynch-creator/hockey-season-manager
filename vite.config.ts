@@ -15,17 +15,25 @@ export default defineConfig({
     host: '0.0.0.0',
     allowedHosts: true,
     proxy: {
-      '/blink-proxy/auth': {
+      '/api/auth': {
         target: 'https://blink.new',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/blink-proxy\/auth/, ''),
       },
-      '/blink-proxy/core': {
+      '/api/db': {
         target: 'https://core.blink.new',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/blink-proxy\/core/, ''),
+      },
+      '/api/storage': {
+        target: 'https://core.blink.new',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/api/analytics': {
+        target: 'https://core.blink.new',
+        changeOrigin: true,
+        secure: true,
       },
     },
   }

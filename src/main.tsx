@@ -10,7 +10,7 @@ const queryClient = new QueryClient()
 
 const isInIframe = window.self !== window.top
 const proxiedUrls = isInIframe
-  ? { authUrl: `${window.location.origin}/blink-proxy/auth`, coreUrl: `${window.location.origin}/blink-proxy/core` }
+  ? { authUrl: window.location.origin, coreUrl: window.location.origin }
   : {}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
