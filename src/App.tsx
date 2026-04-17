@@ -175,19 +175,20 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 function DashboardPage() {
-  const { data: teamData, isLoading } = useTeam()
+  const { user, isLoading: authLoading } = useAuth()
+  const { data: teamData, isLoading, isFetching, isSuccess } = useTeam()
   const { data: practices = [] } = usePractices()
   const { data: games = [] } = useGames()
   const { data: analytics } = useAnalytics()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isLoading && !teamData) {
-      navigate({ to: '/onboarding' })
+    if (!authLoading && user && isSuccess && !isFetching && !teamData) {
+      navigate({ to: '/onboarding', replace: true })
     }
-  }, [teamData, isLoading, navigate])
+  }, [teamData, isSuccess, isFetching, authLoading, user, navigate])
 
-  if (isLoading || !teamData) return <LoadingOverlay show />
+  if (authLoading || isLoading || !teamData) return <LoadingOverlay show />
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -237,12 +238,12 @@ function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">{teamData.team.name}</h1>
-          <p className="text-muted-foreground mt-1 flex items-center gap-2">
+          <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}
             </Badge>
             <span>{teamData.season?.startDate} — {teamData.season?.endDate}</span>
-          </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={() => navigate({ to: '/practices' })}>
@@ -589,16 +590,16 @@ function DashboardPage() {
 }
 
 function OnboardingPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const { data: existingTeam, isLoading: teamLoading } = useTeam()
+  const { data: existingTeam, isFetching: teamFetching, isSuccess: teamSuccess } = useTeam()
 
   useEffect(() => {
-    if (!teamLoading && existingTeam) {
+    if (!authLoading && user && teamSuccess && !teamFetching && existingTeam) {
       navigate({ to: '/', replace: true })
     }
-  }, [existingTeam, teamLoading, navigate])
+  }, [existingTeam, teamSuccess, teamFetching, authLoading, user, navigate])
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
