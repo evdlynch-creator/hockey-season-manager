@@ -46,9 +46,10 @@ import TeamMembersPage from './pages/TeamMembersPage'
 import SettingsPage from './pages/SettingsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
-import { useFilteredAnalytics, filterGamesByMode } from './hooks/useAnalytics'
+import { useFilteredAnalytics, filterGamesByMode, buildInsights } from './hooks/useAnalytics'
 import { useGameTypes, useViewMode } from './hooks/usePreferences'
 import { HypeCard } from './components/HypeCard'
+import { InsightsStrip } from './components/InsightsStrip'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
 
@@ -296,6 +297,8 @@ function DashboardPage() {
   const avgGF = recentCompleted.length ? snapshotGF / recentCompleted.length : 0
   const avgGA = recentCompleted.length ? snapshotGA / recentCompleted.length : 0
 
+  const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
+
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-8">
@@ -347,6 +350,16 @@ function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {topInsights.length > 0 && (
+        <div className="mb-6">
+          <InsightsStrip
+            insights={topInsights}
+            limit={3}
+            onViewAll={() => navigate({ to: '/trends' })}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Coaching points / pre-game hype */}

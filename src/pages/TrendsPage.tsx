@@ -3,13 +3,14 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Separator, EmptyState, Badge,
 } from '@blinkdotnew/ui'
-import { TrendingUp, TrendingDown, Trophy, Target, Activity, Lightbulb, Sparkles, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Trophy, Target, Activity, Lightbulb } from 'lucide-react'
+import { InsightsList } from '@/components/InsightsStrip'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
-import { useFilteredAnalytics, buildInsights, type Insight } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics, buildInsights } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
@@ -38,38 +39,6 @@ function DarkTooltip({ active, payload, label }: any) {
       ))}
     </div>
   )
-}
-
-// ── Insight highlight renderer ───────────────────────────────────────────────
-
-function renderHighlighted(text: string) {
-  const parts = text.split(/(\{\{[^}]+\}\})/g)
-  return parts.map((part, i) => {
-    const m = part.match(/^\{\{(.+)\}\}$/)
-    if (m) {
-      return (
-        <span key={i} className="text-primary font-bold">{m[1]}</span>
-      )
-    }
-    return <span key={i}>{part}</span>
-  })
-}
-
-function insightIcon(insight: Insight) {
-  switch (insight.kind) {
-    case 'trending-up':
-    case 'best-lever':
-      return <TrendingUp className="w-4 h-4 text-emerald-400" />
-    case 'trending-down':
-      return <TrendingDown className="w-4 h-4 text-red-400" />
-    case 'weakest-concept':
-      return <AlertTriangle className="w-4 h-4 text-amber-400" />
-    case 'goal-differential':
-      return <Sparkles className="w-4 h-4 text-primary" />
-    case 'concept-correlation':
-    default:
-      return <Target className="w-4 h-4 text-primary" />
-  }
 }
 
 // ── Heatmap cell ─────────────────────────────────────────────────────────────
@@ -561,19 +530,7 @@ export default function TrendsPage() {
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-border/60">
-              {insights.map(insight => (
-                <li key={insight.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="mt-0.5 shrink-0">{insightIcon(insight)}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground leading-snug">
-                      {renderHighlighted(insight.headline)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{insight.detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <InsightsList insights={insights} />
           )}
         </CardContent>
       </Card>
