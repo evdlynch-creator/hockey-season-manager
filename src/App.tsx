@@ -621,6 +621,111 @@ function ChevronRight(props: any) {
   )
 }
 
+const isInIframe = typeof window !== 'undefined' && window.self !== window.top
+
+const authSchema = z.object({
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+})
+type AuthData = z.infer<typeof authSchema>
+
+function EmbeddedSignInForm() {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthData>({
+    resolver: zodResolver(authSchema),
+  })
+
+  const onSubmit = async (data: AuthData) => {
+    setAuthError(null)
+    try {
+      if (mode === 'signup') {
+        await blink.auth.signUp({ email: data.email, password: data.password })
+      } else {
+        await blink.auth.signInWithEmail(data.email, data.password)
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Authentication failed. Please try again.')
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-2xl shadow-primary/20">
+            <LayoutDashboard className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">
+            Inside<span className="text-primary">Edge</span>
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm text-center">
+            {mode === 'signin' ? 'Sign in to your coaching account' : 'Create your coaching account'}
+          </p>
+        </div>
+
+        <Card className="border-border/50 shadow-xl">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <Field>
+                <FieldLabel>Email</FieldLabel>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  placeholder="coach@team.com"
+                  autoComplete="email"
+                />
+                {errors.email && <FieldError>{errors.email.message}</FieldError>}
+              </Field>
+
+              <Field>
+                <FieldLabel>Password</FieldLabel>
+                <Input
+                  {...register('password')}
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                />
+                {errors.password && <FieldError>{errors.password.message}</FieldError>}
+              </Field>
+
+              {authError && (
+                <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
+                  {authError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full gap-2 font-bold shadow-lg shadow-primary/20"
+                disabled={isSubmitting}
+              >
+                <LogIn className="w-4 h-4" />
+                {isSubmitting
+                  ? mode === 'signin' ? 'Signing in...' : 'Creating account...'
+                  : mode === 'signin' ? 'Sign In' : 'Create Account'}
+              </Button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setAuthError(null) }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {mode === 'signin'
+                  ? "Don't have an account? Sign up"
+                  : 'Already have an account? Sign in'}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const { user, isLoading, isAuthenticated } = useAuth()
 
@@ -633,9 +738,12 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
+    if (isInIframe) {
+      return <EmbeddedSignInForm />
+    }
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 text-center overflow-hidden">
-        {/* Background Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
           <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
           <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
