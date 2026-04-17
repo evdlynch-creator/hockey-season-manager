@@ -298,7 +298,7 @@ export default function CalendarPage() {
         {/* Stacked: compact calendar on top, agenda below */}
         <div className="space-y-6">
           {/* Mini month — narrow, sits above the agenda */}
-          <div className="rounded-xl bg-sidebar border border-sidebar-border p-3 max-w-xs">
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:p-5">
             <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} />
           </div>
 
