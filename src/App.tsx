@@ -49,6 +49,7 @@ import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { useFilteredAnalytics, filterGamesByMode, buildInsights } from './hooks/useAnalytics'
 import { useGameTypes, useViewMode } from './hooks/usePreferences'
+import { useDemoMode } from './hooks/useDemoData'
 import { HypeCard } from './components/HypeCard'
 import { InsightsStrip } from './components/InsightsStrip'
 import { format, isAfter, parseISO } from 'date-fns'
@@ -1166,6 +1167,7 @@ function EmbeddedSignInForm() {
 
 export default function App() {
   const { user, isLoading, isAuthenticated } = useAuth()
+  const { isDemo, enterDemo } = useDemoMode()
 
   if (isLoading) {
     return (
@@ -1175,7 +1177,7 @@ export default function App() {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isDemo) {
     if (isInIframe) {
       return <EmbeddedSignInForm />
     }
@@ -1212,6 +1214,7 @@ export default function App() {
             size="lg" 
             variant="outline"
             className="h-14 px-10 border-border/50 hover:bg-accent"
+            onClick={enterDemo}
           >
             View Demo
           </Button>

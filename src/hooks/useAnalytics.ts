@@ -6,6 +6,10 @@ import type { Practice, PracticeSegment, Game, GameReview } from '../types'
 import { CONCEPTS } from '../types'
 import { useGameTypes, useViewMode } from './usePreferences'
 import type { GameType, ViewMode } from './usePreferences'
+import { DEMO_PRACTICES, DEMO_SEGMENTS, DEMO_GAMES, DEMO_REVIEWS, isDemoMode } from './useDemoData'
+
+const DEMO_KEY = 'demo_mode'
+// Removed redundant isDemoMode function definition as it's now imported.
 
 export type ConceptKey = typeof CONCEPTS[number]
 
@@ -163,8 +167,12 @@ export function useAnalytics() {
   const seasonId = teamData?.season?.id
 
   return useQuery<SeasonAnalytics | null>({
-    queryKey: ['analytics', seasonId],
+    queryKey: ['analytics', seasonId, isDemoMode()],
     queryFn: async () => {
+      if (isDemoMode()) {
+        const byConcept = buildByConcept(DEMO_GAMES, DEMO_PRACTICES, DEMO_SEGMENTS, DEMO_REVIEWS)
+        return { byConcept, games: DEMO_GAMES, practices: DEMO_PRACTICES, segments: DEMO_SEGMENTS, reviews: DEMO_REVIEWS }
+      }
       if (!seasonId) return null
 
       // Parallel load everything
@@ -194,7 +202,7 @@ export function useAnalytics() {
       const byConcept = buildByConcept(games, practices, segments, reviews)
       return { byConcept, games, practices, segments, reviews }
     },
-    enabled: !!seasonId,
+    enabled: !!seasonId || isDemoMode(),
   })
 }
 
@@ -307,8 +315,7 @@ function buildInsightsCore(slice: InsightSlice, options: InsightOptions): Insigh
   // Season win rate: wins / all completed games (ties are included in the denominator
   // and counted as non-wins). All "win rate" values reported in insights use this same
   // denominator so the lift comparisons are apples-to-apples.
-  const seasonWins = completedGames.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
-  const seasonWinPct = seasonWins / completedGames.length
+  const seasonWinPct = completedGames.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length / completedGames.length
 
   // ── Concept correlations ───────────────────────────────────────────────────
   type ConceptStat = {

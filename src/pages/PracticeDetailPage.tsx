@@ -89,6 +89,15 @@ function SegmentCard({
         </div>
       </CardHeader>
       <CardContent className="px-4 pb-4">
+        {segment.fileUrl && (
+          <div className="mb-4 -mx-4 -mt-2 overflow-hidden border-b border-border/50">
+            <img 
+              src={segment.fileUrl} 
+              alt={segment.name || 'Segment drill'} 
+              className="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        )}
         {segment.notes && <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{segment.notes}</p>}
         {segment.link && (
           <a href={segment.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline block mb-3 truncate">

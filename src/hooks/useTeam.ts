@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import type { Team, Season } from '../types'
+import { DEMO_TEAM, DEMO_SEASON, isDemoMode } from './useDemoData'
 
 interface SeasonStateRaw {
   activeSeasonId: string | null
@@ -63,8 +64,11 @@ export function useTeam() {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ['team', user?.id, seasonStateRev],
+    queryKey: ['team', user?.id, seasonStateRev, isDemoMode()],
     queryFn: async () => {
+      if (isDemoMode()) {
+        return { teams: [DEMO_TEAM], team: DEMO_TEAM, season: DEMO_SEASON }
+      }
       if (!user) return null
 
       const teams = (await blink.db.teams.list({

@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { useTeam } from '@/hooks/useTeam'
+import { useDemoMode } from '@/hooks/useDemoData'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
 
@@ -104,6 +105,7 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
 export function AppSidebarShell() {
   const { user } = useAuth()
   const { data: teamData, switchTeam } = useTeam()
+  const { isDemo, exitDemo } = useDemoMode()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -135,25 +137,41 @@ export function AppSidebarShell() {
         <div
           className={cn(
             'flex items-center gap-3 shrink-0 border-b border-sidebar-border h-[64px] px-4',
-            collapsed && 'justify-center px-2'
+            collapsed && 'justify-center px-2',
+            isDemo && 'bg-amber-500/10 border-amber-500/20'
           )}
         >
           {collapsed ? (
-            <img
-              src={iqPlusLogoUrl}
-              alt="Blue Line IQ"
-              className="h-7 w-7 mx-auto object-contain select-none"
-              draggable={false}
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={isDemo ? exitDemo : undefined} className={cn("cursor-pointer", isDemo && "text-amber-500")}>
+                  <img
+                    src={iqPlusLogoUrl}
+                    alt="Blue Line IQ"
+                    className="h-7 w-7 mx-auto object-contain select-none"
+                    draggable={false}
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">{isDemo ? 'Exit Demo Mode' : 'Blue Line IQ'}</TooltipContent>
+            </Tooltip>
           ) : (
             <>
-              <div className="flex-1 min-w-0 flex items-center justify-center -ml-2">
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5 justify-center -ml-2">
                 <img
                   src={logoUrl}
                   alt="Blue Line IQ"
-                  className="h-8 w-auto object-contain select-none scale-110"
+                  className="h-7 w-auto object-contain select-none scale-110"
                   draggable={false}
                 />
+                {isDemo && (
+                  <button 
+                    onClick={exitDemo}
+                    className="text-[9px] text-amber-500 font-bold uppercase tracking-tighter hover:underline text-center"
+                  >
+                    Demo Mode · Exit
+                  </button>
+                )}
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
