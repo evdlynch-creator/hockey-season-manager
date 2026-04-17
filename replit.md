@@ -47,3 +47,4 @@ npm run build   # Build for production (outputs to dist/)
 
 - The Blink SDK (`@blinkdotnew/sdk`) is used for authentication and backend integration
 - The app uses a "linear" dark theme via BlinkUIProvider
+- **Multi-coach access**: `team_members` table tracks (teamId, userId, email, role, status). Onboarding creates an `owner` membership for the founder. Pending email invites are auto-claimed when the invitee signs in (matched by email). Coaches share all team data (practices, games, ratings) — `useTeam` resolves the team via membership lookup; other hooks scope by `teamId`/`seasonId`. UI in `/team`. Note: like all other tables, membership writes are client-side; trust model matches the rest of the app.

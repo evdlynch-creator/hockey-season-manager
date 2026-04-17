@@ -26,6 +26,7 @@ import {
   BarChart3,
   TrendingUp,
   Settings,
+  UserCog,
   LogOut,
   PanelLeft,
 } from 'lucide-react'
@@ -50,6 +51,7 @@ const NAV_ITEMS: NavItemDef[] = [
   { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents' },
   { to: '/concepts', icon: <BarChart3 className="h-4 w-4" />, label: 'Concepts' },
   { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends' },
+  { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
   { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
 ]
 

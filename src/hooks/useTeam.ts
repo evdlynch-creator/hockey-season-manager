@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
+import type { Team, Season, TeamMember } from '../types'
 
 export function useTeam() {
   const { user } = useAuth()
@@ -9,27 +10,83 @@ export function useTeam() {
     queryKey: ['team', user?.id],
     queryFn: async () => {
       if (!user) return null
-      
-      const teams = await blink.db.teams.list({
-        where: { user_id: user.id },
-        limit: 1
-      })
-      
-      if (teams.length === 0) return null
-      
-      const team = teams[0]
-      
-      const seasons = await blink.db.seasons.list({
-        where: { team_id: team.id },
-        orderBy: { created_at: 'desc' },
-        limit: 1
-      })
-      
+
+      const userEmail = (user as any).email?.toLowerCase?.() ?? null
+
+      // Claim any pending invites that match the current user's email.
+      if (userEmail) {
+        const pending = (await blink.db.teamMembers.list({
+          where: { email: userEmail, status: 'pending' },
+        })) as TeamMember[]
+
+        for (const invite of pending) {
+          await blink.db.teamMembers.update(invite.id, {
+            userId: user.id,
+            status: 'active',
+          })
+        }
+      }
+
+      // Find all active memberships for this user.
+      const memberships = (await blink.db.teamMembers.list({
+        where: { userId: user.id, status: 'active' },
+      })) as TeamMember[]
+
+      // Backwards compat: if no membership records exist, look up legacy team via userId.
+      let team: Team | null = null
+      if (memberships.length === 0) {
+        const legacy = (await blink.db.teams.list({
+          where: { userId: user.id },
+          limit: 1,
+        })) as Team[]
+        team = legacy[0] ?? null
+
+        // Backfill: create owner membership for legacy team.
+        if (team && userEmail) {
+          await blink.db.teamMembers.create({
+            id: `tm_${crypto.randomUUID().slice(0, 8)}`,
+            teamId: team.id,
+            userId: user.id,
+            email: userEmail,
+            role: 'owner',
+            status: 'active',
+          })
+        }
+      } else {
+        // Pick most recent active team. If user belongs to multiple, take first.
+        const teamIds = memberships.map((m) => m.teamId)
+        const teamList = (await blink.db.teams.list({})) as Team[]
+        team = teamList.find((t) => teamIds.includes(t.id)) ?? null
+      }
+
+      if (!team) return null
+
+      const seasons = (await blink.db.seasons.list({
+        where: { teamId: team.id },
+        orderBy: { createdAt: 'desc' },
+        limit: 1,
+      })) as Season[]
+
       return {
         team,
-        season: seasons[0] || null
+        season: seasons[0] || null,
       }
     },
-    enabled: !!user
+    enabled: !!user,
+  })
+}
+
+export function useTeamMembers(teamId?: string) {
+  return useQuery({
+    queryKey: ['team-members', teamId],
+    queryFn: async () => {
+      if (!teamId) return []
+      const members = (await blink.db.teamMembers.list({
+        where: { teamId },
+        orderBy: { createdAt: 'asc' },
+      })) as TeamMember[]
+      return members
+    },
+    enabled: !!teamId,
   })
 }

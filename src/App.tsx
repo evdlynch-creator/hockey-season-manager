@@ -41,6 +41,7 @@ import CalendarPage from './pages/CalendarPage'
 import ConceptsPage from './pages/ConceptsPage'
 import TrendsPage from './pages/TrendsPage'
 import OpponentsPage from './pages/OpponentsPage'
+import TeamMembersPage from './pages/TeamMembersPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
 import { useAnalytics } from './hooks/useAnalytics'
@@ -142,6 +143,12 @@ const settingsRoute = createRoute({
   component: () => <PlaceholderPage title="Settings" />,
 })
 
+const teamMembersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/team',
+  component: TeamMembersPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute, 
   onboardingRoute,
@@ -153,6 +160,7 @@ const routeTree = rootRoute.addChildren([
   opponentsRoute,
   conceptsRoute,
   trendsRoute,
+  teamMembersRoute,
   settingsRoute
 ])
 const router = createRouter({ routeTree })
@@ -621,6 +629,16 @@ function OnboardingPage() {
         id: teamId,
         name: data.teamName,
         userId: user.id
+      })
+
+      const userEmail = (user as any).email?.toLowerCase?.() ?? ''
+      await blink.db.teamMembers.create({
+        id: `tm_${crypto.randomUUID().slice(0, 8)}`,
+        teamId,
+        userId: user.id,
+        email: userEmail,
+        role: 'owner',
+        status: 'active',
       })
 
       await blink.db.seasons.create({
