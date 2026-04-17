@@ -748,11 +748,33 @@ function OnboardingPage() {
 
       if (!teamId) {
         teamId = `team_${crypto.randomUUID().slice(0, 8)}`
+        const now = new Date().toISOString()
         await blink.db.teams.create({
           id: teamId,
           name: data.teamName,
           userId: user.id,
+          plan: 'beta_free',
+          seatLimit: null,
         })
+        // Founder gets the owner membership immediately so multi-coach
+        // scoping works the same as for invited coaches. Deterministic id
+        // matches the backfill path so duplicate runs are no-ops.
+        try {
+          await blink.db.teamMembers.create({
+            id: `tm_owner_${teamId}`,
+            teamId,
+            userId: user.id,
+            email: ((user as any).email ?? '').toString().trim().toLowerCase(),
+            role: 'owner',
+            status: 'active',
+            invitedBy: null,
+            invitedByName: null,
+            createdAt: now,
+            updatedAt: now,
+          })
+        } catch {
+          // Backfill in useTeam will create/repair if this somehow loses a race.
+        }
       }
 
       await blink.db.seasons.create({

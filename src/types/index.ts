@@ -1,8 +1,12 @@
+export type TeamPlan = 'beta_free' | 'pro'
+
 export interface Team {
   id: string
   name: string
   userId: string
   createdAt: string
+  plan?: TeamPlan | null
+  seatLimit?: number | null
 }
 
 export type TeamMemberRole = 'owner' | 'coach'
@@ -18,6 +22,7 @@ export interface TeamMember {
   invitedBy?: string | null
   invitedByName?: string | null
   createdAt: string
+  updatedAt?: string | null
 }
 
 export interface Season {

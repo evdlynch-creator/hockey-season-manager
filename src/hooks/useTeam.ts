@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
-import type { Team, Season } from '../types'
+import { useActiveTeamId } from './usePreferences'
+import type { Team, Season, TeamMember } from '../types'
 
 interface SeasonStateRaw {
   activeSeasonId: string | null
@@ -25,13 +26,33 @@ function readSeasonState(teamId: string | null): SeasonStateRaw {
   }
 }
 
-// Bumps a counter on any localStorage write to a `season-state:*` key so that
-// React Query callers (whose queryKey includes the counter) re-run.
-function useSeasonStateRevision() {
+function readActiveTeamId(userId: string | null): string | null {
+  if (!userId || typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(`active-team:${userId}`)
+    if (!raw) return null
+    return JSON.parse(raw)?.activeTeamId ?? null
+  } catch {
+    return null
+  }
+}
+
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase()
+}
+
+// Bumps a counter on any localStorage write to a `season-state:*` or
+// `active-team:*` key so that React Query callers (whose queryKey includes
+// the counter) re-run.
+function useTeamScopeRevision() {
   const [rev, setRev] = useState(0)
   useEffect(() => {
     const onChange = (e: StorageEvent) => {
-      if (e.key === null || e.key.startsWith('season-state:')) {
+      if (
+        e.key === null ||
+        e.key.startsWith('season-state:') ||
+        e.key.startsWith('active-team:')
+      ) {
         setRev((r) => r + 1)
       }
     }
@@ -41,22 +62,180 @@ function useSeasonStateRevision() {
   return rev
 }
 
+interface MembershipResolution {
+  memberships: TeamMember[]
+  teams: Team[]
+}
+
+/**
+ * Resolves the current user's memberships and the teams they cover.
+ *
+ * Side effects (idempotent, run on every call but only do work when needed):
+ *  1. Auto-claim pending invites whose email matches the signed-in user.
+ *  2. Backfill an `owner` membership for legacy teams where `teams.userId == me`
+ *     but no membership row exists yet. Also stamps `plan` and `seatLimit` if
+ *     missing so monetization fields are present on every team.
+ */
+async function resolveMemberships(user: {
+  id: string
+  email?: string | null
+}): Promise<MembershipResolution> {
+  const myEmail = normalizeEmail((user as any).email ?? '')
+
+  // 1. Memberships I'm linked to via userId, plus pending invites matching my email.
+  const orClauses: any[] = [{ userId: user.id }]
+  if (myEmail) orClauses.push({ email: myEmail, status: 'pending' })
+
+  let memberships = (await blink.db.teamMembers.list({
+    where: orClauses.length === 1 ? orClauses[0] : { OR: orClauses },
+  })) as TeamMember[]
+
+  // 2. Auto-claim pending memberships matching my email.
+  const claimable = memberships.filter(
+    (m) => m.status === 'pending' && normalizeEmail(m.email) === myEmail,
+  )
+  if (claimable.length > 0) {
+    const now = new Date().toISOString()
+    await Promise.all(
+      claimable.map((m) =>
+        blink.db.teamMembers.update(m.id, {
+          userId: user.id,
+          status: 'active',
+          updatedAt: now,
+        }),
+      ),
+    )
+    memberships = memberships.map((m) =>
+      claimable.find((c) => c.id === m.id)
+        ? { ...m, userId: user.id, status: 'active' }
+        : m,
+    )
+  }
+
+  // 3. Backfill owner row for legacy teams owned by this user.
+  //    Uses a DETERMINISTIC id (`tm_owner_${teamId}`) so that concurrent first
+  //    sign-ins (across tabs/sessions) cannot create duplicate owner rows —
+  //    the second create is either a primary-key conflict (caught) or a no-op.
+  const knownTeamIds = new Set(memberships.map((m) => m.teamId))
+  const legacyTeams = (await blink.db.teams.list({
+    where: { userId: user.id },
+  })) as Team[]
+  const missing = legacyTeams.filter((t) => !knownTeamIds.has(t.id))
+  if (missing.length > 0) {
+    const now = new Date().toISOString()
+    const results = await Promise.all(
+      missing.map(async (team) => {
+        const ownerId = `tm_owner_${team.id}`
+        // Re-check first to avoid the round-trip when a parallel run already wrote.
+        const already = (await blink.db.teamMembers.list({
+          where: { teamId: team.id, role: 'owner' },
+          limit: 1,
+        })) as TeamMember[]
+        if (already.length > 0) return already[0]
+        try {
+          await blink.db.teamMembers.create({
+            id: ownerId,
+            teamId: team.id,
+            userId: user.id,
+            email: myEmail,
+            role: 'owner',
+            status: 'active',
+            invitedBy: null,
+            invitedByName: null,
+            createdAt: now,
+            updatedAt: now,
+          })
+          return {
+            id: ownerId,
+            teamId: team.id,
+            userId: user.id,
+            email: myEmail,
+            role: 'owner' as const,
+            status: 'active' as const,
+            invitedBy: null,
+            invitedByName: null,
+            createdAt: now,
+            updatedAt: now,
+          } as TeamMember
+        } catch {
+          // Another tab won the race — re-fetch and use whatever owner row exists.
+          const existing = (await blink.db.teamMembers.list({
+            where: { teamId: team.id, role: 'owner' },
+            limit: 1,
+          })) as TeamMember[]
+          return existing[0] ?? null
+        }
+      }),
+    )
+    memberships = [...memberships, ...results.filter((m): m is TeamMember => !!m)]
+  }
+
+  // 4. Load every team I have a membership for.
+  const teamIds = Array.from(new Set(memberships.map((m) => m.teamId)))
+  if (teamIds.length === 0) return { memberships, teams: [] }
+
+  const teamsRaw = (await blink.db.teams.list({
+    where: { id: { in: teamIds } },
+  })) as Team[]
+
+  // 5. Stamp plan/seatLimit defaults on any team that's missing them so the
+  //    monetization fields are guaranteed present (one-time per team).
+  const needsPlanStamp = teamsRaw.filter(
+    (t) => t.plan == null || t.plan === undefined,
+  )
+  if (needsPlanStamp.length > 0) {
+    await Promise.all(
+      needsPlanStamp.map((t) =>
+        blink.db.teams
+          .update(t.id, { plan: 'beta_free', seatLimit: null })
+          .catch(() => undefined),
+      ),
+    )
+  }
+  const teams = teamsRaw.map((t) => ({
+    ...t,
+    plan: t.plan ?? 'beta_free',
+    seatLimit: t.seatLimit ?? null,
+  })) as Team[]
+
+  return { memberships, teams }
+}
+
+/** All teams the current user belongs to. Drives the team switcher. */
+export function useMyTeams() {
+  const { user } = useAuth()
+  return useQuery({
+    queryKey: ['myTeams', user?.id],
+    queryFn: async () => {
+      if (!user) return [] as Team[]
+      const { teams } = await resolveMemberships(user)
+      return teams
+    },
+    enabled: !!user,
+  })
+}
+
 export function useTeam() {
   const { user } = useAuth()
-  const seasonStateRev = useSeasonStateRevision()
+  const queryClient = useQueryClient()
+  const teamScopeRev = useTeamScopeRevision()
 
   return useQuery({
-    queryKey: ['team', user?.id, seasonStateRev],
+    queryKey: ['team', user?.id, teamScopeRev],
     queryFn: async () => {
       if (!user) return null
 
-      const teams = (await blink.db.teams.list({
-        where: { userId: user.id },
-        limit: 1,
-      })) as Team[]
+      const { teams } = await resolveMemberships(user)
+      if (teams.length === 0) return null
 
-      const team = teams[0] ?? null
-      if (!team) return null
+      // Pick the active team for users with multiple teams.
+      const activeTeamId = readActiveTeamId(user.id)
+      let team = activeTeamId ? teams.find((t) => t.id === activeTeamId) ?? null : null
+      if (!team) team = teams[0]
+
+      // Keep the myTeams cache fresh so the switcher reflects new memberships
+      // discovered during resolution.
+      queryClient.setQueryData(['myTeams', user.id], teams)
 
       const seasons = (await blink.db.seasons.list({
         where: { teamId: team.id },

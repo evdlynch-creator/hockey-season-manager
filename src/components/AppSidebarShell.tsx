@@ -16,6 +16,12 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@blinkdotnew/ui'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import iqPlusLogoUrl from '@/assets/iq-plus-logo.svg'
@@ -32,12 +38,17 @@ import {
   LogOut,
   PanelLeft,
   ChevronsRight,
+  ChevronDown,
+  Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
+import { useMyTeams, useTeam } from '@/hooks/useTeam'
+import { useActiveTeamId } from '@/hooks/usePreferences'
+import { useQueryClient } from '@tanstack/react-query'
 
 const SIDEBAR_KEY = 'sidebar_collapsed'
 
@@ -180,6 +191,9 @@ export function AppSidebarShell() {
             </div>
           )}
           <div className="pb-3">
+            <TeamSwitcher collapsed={collapsed} />
+          </div>
+          <div className="pb-3">
             <ViewModeSwitcher collapsed={collapsed} />
           </div>
           {!collapsed && (
@@ -265,5 +279,94 @@ export function AppSidebarShell() {
         </div>
       </div>
     </TooltipProvider>
+  )
+}
+
+function TeamSwitcher({ collapsed }: { collapsed: boolean }) {
+  const { user } = useAuth()
+  const { data: teams = [] } = useMyTeams()
+  const { data: teamData } = useTeam()
+  const [active, setActive] = useActiveTeamId(user?.id)
+  const queryClient = useQueryClient()
+
+  if (teams.length < 2) return null
+
+  const currentId = teamData?.team.id ?? active.activeTeamId ?? teams[0]?.id ?? null
+  const current = teams.find(t => t.id === currentId) ?? teams[0]
+
+  const pick = (id: string) => {
+    setActive({ activeTeamId: id })
+    queryClient.invalidateQueries({ queryKey: ['team'] })
+  }
+
+  if (collapsed) {
+    return (
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="mx-auto flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                aria-label="Switch team"
+              >
+                <Users className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right">Team: {current?.name}</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent side="right" align="start" className="min-w-[12rem]">
+          <DropdownMenuLabel>Switch team</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {teams.map(t => (
+            <DropdownMenuItem key={t.id} onClick={() => pick(t.id)} className="gap-2">
+              {t.id === currentId ? (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <span className="w-3.5" />
+              )}
+              <span className="truncate">{t.name}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
+        Team
+      </p>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors text-left"
+          >
+            <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="flex-1 text-xs font-medium truncate">
+              {current?.name ?? 'Select team'}
+            </span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-[14rem]">
+          <DropdownMenuLabel>Switch team</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {teams.map(t => (
+            <DropdownMenuItem key={t.id} onClick={() => pick(t.id)} className="gap-2">
+              {t.id === currentId ? (
+                <Check className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <span className="w-3.5" />
+              )}
+              <span className="truncate">{t.name}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

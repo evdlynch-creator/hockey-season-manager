@@ -52,6 +52,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTeam } from '../hooks/useTeam'
 import { useAuth } from '../hooks/useAuth'
 import { useSeasons, useCreateSeason, useUpdateSeason, useDeleteSeason, useUpdateTeamName } from '../hooks/useSeasons'
+import { useTeamMembers, useRemoveMember } from '../hooks/useTeamMembers'
 import {
   useTeamPreferences,
   useNotificationPreferences,
@@ -816,6 +817,31 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
   const deleteSeason = useDeleteSeason()
   const queryClient = useQueryClient()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const { user } = useAuth()
+  const { data: members = [] } = useTeamMembers(teamId)
+  const myMembership =
+    members.find((m) => m.userId === user?.id) ??
+    members.find(
+      (m) => m.email.toLowerCase() === ((user as any)?.email ?? '').toString().toLowerCase(),
+    ) ??
+    null
+  const isOwner = myMembership?.role === 'owner'
+  const removeMember = useRemoveMember()
+
+  const handleLeave = async () => {
+    if (!myMembership) return
+    try {
+      await removeMember.mutateAsync(myMembership)
+      toast.success('You left the team')
+      setConfirmLeave(false)
+      // Force the team scope to re-resolve and pick up another team (or land on onboarding).
+      queryClient.invalidateQueries({ queryKey: ['team'] })
+      queryClient.invalidateQueries({ queryKey: ['myTeams'] })
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not leave team')
+    }
+  }
 
   const handleArchive = () => {
     if (!activeSeason) return
@@ -870,15 +896,36 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
           </Button>
         </div>
 
-        <div className="rounded-md border border-border/40 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3 opacity-70">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">Remove coach access</p>
-            <p className="text-xs text-muted-foreground">
-              Multi-coach access isn't enabled yet — see the Coaching Staff page for details.
-            </p>
+        {isOwner ? (
+          <div className="rounded-md border border-border/40 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Manage coach access</p>
+              <p className="text-xs text-muted-foreground">
+                Invite, resend, revoke, or remove coaches from the Coaching Staff page.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <a href="/team">Open Coaching Staff</a>
+            </Button>
           </div>
-          <Button variant="outline" disabled>Remove coach</Button>
-        </div>
+        ) : myMembership ? (
+          <div className="rounded-md border border-red-500/30 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Leave this team</p>
+              <p className="text-xs text-muted-foreground">
+                You'll lose access to {/* team name lookup */} this team's data immediately. Anything
+                you've already entered stays on the team.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
+              onClick={() => setConfirmLeave(true)}
+            >
+              <Trash2 className="w-4 h-4" /> Leave team
+            </Button>
+          </div>
+        ) : null}
       </CardContent>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
@@ -911,6 +958,34 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
               }}
             >
               {deleteSeason.isPending ? 'Deleting…' : 'Delete season'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              Leave this team?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You'll lose access to this team's practices, games, and analytics
+              immediately. The team owner can re-invite you any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeMember.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={removeMember.isPending}
+              onClick={(e) => {
+                e.preventDefault()
+                handleLeave()
+              }}
+            >
+              {removeMember.isPending ? 'Leaving…' : 'Leave team'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

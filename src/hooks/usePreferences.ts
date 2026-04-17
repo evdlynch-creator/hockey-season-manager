@@ -111,6 +111,22 @@ export function useSeasonState(teamId?: string) {
   return usePersistedJson<SeasonState>(teamId ? `season-state:${teamId}` : null, DEFAULT_SEASON_STATE)
 }
 
+interface ActiveTeamState {
+  activeTeamId: string | null
+}
+const DEFAULT_ACTIVE_TEAM: ActiveTeamState = { activeTeamId: null }
+
+/**
+ * Persists the active team for users that belong to multiple teams.
+ * Stored per-user so different sign-ins on the same browser don't collide.
+ */
+export function useActiveTeamId(userId?: string) {
+  return usePersistedJson<ActiveTeamState>(
+    userId ? `active-team:${userId}` : null,
+    DEFAULT_ACTIVE_TEAM,
+  )
+}
+
 // ── Game classification (exhibition / tournament / league) ────────────────────
 
 export type GameType = 'league' | 'tournament' | 'exhibition'
