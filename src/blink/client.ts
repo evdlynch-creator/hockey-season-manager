@@ -9,10 +9,6 @@ const proxyConfig = isInIframe
     }
   : {}
 
-if (typeof window !== 'undefined') {
-  console.log('🔧 Blink client config:', { isInIframe, ...proxyConfig, origin: window.location.origin })
-}
-
 export const blink = createClient({
   projectId: import.meta.env.VITE_BLINK_PROJECT_ID,
   publishableKey: import.meta.env.VITE_BLINK_PUBLISHABLE_KEY,
