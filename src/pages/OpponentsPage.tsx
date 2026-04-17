@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useMemo, useState, useEffect } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Badge, Separator, EmptyState, Button, toast,
@@ -636,7 +636,16 @@ export default function OpponentsPage() {
   const { types } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)
   const allGames = useMemo(() => filterGamesByMode(rawGames, types, mode), [rawGames, types, mode])
+  
+  const search = useSearch({ from: '/opponents' }) as { opponent?: string }
   const [selected, setSelected] = useState<string | null>(null)
+
+  // Sync search param to state once
+  useEffect(() => {
+    if (search.opponent) {
+      setSelected(search.opponent)
+    }
+  }, [search.opponent])
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

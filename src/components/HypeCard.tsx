@@ -238,7 +238,7 @@ export function HypeCard({
         )}
         {nextGame && (
           <button
-            onClick={() => navigate({ to: '/opponents' })}
+            onClick={() => navigate({ to: '/opponents', search: { opponent: nextGame.opponent } })}
             className="mt-3 text-[11px] text-primary hover:underline flex items-center gap-1"
           >
             Full coaching plan vs. {nextGame.opponent}
