@@ -8,10 +8,16 @@ import './index.css'
 
 const queryClient = new QueryClient()
 
+const isInIframe = window.self !== window.top
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BlinkProvider projectId={import.meta.env.VITE_BLINK_PROJECT_ID}>
+      <BlinkProvider
+        projectId={import.meta.env.VITE_BLINK_PROJECT_ID}
+        publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY}
+        auth={{ mode: isInIframe ? 'headless' : 'managed' }}
+      >
         <BlinkUIProvider theme="linear" darkMode="dark">
           <Toaster />
           <div className="flex w-full flex-1 flex-col min-h-0">
