@@ -18,7 +18,7 @@ import {
   toast,
   EmptyState
 } from '@blinkdotnew/ui'
-import { LayoutDashboard, LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { LayoutDashboard, LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { useState, useEffect } from 'react'
 import {
@@ -244,9 +244,56 @@ function DashboardPage() {
 
   const completedPractices = practices.filter(p => p.status === 'completed' || p.status === 'reviewed').length
 
-  // Rematch prep: find opponents we've already played
-  const pastOpponents = new Set(completedGames.map(g => g.opponent))
-  const rematchGames = upcomingGames.filter(g => pastOpponents.has(g.opponent))
+  // ── Team Snapshot (rolling form over last 3-5 completed games) ─────────────
+  const SNAPSHOT_FIELD: Record<string, 'breakoutsRating' | 'forecheckRating' | 'defensiveZoneRating' | 'transitionRating' | 'passingRating' | 'skatingRating'> = {
+    'Breakouts': 'breakoutsRating',
+    'Forecheck': 'forecheckRating',
+    'Defensive Zone': 'defensiveZoneRating',
+    'Transition': 'transitionRating',
+    'Passing': 'passingRating',
+    'Skating': 'skatingRating',
+  }
+  const recentCompleted = [...completedGames]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5)
+  const reviewsByGameId = new Map((analytics?.reviews ?? []).map(r => [r.gameId, r]))
+  const snapshotGF = recentCompleted.reduce((s, g) => s + Number(g.goalsFor ?? 0), 0)
+  const snapshotGA = recentCompleted.reduce((s, g) => s + Number(g.goalsAgainst ?? 0), 0)
+  const snapshotW = recentCompleted.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
+  const snapshotL = recentCompleted.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
+  const snapshotT = recentCompleted.length - snapshotW - snapshotL
+  const conceptAvgs = CONCEPTS
+    .map(c => {
+      const field = SNAPSHOT_FIELD[c]
+      const vals = recentCompleted
+        .map(g => reviewsByGameId.get(g.id))
+        .map(r => (r ? (r as any)[field] : null))
+        .filter(v => v != null)
+        .map(Number)
+      return { concept: c, avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null, count: vals.length }
+    })
+    .filter((x): x is { concept: string; avg: number; count: number } => x.avg != null)
+  const working = [...conceptAvgs].filter(c => c.avg >= 3.5).sort((a, b) => b.avg - a.avg).slice(0, 2)
+  const hurting = [...conceptAvgs].filter(c => c.avg <= 2.7).sort((a, b) => a.avg - b.avg).slice(0, 2)
+  let hurtNarrative = ''
+  if (hurting.length && snapshotGA > 0) {
+    const c = hurting[0]
+    const field = SNAPSHOT_FIELD[c.concept]
+    const badGames = recentCompleted.filter(g => {
+      const r = reviewsByGameId.get(g.id)
+      const v = r ? (r as any)[field] : null
+      return v != null && Number(v) <= 2.5
+    })
+    const gaInBad = badGames.reduce((s, g) => s + Number(g.goalsAgainst ?? 0), 0)
+    if (gaInBad > 0) {
+      const pct = Math.round((gaInBad / snapshotGA) * 100)
+      if (pct >= 30) {
+        hurtNarrative = `${pct}% of goals against came in games where ${c.concept} rated 2.5 or lower.`
+      }
+    }
+  }
+  const avgGF = recentCompleted.length ? snapshotGF / recentCompleted.length : 0
+  const avgGA = recentCompleted.length ? snapshotGA / recentCompleted.length : 0
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fade-in">
@@ -410,78 +457,133 @@ function DashboardPage() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Target className="w-4 h-4 text-primary" />
-                  Rematch Prep
+                  <Activity className="w-4 h-4 text-primary" />
+                  Team Snapshot
                 </CardTitle>
-                <CardDescription className="text-xs mt-1">Upcoming games vs. teams you've faced before.</CardDescription>
+                <CardDescription className="text-xs mt-1">
+                  Rolling form over the last {recentCompleted.length || 'few'} game{recentCompleted.length === 1 ? '' : 's'}.
+                </CardDescription>
               </div>
               <button
-                onClick={() => navigate({ to: '/opponents' })}
+                onClick={() => navigate({ to: '/trends' })}
                 className="text-[11px] text-primary hover:underline flex items-center gap-0.5 shrink-0 mt-1"
               >
-                Full history <ChevronRight className="w-3 h-3" />
+                Full trends <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {rematchGames.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No rematches coming up.</p>
+          <CardContent className="space-y-4">
+            {recentCompleted.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Play and review a game to see your rolling form here.
+              </p>
             ) : (
-              rematchGames.map(g => {
-                const past = completedGames.filter(c => c.opponent === g.opponent)
-                const sortedPast = [...past].sort((a, b) => b.date.localeCompare(a.date))
-                const lastGame = sortedPast[0]
-                const gf = lastGame?.goalsFor != null ? Number(lastGame.goalsFor) : null
-                const ga = lastGame?.goalsAgainst != null ? Number(lastGame.goalsAgainst) : null
-                const result = gf != null && ga != null
-                  ? (gf > ga ? 'W' : gf < ga ? 'L' : 'T')
-                  : null
-                const allWins = past.filter(c => Number(c.goalsFor) > Number(c.goalsAgainst)).length
-                const allLosses = past.filter(c => Number(c.goalsFor) < Number(c.goalsAgainst)).length
-                return (
-                  <div
-                    key={g.id}
-                    className="rounded-md bg-secondary/30 border border-border/40 overflow-hidden"
-                  >
-                    <button
-                      onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
-                      className="w-full flex items-start gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
-                    >
-                      <Swords className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-semibold text-foreground truncate">vs. {g.opponent}</p>
-                          {result && (
-                            <Badge className={cn(
-                              'shrink-0 text-[10px] px-1.5 py-0 h-4',
-                              result === 'W' && 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border',
-                              result === 'L' && 'bg-red-600/20 text-red-400 border-red-600/30 border',
-                              result === 'T' && 'bg-secondary',
-                            )}>
-                              Last: {result} {gf != null && ga != null ? `${gf}–${ga}` : ''}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {format(parseISO(g.date), 'EEE, MMM d')} · {g.location === 'home' ? 'Home' : 'Away'}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {past.length} prior meeting{past.length !== 1 ? 's' : ''} · Record: {allWins}W {allLosses}L
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                    </button>
-                    <div className="flex border-t border-border/30">
-                      <button
-                        onClick={() => navigate({ to: '/opponents' })}
-                        className="flex-1 py-1.5 text-[10px] text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors font-medium uppercase tracking-wide"
-                      >
-                        View scout notes
-                      </button>
+              <>
+                {/* Form / record + goals */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Record</p>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                      <span className="text-xl font-bold tabular-nums text-emerald-400">{snapshotW}</span>
+                      <span className="text-xs text-muted-foreground">W</span>
+                      <span className="text-xl font-bold tabular-nums text-red-400">{snapshotL}</span>
+                      <span className="text-xs text-muted-foreground">L</span>
+                      {snapshotT > 0 && (
+                        <>
+                          <span className="text-xl font-bold tabular-nums text-muted-foreground">{snapshotT}</span>
+                          <span className="text-xs text-muted-foreground">T</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="mt-1.5 flex gap-0.5">
+                      {recentCompleted.slice().reverse().map(g => {
+                        const gf = Number(g.goalsFor)
+                        const ga = Number(g.goalsAgainst)
+                        const r = gf > ga ? 'W' : gf < ga ? 'L' : 'T'
+                        return (
+                          <span
+                            key={g.id}
+                            title={`${g.opponent}: ${gf}–${ga}`}
+                            className={cn(
+                              'flex-1 h-1.5 rounded-sm',
+                              r === 'W' && 'bg-emerald-500',
+                              r === 'L' && 'bg-red-500',
+                              r === 'T' && 'bg-muted-foreground/40',
+                            )}
+                          />
+                        )
+                      })}
                     </div>
                   </div>
-                )
-              })
+                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Goals (avg)</p>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="text-xl font-bold tabular-nums text-foreground">{avgGF.toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">for</span>
+                      <span className="text-xl font-bold tabular-nums text-foreground">{avgGA.toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">against</span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-muted-foreground tabular-nums">
+                      Total: {snapshotGF}–{snapshotGA} ({snapshotGF - snapshotGA >= 0 ? '+' : ''}{snapshotGF - snapshotGA})
+                    </p>
+                  </div>
+                </div>
+
+                {/* What's working */}
+                <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">What's working</p>
+                  </div>
+                  {working.length ? (
+                    <ul className="space-y-1">
+                      {working.map(c => (
+                        <li key={c.concept} className="text-xs text-foreground flex items-center justify-between gap-2">
+                          <span className="font-medium">{c.concept}</span>
+                          <span className="text-emerald-400 tabular-nums font-semibold">
+                            {c.avg.toFixed(1)}/5
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      No concept is consistently grading 3.5+ yet — keep reviewing games to find the bright spots.
+                    </p>
+                  )}
+                </div>
+
+                {/* What's hurting */}
+                <div className="rounded-md border border-red-500/20 bg-red-500/5 p-3">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <TrendingDown className="w-3.5 h-3.5 text-red-400" />
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-red-400">What's hurting you</p>
+                  </div>
+                  {hurting.length ? (
+                    <>
+                      <ul className="space-y-1">
+                        {hurting.map(c => (
+                          <li key={c.concept} className="text-xs text-foreground flex items-center justify-between gap-2">
+                            <span className="font-medium">{c.concept}</span>
+                            <span className="text-red-400 tabular-nums font-semibold">
+                              {c.avg.toFixed(1)}/5
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      {hurtNarrative && (
+                        <p className="mt-2 text-[11px] text-muted-foreground leading-snug">
+                          {hurtNarrative}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Nothing is grading below 2.7 — no clear weak spot in the recent window.
+                    </p>
+                  )}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
