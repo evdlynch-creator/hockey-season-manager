@@ -761,53 +761,128 @@ function OnboardingPage() {
     mutationFn: async (data: OnboardingData) => {
       if (!user) throw new Error('Not authenticated')
 
+      // Retry helper for transient backend hiccups during onboarding.
+      // Blink occasionally returns "Failed to fetch" or HTTP 5xx mid-flow
+      // and a partial onboarding leaves an orphan team. We retry up to
+      // twice with backoff before surfacing the error.
+      const retryTransient = async <T,>(label: string, fn: () => Promise<T>): Promise<T> => {
+        const isTransient = (err: unknown) => {
+          const msg = String((err as Error)?.message ?? '')
+          if (/Failed to fetch/i.test(msg)) return true
+          const status = (err as { status?: number })?.status
+          return typeof status === 'number' && status >= 500 && status < 600
+        }
+        let lastErr: unknown
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            return await fn()
+          } catch (err) {
+            lastErr = err
+            if (!isTransient(err) || attempt === 2) throw err
+            const delay = 500 * Math.pow(2, attempt)
+            console.warn(
+              `[onboarding] ${label} failed (attempt ${attempt + 1}/3), retrying in ${delay}ms`,
+              err,
+            )
+            await new Promise((r) => setTimeout(r, delay))
+          }
+        }
+        throw lastErr
+      }
+
       let teamId = existingTeam?.team.id
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
       if (!teamId) {
-        teamId = `team_${crypto.randomUUID().slice(0, 8)}`
-        const now = new Date().toISOString()
-        await blink.db.teams.create({
-          id: teamId,
-          name: data.teamName,
-          userId: user.id,
-        })
+        // Idempotency guard: if a previous attempt in the same session
+        // already created a team owned by this user with this name (e.g.
+        // network blip after team-create but before season-create), reuse
+        // it instead of accumulating orphan teams on every retry.
+        const existingByName = (await retryTransient('teams.list', () =>
+          blink.db.teams.list({
+            where: { userId: user.id, name: data.teamName },
+            limit: 1,
+          }),
+        )) as { id: string }[]
+
+        if (existingByName.length > 0) {
+          teamId = existingByName[0].id
+        } else {
+          teamId = `team_${crypto.randomUUID().slice(0, 8)}`
+          await retryTransient('teams.create', () =>
+            blink.db.teams.create({
+              id: teamId!,
+              name: data.teamName,
+              userId: user.id,
+            }),
+          )
+        }
+
         // Founder gets the owner membership immediately so multi-coach
         // scoping works the same as for invited coaches. Deterministic id
-        // matches the backfill path so duplicate runs are no-ops.
-        try {
-          await blink.db.teamMembers.create({
-            id: `tm_owner_${teamId}`,
-            teamId,
-            userId: user.id,
-            email: (user.email ?? '').trim().toLowerCase(),
-            role: 'owner',
-            status: 'active',
-            invitedBy: null,
-            invitedByName: null,
-            createdAt: now,
-            updatedAt: now,
-          })
-        } catch (err) {
-          // Most likely another tab/session already created the deterministic
-          // owner row. The backfill in useTeam will recover. Log so real
-          // schema/permission errors aren't masked.
-          console.warn(
-            '[onboarding] owner membership create failed for team',
-            teamId,
-            err,
-          )
+        // makes this idempotent across retries.
+        const now = new Date().toISOString()
+        const ownerId = `tm_owner_${teamId}`
+        const existingOwner = (await retryTransient('teamMembers.list', () =>
+          blink.db.teamMembers.list({
+            where: { teamId: teamId!, userId: user.id, role: 'owner' },
+            limit: 1,
+          }),
+        )) as { id: string }[]
+        if (existingOwner.length === 0) {
+          try {
+            await retryTransient('teamMembers.create', () =>
+              blink.db.teamMembers.create({
+                id: ownerId,
+                teamId: teamId!,
+                userId: user.id,
+                email: (user.email ?? '').trim().toLowerCase(),
+                role: 'owner',
+                status: 'active',
+                invitedBy: null,
+                invitedByName: null,
+                createdAt: now,
+                updatedAt: now,
+              }),
+            )
+          } catch (err) {
+            // Don't silently swallow — without a membership, useTeam
+            // won't see this team and the user lands in NoTeamScreen.
+            // The owner-backfill in useTeam will eventually catch it on
+            // a future load, but we need the user to know the call
+            // didn't fully succeed so they can retry.
+            console.error(
+              '[onboarding] owner membership create failed for team',
+              teamId,
+              err,
+            )
+            throw new Error(
+              'Could not finish setting up your team membership. Check your connection and try again.',
+            )
+          }
         }
       }
 
-      await blink.db.seasons.create({
-        id: seasonId,
-        teamId,
-        name: data.seasonName,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        priorityConcepts: JSON.stringify(data.concepts)
-      })
+      // Reuse an existing season for this team if one already exists from
+      // a partial prior attempt; otherwise create a fresh one.
+      const existingSeason = (await retryTransient('seasons.list', () =>
+        blink.db.seasons.list({
+          where: { teamId: teamId! },
+          limit: 1,
+        }),
+      )) as { id: string }[]
+      if (existingSeason.length === 0) {
+        await retryTransient('seasons.create', () =>
+          blink.db.seasons.create({
+            id: seasonId,
+            teamId,
+            name: data.seasonName,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            priorityConcepts: JSON.stringify(data.concepts),
+          }),
+        )
+      }
 
       return { teamId, seasonId }
     },
