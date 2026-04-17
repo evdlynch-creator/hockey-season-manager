@@ -1,14 +1,10 @@
 import { createClient } from '@blinkdotnew/sdk'
 
 const isInIframe = typeof window !== 'undefined' && window.self !== window.top
-
 const proxyOrigin = typeof window !== 'undefined' ? window.location.origin : ''
 
 const proxyConfig = isInIframe
-  ? {
-      authUrl: proxyOrigin,
-      coreUrl: proxyOrigin,
-    }
+  ? { authUrl: proxyOrigin, coreUrl: proxyOrigin }
   : {}
 
 export const blink = createClient({
