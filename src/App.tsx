@@ -1095,7 +1095,7 @@ function EmbeddedSignInForm() {
           <img
             src={logoUrl}
             alt="Blue Line IQ"
-            className="h-12 w-auto mb-4 select-none"
+            className="h-14 w-auto mb-4 select-none scale-110"
             draggable={false}
           />
           <p className="text-muted-foreground mt-2 text-sm text-center">
@@ -1191,7 +1191,7 @@ export default function App() {
           <img
             src={logoUrl}
             alt="Blue Line IQ"
-            className="h-20 sm:h-24 w-auto mb-2 select-none"
+            className="h-24 sm:h-28 w-auto mb-2 select-none scale-110"
             draggable={false}
           />
           <p className="text-muted-foreground mt-4 max-w-md text-base leading-relaxed">

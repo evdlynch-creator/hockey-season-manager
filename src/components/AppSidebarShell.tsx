@@ -147,14 +147,13 @@ export function AppSidebarShell() {
             />
           ) : (
             <>
-              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+              <div className="flex-1 min-w-0 flex items-center justify-center -ml-2">
                 <img
                   src={logoUrl}
                   alt="Blue Line IQ"
-                  className="h-7 w-auto object-contain object-left select-none"
+                  className="h-8 w-auto object-contain select-none scale-110"
                   draggable={false}
                 />
-                <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
