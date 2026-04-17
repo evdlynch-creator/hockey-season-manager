@@ -19,7 +19,7 @@ import {
   EmptyState
 } from '@blinkdotnew/ui'
 import { LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
-import logoUrl from '@/assets/blue-line-iq-logo.png'
+import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { useState, useEffect } from 'react'
 import {

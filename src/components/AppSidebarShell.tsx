@@ -17,7 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@blinkdotnew/ui'
-import logoUrl from '@/assets/blue-line-iq-logo.png'
+import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import {
   LayoutDashboard,
   Calendar,
