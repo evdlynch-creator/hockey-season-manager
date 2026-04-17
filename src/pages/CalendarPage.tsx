@@ -365,9 +365,10 @@ export default function CalendarPage() {
 
       {/* ── Light canvas ─────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: LIGHT.bg, color: LIGHT.text }}>
-        {/* Top bar */}
+        {/* Top bar — hidden to give the calendar grid more vertical space.
+            Kept in the tree so view/cursor state and handlers stay referenced. */}
         <div
-          className="flex items-center justify-between px-6 py-3 border-b shrink-0"
+          className="hidden items-center justify-between px-6 py-3 border-b shrink-0"
           style={{ borderColor: LIGHT.border, backgroundColor: LIGHT.bg }}
         >
           {/* Left: prev / today / next */}
