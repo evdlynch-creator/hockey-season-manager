@@ -629,190 +629,164 @@ function OpponentListItem({
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function OpponentsPage() {
-  const { data: analytics, isLoading } = useFilteredAnalytics()
-  const { data: rawGames = [] } = useGames()
+  const navigate = useNavigate()
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
-  const { types } = useGameTypes(teamId)
-  const { mode } = useViewMode(teamId)
-  const allGames = useMemo(() => filterGamesByMode(rawGames, types, mode), [rawGames, types, mode])
-  
+  const { data: analytics, isLoading } = useFilteredAnalytics()
+  const { data: rawGames = [] } = useGames()
+  const { types: gameTypes } = useGameTypes(teamId)
+  const { mode: viewMode } = useViewMode(teamId)
+  const games = filterGamesByMode(rawGames, gameTypes, viewMode)
+
   const search = useSearch({ from: '/opponents' }) as { opponent?: string }
-  const [selected, setSelected] = useState<string | null>(null)
+  const selectedOpponent = search.opponent
 
-  // Sync search param to state once
-  useEffect(() => {
-    if (search.opponent) {
-      setSelected(search.opponent)
-    }
-  }, [search.opponent])
+  const statsByOpponent = useMemo(() => {
+    if (!analytics) return new Map<string, OpponentStats>()
+    const map = new Map<string, OpponentStats>()
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const opponents = useMemo<OpponentStats[]>(() => {
-    if (!analytics) return []
-
-    const { games, reviews } = analytics
-    const gamesByOpponent = new Map<string, Game[]>()
-    for (const g of games) {
-      const arr = gamesByOpponent.get(g.opponent) ?? []
-      arr.push(g)
-      gamesByOpponent.set(g.opponent, arr)
-    }
-
-    const reviewsByGameId = new Map<string, GameReview>()
-    for (const r of reviews) {
-      reviewsByGameId.set(r.gameId, r)
-    }
-
-    const upcomingByOpponent = new Map<string, Game>()
-    for (const g of allGames) {
-      if (g.status !== 'scheduled') continue
-      const d = parseISO(g.date)
-      if (!isAfter(d, today) && format(d, 'yyyy-MM-dd') !== format(today, 'yyyy-MM-dd')) continue
-      const existing = upcomingByOpponent.get(g.opponent)
-      if (!existing || g.date < existing.date) {
-        upcomingByOpponent.set(g.opponent, g)
+    games.forEach(g => {
+      const name = g.opponent
+      let s = map.get(name)
+      if (!s) {
+        s = {
+          name,
+          games: [],
+          reviews: [],
+          wins: 0,
+          losses: 0,
+          ties: 0,
+          totalGoalsFor: 0,
+          totalGoalsAgainst: 0,
+          avgConceptRatings: {},
+          notes: [],
+          lastPlayed: null,
+          nextGame: null,
+        }
+        CONCEPTS.forEach(c => s!.avgConceptRatings[c] = null)
+        map.set(name, s)
       }
-    }
-
-    const result: OpponentStats[] = []
-
-    for (const [opponent, opGames] of gamesByOpponent.entries()) {
-      const completedGames = opGames.filter(g => g.goalsFor != null && g.goalsAgainst != null)
-      const wins = completedGames.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
-      const losses = completedGames.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
-      const ties = completedGames.filter(g => Number(g.goalsFor) === Number(g.goalsAgainst)).length
-      const totalGoalsFor = completedGames.reduce((s, g) => s + Number(g.goalsFor ?? 0), 0)
-      const totalGoalsAgainst = completedGames.reduce((s, g) => s + Number(g.goalsAgainst ?? 0), 0)
-
-      const opReviews = opGames.map(g => reviewsByGameId.get(g.id)).filter(Boolean) as GameReview[]
-
-      const avgConceptRatings: Record<string, number | null> = {}
-      for (const c of CONCEPTS) {
-        const field = CONCEPT_FIELD_MAP[c]
-        const vals = opReviews.map(r => r[field]).filter(v => v != null).map(Number)
-        avgConceptRatings[c] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
-      }
-
-      const notes = opReviews.map(r => r.opponentNotes ?? '').filter(Boolean)
-
-      const sortedByDate = [...opGames].sort((a, b) => b.date.localeCompare(a.date))
-      const lastPlayed = completedGames.length > 0
-        ? [...completedGames].sort((a, b) => b.date.localeCompare(a.date))[0].date
-        : null
-
-      result.push({
-        name: opponent,
-        games: opGames,
-        reviews: opReviews,
-        wins,
-        losses,
-        ties,
-        totalGoalsFor,
-        totalGoalsAgainst,
-        avgConceptRatings,
-        notes,
-        lastPlayed,
-        nextGame: upcomingByOpponent.get(opponent) ?? null,
-      })
-    }
-
-    return result.sort((a, b) => {
-      if (a.nextGame && !b.nextGame) return -1
-      if (!a.nextGame && b.nextGame) return 1
-      return b.games.length - a.games.length
+      s.games.push(g)
     })
-  }, [analytics, allGames])
 
-  const selectedStats = opponents.find(o => o.name === selected) ?? (opponents.length > 0 ? opponents[0] : null)
+    // Fill details
+    const today = new Date().toISOString().split('T')[0]
+    map.forEach(s => {
+      s.games.sort((a, b) => a.date.localeCompare(b.date))
+      const completed = s.games.filter(g => g.goalsFor != null && g.goalsAgainst != null)
+      s.wins = completed.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
+      s.losses = completed.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
+      s.ties = completed.length - s.wins - s.losses
+      s.totalGoalsFor = completed.reduce((sum, g) => sum + Number(g.goalsFor ?? 0), 0)
+      s.totalGoalsAgainst = completed.reduce((sum, g) => sum + Number(g.goalsAgainst ?? 0), 0)
+      
+      const played = s.games.filter(g => g.date <= today).sort((a, b) => b.date.localeCompare(a.date))
+      s.lastPlayed = played.length ? played[0].date : null
+      
+      const upcoming = s.games.filter(g => g.date > today).sort((a, b) => a.date.localeCompare(b.date))
+      s.nextGame = upcoming.length ? upcoming[0] : null
 
-  const rematchCount = opponents.filter(o => o.nextGame).length
+      s.reviews = analytics.reviews.filter(r => s.games.find(g => g.id === r.gameId))
+      CONCEPTS.forEach(c => {
+        const field = CONCEPT_FIELD_MAP[c]
+        const vals = s.reviews.map(r => r[field]).filter(v => v != null).map(Number)
+        s.avgConceptRatings[c] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+      })
+    })
+
+    return map
+  }, [analytics, games])
+
+  const opponentList = useMemo(() => {
+    return [...statsByOpponent.values()].sort((a, b) => {
+      const gDiff = b.games.length - a.games.length
+      if (gDiff !== 0) return gDiff
+      return a.name.localeCompare(b.name)
+    })
+  }, [statsByOpponent])
+
+  const currentStats = selectedOpponent ? statsByOpponent.get(selectedOpponent) : null
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-card rounded-md" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-20 bg-card rounded-lg" />
-            ))}
-          </div>
-          <div className="lg:col-span-2 h-96 bg-card rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-96 bg-card rounded-lg" />
+          <div className="md:col-span-2 h-96 bg-card rounded-lg" />
         </div>
       </div>
     )
   }
 
+  if (!analytics || opponentList.length === 0) {
+    return (
+      <div className="p-4 md:p-6 max-w-3xl mx-auto">
+        <EmptyState 
+          icon={<Swords />} 
+          title="No opponents yet" 
+          description="Schedule games to see opponent tracking and coaching plans." 
+          action={{ label: 'Schedule a Game', onClick: () => navigate({ to: '/games' }) }}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Opponents</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            History, tendencies, and rematch prep for every team you&apos;ve faced.
-          </p>
-        </div>
-        {rematchCount > 0 && (
-          <Badge className="bg-primary/15 text-primary border-primary/25 border gap-1.5 px-3 py-1.5 h-auto">
-            <Swords className="w-3.5 h-3.5" />
-            {rematchCount} rematch{rematchCount !== 1 ? 'es' : ''} coming up
-          </Badge>
-        )}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Opponents</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Scout and prep for rematches based on historical performance.
+        </p>
       </div>
 
-      <Separator />
-
-      {opponents.length === 0 ? (
-        <EmptyState
-          icon={<Users />}
-          title="No opponents yet"
-          description="Log games and add opponents. Once you've played teams, their history and tendencies will appear here."
-        />
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Opponent list */}
-          <div className="space-y-2">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-1 mb-3">
-              {opponents.length} Opponent{opponents.length !== 1 ? 's' : ''}
-            </p>
-            {opponents.map(o => (
-              <OpponentListItem
-                key={o.name}
-                stats={o}
-                selected={(selected ?? selectedStats?.name) === o.name}
-                onClick={() => setSelected(o.name)}
-              />
-            ))}
-          </div>
-
-          {/* Right: Detail */}
-          <div className="lg:col-span-2">
-            {selectedStats ? (
-              <>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <Trophy className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold tracking-tight">{selectedStats.name}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedStats.games.length} game{selectedStats.games.length !== 1 ? 's' : ''} ·{' '}
-                      Record: <span className={cn('font-semibold', recordColor(selectedStats.wins, selectedStats.losses))}>
-                        {selectedStats.wins}W {selectedStats.losses}L {selectedStats.ties}T
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <OpponentDetail stats={selectedStats} analytics={analytics} />
-              </>
-            ) : null}
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left side: Opponent list */}
+        <div className="lg:col-span-4 space-y-3">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-1 mb-3">
+            {opponentList.length} Opponent{opponentList.length !== 1 ? 's' : ''}
+          </p>
+          {opponentList.map(o => (
+            <OpponentListItem
+              key={o.name}
+              stats={o}
+              selected={(selectedOpponent ?? currentStats?.name) === o.name}
+              onClick={() => navigate({ to: '/opponents', search: { opponent: o.name } })}
+            />
+          ))}
         </div>
-      )}
+
+        {/* Right side: Detail */}
+        <div className="lg:col-span-8">
+          {currentStats ? (
+            <>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Trophy className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold tracking-tight">{currentStats.name}</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {currentStats.games.length} game{currentStats.games.length !== 1 ? 's' : ''} ·{' '}
+                    Record: <span className={cn('font-semibold', recordColor(currentStats.wins, currentStats.losses))}>
+                      {currentStats.wins}W {currentStats.losses}L {currentStats.ties}T
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <OpponentDetail stats={currentStats} analytics={analytics} />
+            </>
+          ) : (
+            <EmptyState 
+              icon={<Users />} 
+              title="Select an opponent" 
+              description="Choose an opponent from the list to view their game history, stats, and coaching plan." 
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

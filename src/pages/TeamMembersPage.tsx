@@ -76,21 +76,21 @@ export default function TeamMembersPage() {
   const invitations = staff?.invitations ?? []
 
   return (
-    <div className="p-8 max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
             <Users className="w-8 h-8 text-primary" />
             Coaching Staff
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 text-sm">
             {teamData?.team
               ? `Manage the coaching team for ${teamData.team.name} — ${teamData.season?.name}.`
               : 'Set up a season to manage your staff.'}
           </p>
         </div>
         {isOwner && (
-          <Button onClick={() => setInviteOpen(true)} className="gap-2">
+          <Button onClick={() => setInviteOpen(true)} className="gap-2 w-full sm:w-auto">
             <UserPlus className="w-4 h-4" />
             Invite Coach
           </Button>
@@ -99,24 +99,24 @@ export default function TeamMembersPage() {
 
       <div className="grid gap-8">
         <Card className="border-border/50">
-          <CardHeader>
+          <CardHeader className="px-4 md:px-6">
             <CardTitle>Active Members</CardTitle>
             <CardDescription>Coaches with access to this season.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 md:px-6">
             <div className="space-y-4">
               {members.length === 0 ? (
                 <EmptyState icon={<Users />} title="No members found" description="Invite your first coach to get started." />
               ) : (
                 members.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 rounded-lg bg-secondary/20 border border-border/40">
+                  <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-secondary/20 border border-border/40 gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary shrink-0">
                         {member.displayName?.slice(0, 2).toUpperCase() || member.email?.slice(0, 2).toUpperCase() || '??'}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-foreground">{member.displayName || 'Coach'}</p>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-foreground truncate">{member.displayName || 'Coach'}</p>
                           <Badge variant="outline" className={cn(
                             "gap-1.5 text-[10px] uppercase font-bold",
                             member.role === 'owner' ? "text-primary border-primary/30" : "text-muted-foreground"
@@ -125,12 +125,12 @@ export default function TeamMembersPage() {
                             {member.role}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground">{member.email || member.userId}</p>
+                        <p className="text-xs text-muted-foreground truncate">{member.email || member.userId}</p>
                       </div>
                     </div>
 
                     {isOwner && member.userId !== user?.id && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-end">
                         <Select
                           value={member.role}
                           onValueChange={(v) => updateRoleMutation.mutate({ memberId: member.id, role: v as SeasonRole })}
@@ -166,16 +166,16 @@ export default function TeamMembersPage() {
 
         {invitations.length > 0 && (
           <Card className="border-border/50">
-            <CardHeader>
+            <CardHeader className="px-4 md:px-6">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="w-5 h-5 text-amber-400" />
                 Pending Invitations
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 md:px-6">
               <div className="space-y-3">
                 {invitations.map((invite) => (
-                  <div key={invite.id} className="flex items-center justify-between p-4 rounded-lg border border-dashed border-border/60 bg-secondary/10">
+                  <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-dashed border-border/60 bg-secondary/10 gap-4">
                     <div className="flex items-center gap-3">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <div>
@@ -184,7 +184,7 @@ export default function TeamMembersPage() {
                       </div>
                     </div>
                     {isOwner && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-end">
                         <Button
                           variant="ghost"
                           size="sm"

@@ -91,9 +91,9 @@ function SegmentCard({
       <CardContent className="px-4 pb-4">
         {segment.fileUrl && (
           <div className="mb-4 -mx-4 -mt-2 overflow-hidden border-b border-border/50">
-            <img 
-              src={segment.fileUrl} 
-              alt={segment.name || 'Segment drill'} 
+            <img
+              src={segment.fileUrl}
+              alt={segment.name || 'Segment drill'}
               className="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"
             />
           </div>
@@ -203,7 +203,7 @@ export default function PracticeDetailPage() {
 
   if (practiceLoading) {
     return (
-      <div className="p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
         <div className="h-8 w-48 bg-card rounded-md" />
         <div className="h-4 w-32 bg-card rounded-md" />
         <div className="h-32 bg-card rounded-lg" />
@@ -213,27 +213,27 @@ export default function PracticeDetailPage() {
 
   if (!practice) {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto">
         <EmptyState icon={<ClipboardList />} title="Practice not found" description="This practice may have been deleted." />
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
       {/* Back nav */}
       <Link to="/practices" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Practices
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={practice.status} />
             <span className="text-xs text-muted-foreground">{dateStr}</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight truncate">{practice.title}</h1>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">{practice.title}</h1>
           {practice.notes && <p className="text-sm text-muted-foreground">{practice.notes}</p>}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -241,28 +241,31 @@ export default function PracticeDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 flex-1 sm:flex-none"
               onClick={() => markComplete.mutate()}
               disabled={markComplete.isPending}
             >
               <CheckCircle className="w-4 h-4" />
-              Mark Complete
+              <span className="hidden xs:inline">Mark Complete</span>
+              <span className="xs:hidden">Complete</span>
             </Button>
           ) : practice.status === 'completed' ? (
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
+              className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex-1 sm:flex-none"
               onClick={() => markReviewed.mutate()}
               disabled={markReviewed.isPending || segments.length === 0}
               title={segments.length === 0 ? 'Add segments with ratings first' : 'Mark as reviewed once all ratings are entered'}
             >
               <CheckCircle className="w-4 h-4" />
-              Mark Reviewed
+              <span className="hidden xs:inline">Mark Reviewed</span>
+              <span className="xs:hidden">Review</span>
             </Button>
           ) : null}
-          <Button size="sm" className="gap-1.5 shadow-lg shadow-primary/20" onClick={openAdd}>
-            <Plus className="w-4 h-4" /> Add Segment
+          <Button size="sm" className="gap-1.5 shadow-lg shadow-primary/20 flex-1 sm:flex-none" onClick={openAdd}>
+            <Plus className="w-4 h-4" /> <span className="hidden xs:inline">Add Segment</span>
+            <span className="xs:hidden">Add</span>
           </Button>
         </div>
       </div>

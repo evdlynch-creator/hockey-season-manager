@@ -231,7 +231,7 @@ export default function TrendsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-card rounded-md" />
         <div className="grid grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -245,14 +245,14 @@ export default function TrendsPage() {
 
   if (!analytics) {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto">
         <EmptyState icon={<TrendingUp />} title="No season data" description="Set up a season to see trends." />
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>

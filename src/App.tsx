@@ -304,10 +304,10 @@ function DashboardPage() {
   const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">{teamData.team?.name}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{teamData.team?.name}</h1>
           <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}
@@ -315,11 +315,11 @@ function DashboardPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => navigate({ to: '/practices' })}>
+          <Button variant="outline" className="gap-2 flex-1 md:flex-none" onClick={() => navigate({ to: '/practices' })}>
             <Plus className="w-4 h-4" />
             Practice
           </Button>
-          <Button className="gap-2 shadow-lg shadow-primary/20" onClick={() => navigate({ to: '/games' })}>
+          <Button className="gap-2 shadow-lg shadow-primary/20 flex-1 md:flex-none" onClick={() => navigate({ to: '/games' })}>
             <Plus className="w-4 h-4" />
             Game
           </Button>
@@ -662,7 +662,7 @@ function DashboardPage() {
             }
 
             return (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {sorted.map(s => {
                   const isPriority = priorityList.includes(s.concept)
                   const trendUp = s.trend > 0.2
@@ -945,22 +945,22 @@ function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 animate-fade-in">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-fade-in">
       <Card className="w-full max-w-2xl border-primary/10 shadow-2xl shadow-primary/5">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center px-4 md:px-6">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-3xl">
+          <CardTitle className="text-2xl md:text-3xl">
             {hasTeam ? `Start a new season for ${existingTeam?.team?.name}` : 'Set up your season'}
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-sm md:text-base">
             {hasTeam
               ? 'Your team is saved. Add a new season to keep coaching.'
               : 'Configure your team and pick the concepts you want to prioritize this season.'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 md:px-6">
           <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {!hasTeam && (
@@ -1006,7 +1006,7 @@ function OnboardingPage() {
                   {selectedConcepts.length} / 5 Selected
                 </span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                 {CONCEPTS.map(concept => {
                   const isSelected = selectedConcepts.includes(concept)
                   return (
@@ -1015,7 +1015,7 @@ function OnboardingPage() {
                       type="button"
                       onClick={() => toggleConcept(concept)}
                       className={cn(
-                        "px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 text-center",
+                        "px-3 py-2.5 md:px-4 md:py-3 rounded-xl border text-xs md:text-sm font-medium transition-all duration-200 text-center",
                         isSelected 
                           ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]" 
                           : "bg-sidebar hover:bg-accent border-border text-muted-foreground"

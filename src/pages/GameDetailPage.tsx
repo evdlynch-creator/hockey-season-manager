@@ -175,7 +175,7 @@ export default function GameDetailPage() {
     : null
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
       <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Games
       </Link>

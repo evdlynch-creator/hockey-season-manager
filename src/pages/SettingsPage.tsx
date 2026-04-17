@@ -95,7 +95,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     )
@@ -103,7 +103,7 @@ export default function SettingsPage() {
 
   if (!team) {
     return (
-      <div className="p-8 max-w-3xl mx-auto">
+      <div className="p-4 md:p-8 max-w-3xl mx-auto">
         <EmptyState
           title="No team yet"
           description="Finish onboarding to access settings."
@@ -113,9 +113,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Manage your team, seasons, preferences, and account.
         </p>

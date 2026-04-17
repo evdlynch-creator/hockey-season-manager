@@ -100,9 +100,9 @@ function GameCard({ game, type }: { game: Game; type: GameType }) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-3 text-xs gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            className="h-8 px-3 text-xs gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0"
           >
-            <Eye className="w-3.5 h-3.5" /> Open
+            <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Open</span>
           </Button>
         </div>
       </CardContent>
@@ -225,14 +225,14 @@ export default function GamesPage() {
   const ties = completed.filter(g => Number(g.goalsFor) === Number(g.goalsAgainst)).length
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Games</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20">
+        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
           <Plus className="w-4 h-4" /> New Game
         </Button>
       </div>
@@ -255,11 +255,11 @@ export default function GamesPage() {
       <Separator />
 
       <Tabs value={tab} onValueChange={v => setTab(v as TabValue)}>
-        <TabsList className="bg-secondary/50 border border-border">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="reviewed">Reviewed</TabsTrigger>
+        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
+          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none">Scheduled</TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
+          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none">Reviewed</TabsTrigger>
         </TabsList>
 
         {TABS.map(t => (

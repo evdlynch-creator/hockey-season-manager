@@ -247,7 +247,7 @@ export default function ConceptsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-card rounded-md" />
         <div className="h-4 w-64 bg-card rounded-md" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -261,7 +261,7 @@ export default function ConceptsPage() {
 
   if (!analytics) {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto">
         <EmptyState icon={<BarChart3 />} title="No season data" description="Set up a season to start tracking concept progress." />
       </div>
     )
@@ -274,9 +274,9 @@ export default function ConceptsPage() {
   })) ?? []
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Concepts</h1>
           <p className="text-muted-foreground text-sm mt-1">

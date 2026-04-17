@@ -60,7 +60,10 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
     : '—'
 
   return (
-    <Card className="border-border bg-card hover:border-border/80 transition-all duration-200 group">
+    <Card
+      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"
+      onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: practice.id } })}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -78,12 +81,15 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
             )}
             <PracticeConceptChips practiceId={practice.id} />
           </div>
-          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex items-center gap-1 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-xs gap-1.5"
-              onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: practice.id } })}
+              className="h-8 px-3 text-xs gap-1.5 hidden md:flex"
+              onClick={(e) => {
+                e.stopPropagation()
+                navigate({ to: '/practices/$practiceId', params: { practiceId: practice.id } })
+              }}
             >
               <Eye className="w-3.5 h-3.5" /> View
             </Button>
@@ -91,9 +97,12 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
               variant="ghost"
               size="sm"
               className="h-8 px-3 text-xs gap-1.5 text-muted-foreground"
-              onClick={() => onDuplicate(practice)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDuplicate(practice)
+              }}
             >
-              <Copy className="w-3.5 h-3.5" /> Duplicate
+              <Copy className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Duplicate</span>
             </Button>
           </div>
         </div>
@@ -244,14 +253,14 @@ export default function PracticesPage() {
   })
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Practices</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20">
+        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
           <Plus className="w-4 h-4" /> New Practice
         </Button>
       </div>
@@ -260,11 +269,11 @@ export default function PracticesPage() {
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={v => setTab(v as TabValue)}>
-        <TabsList className="bg-secondary/50 border border-border">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="reviewed">Reviewed</TabsTrigger>
+        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
+          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none">Scheduled</TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
+          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none">Reviewed</TabsTrigger>
         </TabsList>
 
         {TABS.map(t => (
