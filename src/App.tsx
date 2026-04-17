@@ -51,6 +51,7 @@ import { useGameTypes, useViewMode } from './hooks/usePreferences'
 import { HypeCard } from './components/HypeCard'
 import { InsightsStrip } from './components/InsightsStrip'
 import { NoTeamScreen } from './components/NoTeamScreen'
+import { useOrphanTeams } from './hooks/useTeamRecovery'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
 
@@ -198,6 +199,7 @@ function DashboardPage() {
   const { mode: viewMode } = useViewMode(teamId)
   const games = filterGamesByMode(rawGames, gameTypes, viewMode)
   const { data: analytics } = useFilteredAnalytics()
+  const { data: orphanCandidates = [] } = useOrphanTeams()
   const navigate = useNavigate()
 
   if (authLoading || isLoading) return <LoadingOverlay show />
@@ -209,6 +211,13 @@ function DashboardPage() {
     return <NoTeamScreen />
   }
   if (!teamData) return <LoadingOverlay show />
+
+  // Suspicious state: current team has no season AND we found orphan
+  // candidates the user can prove ownership of. Surface the recovery
+  // UI so they can claim the original team and clean up the duplicate.
+  if (!teamData.season && orphanCandidates.length > 0) {
+    return <NoTeamScreen />
+  }
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

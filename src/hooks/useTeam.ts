@@ -208,17 +208,25 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
     memberships = [...memberships, ...results.filter((m): m is TeamMember => !!m)]
   }
 
-  // 3b. Single-orphan auto-claim. If after the above I still have NO
-  //     memberships but exactly one team in the database has an owner
-  //     row whose email exactly matches mine (and it's not me), claim it
-  //     transparently. This handles the common identity-drift case
-  //     without forcing the user through the recovery UI.
-  if (memberships.length === 0 && myEmail) {
+  // 3b. Single-orphan auto-claim. If exactly one team in the database
+  //     has an owner row whose email matches mine but a stale userId,
+  //     and I'm not already a member of that team, claim it transparently.
+  //     Decoupled from `memberships.length === 0` on purpose: the common
+  //     incident state is that the user already has a duplicate empty
+  //     team membership (so memberships > 0) AND their original team is
+  //     orphaned. Without this, the original team would never be auto-
+  //     restored.
+  if (myEmail) {
     const ownerByEmail = (await blink.db.teamMembers.list({
       where: { email: myEmail, role: 'owner' },
     })) as TeamMember[]
+    const knownTeamIdsForOrphan = new Set(memberships.map((m) => m.teamId))
     const orphanTeamIds = Array.from(
-      new Set(ownerByEmail.filter((m) => m.userId !== user.id).map((m) => m.teamId)),
+      new Set(
+        ownerByEmail
+          .filter((m) => m.userId !== user.id && !knownTeamIdsForOrphan.has(m.teamId))
+          .map((m) => m.teamId),
+      ),
     )
     if (orphanTeamIds.length === 1) {
       const teamId = orphanTeamIds[0]
@@ -321,8 +329,30 @@ export function useTeam() {
       if (teams.length === 0) return null
 
       // Pick the active team for users with multiple teams.
+      // If the user's stored active team is empty (no seasons) but another
+      // team has data, prefer the data-rich one — this lands recently
+      // auto-claimed historical teams in front of the user instead of
+      // stranding them on a duplicate empty team from a past incident.
       const activeTeamId = readActiveTeamId(user.id)
       let team = activeTeamId ? teams.find((t) => t.id === activeTeamId) ?? null : null
+
+      if (teams.length > 1) {
+        const seasonCounts = await Promise.all(
+          teams.map(async (t) => {
+            const ss = (await blink.db.seasons.list({
+              where: { teamId: t.id },
+              limit: 1,
+            })) as Season[]
+            return { teamId: t.id, hasSeasons: ss.length > 0 }
+          }),
+        )
+        const dataRich = seasonCounts.filter((c) => c.hasSeasons).map((c) => c.teamId)
+        const teamHasData = team && dataRich.includes(team.id)
+        if ((!team || !teamHasData) && dataRich.length > 0) {
+          team = teams.find((t) => t.id === dataRich[0]) ?? team
+        }
+      }
+
       if (!team) team = teams[0]
 
       // Keep the myTeams cache fresh so the switcher reflects new memberships
