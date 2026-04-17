@@ -1,16 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
-  <!-- Blue accent shadow behind Q -->
-  <path d="M82 22 L94 22 L94 58 L106 58 L106 70 L82 70 Z" fill="#3BB0FF" />
-  <!-- Blue plus -->
-  <path d="M96 8 L112 8 L112 18 L122 18 L122 30 L112 30 L112 40 L96 40 L96 30 L86 30 L86 18 L96 18 Z" fill="#3BB0FF" />
-  <!-- I (black, italic slant) -->
-  <path d="M14 14 L36 14 L30 66 L8 66 Z" fill="#0A0A0A" />
-  <!-- Q outer (black) -->
-  <path d="M40 14 L92 14 L86 66 L46 66 Q34 66 36 54 L40 14 Z" fill="#0A0A0A" />
-  <!-- Q inner cutout (white ring) -->
-  <path d="M50 24 L82 24 L77 56 L52 56 Q46 56 47 50 L50 24 Z" fill="#FFFFFF" />
-  <!-- Q center square (black dot) -->
-  <rect x="58" y="32" width="16" height="16" fill="#0A0A0A" />
-  <!-- Q tail (black diagonal) -->
-  <path d="M70 56 L86 56 L82 70 L66 70 Z" fill="#0A0A0A" />
+<svg version="1.1" viewBox="0 0 1536 1024" width="1536" height="1024" xmlns="http://www.w3.org/2000/svg">
+<path transform="translate(1143,265)" d="m0 0h101l-13 42-4 13h71l-2 9-19 60-5 16-1 1-74 1-16 50-1 2-111 1-1-2 8-31 2-8v-5l-5 12-11 29-22 73-12 39-13 43-5 14-8 15-9 12-16 16 24 28 13 15 12 14 5 6v2l-251-1-11-13-11-14-14-17-4-5h-438l1-7 27-82 14-43 16-49 18-55 27-82 4-13v-14l-2-16v-8h720l2-9 13-38z" fill="#1C1C18"/>
+<path transform="translate(681,333)" d="m0 0h266l19 3 14 5 11 7 9 10 5 10 2 8v23l-4 17-20 68-28 94-5 15-10 19-10 12-14 11-17 8-10 3h-5l6 8 8 8 7 8 16 17 10 11 2 4h-142l-12-14-11-14-13-16-2-3-162-1-17-3-12-5-8-6-8-9-5-12-1-7v-13l3-18 14-47 19-64 18-60 5-16 6-13 7-11 11-12 13-10 17-8 16-5z" fill="#FAFBFC"/>
+<path transform="translate(453,334)" d="m0 0h133l-4 16-15 51-17 59-15 52-16 54-17 59-8 27h-132l2-10 24-83 14-48 12-42 19-65 19-66z" fill="#FBFBFC"/>
+<path transform="translate(721,416)" d="m0 0h153l5 2 1 2v7l-21 72-13 44-6 20-4 7-6 3h-152l-5-3-1-2v-8l18-62 21-71 3-7 4-3z" fill="#1C1C18"/>
+<path transform="translate(1156,286)" d="m0 0h59l-6 20-11 34h69l-2 9-12 36-70 1-17 51-1 1h-59l3-10 14-43h-51l-1-15-3-12-7-11-6-7h84l4-16z" fill="#45B6FD"/>
+<path transform="translate(986,333)" d="m0 0h10l13 2 12 5 11 7 7 8 6 11 2 8v25l-7 26-9 29-12 41-15 50-19 62-9 17-9 11-7 7-14 9-11 5 8 8 7 8 14 15 7 8 6 6v2h-22l-16-17-12-13-7-8-9-10-1-4 13-5 11-6 12-9 8-8 7-10 8-16 17-57 13-43 24-82 4-15v-23l-5-14-9-12-10-8-17-9z" fill="#45B6FD"/>
 </svg>
