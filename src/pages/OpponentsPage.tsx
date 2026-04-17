@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
-  Badge, Separator, EmptyState,
+  Badge, Separator, EmptyState, Button, toast,
 } from '@blinkdotnew/ui'
 import {
   Users, Swords, TrendingUp, TrendingDown, Minus,
-  ChevronRight, MapPin, Calendar, Trophy, FileText,
+  ChevronRight, Calendar, Trophy,
+  ShieldAlert, ShieldCheck, ClipboardCopy, Sparkles,
 } from 'lucide-react'
 import {
   ResponsiveContainer, RadarChart, PolarGrid,
@@ -77,6 +78,291 @@ function DarkTooltip({ active, payload, label }: any) {
   )
 }
 
+// ── Coaching plan ────────────────────────────────────────────────────────────
+
+type ConceptTier = { concept: string; avg: number; samples: number }
+
+interface CoachingPlanData {
+  reinforce: ConceptTier[]
+  address: ConceptTier[]
+  mixed: ConceptTier[]
+  trend: 'up' | 'down' | 'steady' | 'unknown'
+  trendDelta: number
+  reviewedCount: number
+  goalsForAvg: number | null
+  goalsAgainstAvg: number | null
+  observations: { date: string; gameId: string; note: string }[]
+}
+
+function buildCoachingPlan(stats: OpponentStats): CoachingPlanData {
+  const reviewedGames = stats.games
+    .filter((g) => stats.reviews.find((r) => r.gameId === g.id))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  const tiers: ConceptTier[] = CONCEPTS.map((c) => {
+    const field = CONCEPT_FIELD_MAP[c]
+    const vals = stats.reviews.map((r) => r[field]).filter((v) => v != null).map(Number)
+    return {
+      concept: c,
+      avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0,
+      samples: vals.length,
+    }
+  }).filter((t) => t.samples > 0)
+
+  const reinforce = tiers.filter((t) => t.avg >= 3.5).sort((a, b) => b.avg - a.avg)
+  const address = tiers.filter((t) => t.avg <= 2.5).sort((a, b) => a.avg - b.avg)
+  const mixed = tiers.filter((t) => t.avg > 2.5 && t.avg < 3.5).sort((a, b) => b.avg - a.avg)
+
+  // Trend: compare avg of last review vs. avg of all earlier reviews
+  let trend: CoachingPlanData['trend'] = 'unknown'
+  let trendDelta = 0
+  if (reviewedGames.length >= 2) {
+    const reviewAvg = (gameId: string) => {
+      const r = stats.reviews.find((rr) => rr.gameId === gameId)
+      if (!r) return null
+      const vals = CONCEPTS.map((c) => r[CONCEPT_FIELD_MAP[c]])
+        .filter((v) => v != null)
+        .map(Number)
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+    }
+    const lastAvg = reviewAvg(reviewedGames[reviewedGames.length - 1].id)
+    const earlier = reviewedGames
+      .slice(0, -1)
+      .map((g) => reviewAvg(g.id))
+      .filter((v): v is number => v != null)
+    const earlierAvg = earlier.length ? earlier.reduce((a, b) => a + b, 0) / earlier.length : null
+    if (lastAvg != null && earlierAvg != null) {
+      trendDelta = lastAvg - earlierAvg
+      if (trendDelta > 0.3) trend = 'up'
+      else if (trendDelta < -0.3) trend = 'down'
+      else trend = 'steady'
+    }
+  }
+
+  const completed = stats.games.filter((g) => g.goalsFor != null && g.goalsAgainst != null)
+  const goalsForAvg = completed.length ? stats.totalGoalsFor / completed.length : null
+  const goalsAgainstAvg = completed.length ? stats.totalGoalsAgainst / completed.length : null
+
+  const observations = stats.reviews
+    .filter((r) => (r.opponentNotes ?? '').trim())
+    .map((r) => {
+      const game = stats.games.find((g) => g.id === r.gameId)
+      return {
+        gameId: r.gameId,
+        date: game?.date ?? '',
+        note: r.opponentNotes!.trim(),
+      }
+    })
+    .filter((o) => o.date)
+    .sort((a, b) => b.date.localeCompare(a.date))
+
+  return {
+    reinforce,
+    address,
+    mixed,
+    trend,
+    trendDelta,
+    reviewedCount: reviewedGames.length,
+    goalsForAvg,
+    goalsAgainstAvg,
+    observations,
+  }
+}
+
+function planToText(stats: OpponentStats, plan: CoachingPlanData): string {
+  const lines: string[] = []
+  lines.push(`Coaching Plan vs. ${stats.name}`)
+  lines.push(`Record: ${stats.wins}W ${stats.losses}L ${stats.ties}T · Based on ${plan.reviewedCount} reviewed game${plan.reviewedCount !== 1 ? 's' : ''}`)
+  if (plan.goalsForAvg != null && plan.goalsAgainstAvg != null) {
+    lines.push(`Avg goals: ${plan.goalsForAvg.toFixed(1)} for / ${plan.goalsAgainstAvg.toFixed(1)} against`)
+  }
+  if (plan.trend !== 'unknown') {
+    const dir = plan.trend === 'up' ? 'improving' : plan.trend === 'down' ? 'declining' : 'steady'
+    lines.push(`Trend: ${dir} (${plan.trendDelta >= 0 ? '+' : ''}${plan.trendDelta.toFixed(2)} avg)`)
+  }
+  lines.push('')
+  if (plan.reinforce.length) {
+    lines.push('REINFORCE (strengths to keep doing):')
+    plan.reinforce.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5 (${t.samples} game${t.samples !== 1 ? 's' : ''})`))
+    lines.push('')
+  }
+  if (plan.address.length) {
+    lines.push('ADDRESS (focus areas for next practice):')
+    plan.address.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5 (${t.samples} game${t.samples !== 1 ? 's' : ''})`))
+    lines.push('')
+  }
+  if (plan.mixed.length) {
+    lines.push('WATCH (mixed results):')
+    plan.mixed.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5`))
+    lines.push('')
+  }
+  if (plan.observations.length) {
+    lines.push('STYLE OF PLAY (running notes):')
+    plan.observations.forEach((o) => {
+      const d = format(parseISO(o.date), 'MMM d, yyyy')
+      lines.push(`  ${d} — ${o.note}`)
+    })
+  }
+  return lines.join('\n')
+}
+
+function CoachingPlan({ stats }: { stats: OpponentStats }) {
+  const plan = useMemo(() => buildCoachingPlan(stats), [stats])
+  const hasAnyData =
+    plan.reinforce.length || plan.address.length || plan.mixed.length || plan.observations.length
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(planToText(stats, plan))
+      toast.success('Coaching plan copied to clipboard')
+    } catch {
+      toast.error('Could not copy to clipboard')
+    }
+  }
+
+  const trendIcon =
+    plan.trend === 'up' ? <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+    : plan.trend === 'down' ? <TrendingDown className="w-3.5 h-3.5 text-red-400" />
+    : plan.trend === 'steady' ? <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+    : null
+
+  const trendLabel =
+    plan.trend === 'up' ? `Improving (+${plan.trendDelta.toFixed(2)})`
+    : plan.trend === 'down' ? `Declining (${plan.trendDelta.toFixed(2)})`
+    : plan.trend === 'steady' ? 'Steady'
+    : null
+
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Coaching Plan vs. {stats.name}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Built from {plan.reviewedCount} reviewed game{plan.reviewedCount !== 1 ? 's' : ''}.
+              Use it to shape the next practice and pre-game talk.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {trendLabel && (
+              <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-5">
+                {trendIcon}
+                {trendLabel}
+              </Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-7 text-xs"
+              onClick={handleCopy}
+              disabled={!hasAnyData}
+            >
+              <ClipboardCopy className="w-3.5 h-3.5" />
+              Copy
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!hasAnyData ? (
+          <p className="text-sm text-muted-foreground italic text-center py-4">
+            Review at least one game against this opponent to generate a plan.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Reinforce */}
+              <div className="rounded-md border border-emerald-600/30 bg-emerald-600/5 p-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-300">Reinforce</p>
+                </div>
+                {plan.reinforce.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No clear strengths yet.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {plan.reinforce.map((t) => (
+                      <li key={t.concept} className="flex items-start justify-between gap-2 text-xs">
+                        <span className="text-foreground">{t.concept}</span>
+                        <span className="font-semibold text-emerald-400 tabular-nums shrink-0">
+                          {t.avg.toFixed(1)}/5
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Address */}
+              <div className="rounded-md border border-red-600/30 bg-red-600/5 p-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-red-300">Address</p>
+                </div>
+                {plan.address.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No major weak spots yet.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {plan.address.map((t) => (
+                      <li key={t.concept} className="flex items-start justify-between gap-2 text-xs">
+                        <span className="text-foreground">{t.concept}</span>
+                        <span className="font-semibold text-red-400 tabular-nums shrink-0">
+                          {t.avg.toFixed(1)}/5
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {plan.mixed.length > 0 && (
+              <div className="rounded-md border border-border/50 bg-secondary/20 p-3">
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
+                  Watch — mixed results
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {plan.mixed.map((t) => (
+                    <Badge key={t.concept} variant="secondary" className="text-[10px] gap-1">
+                      {t.concept} <span className="tabular-nums opacity-70">{t.avg.toFixed(1)}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Style of play running tab */}
+            <div className="rounded-md border border-border/50 bg-secondary/10 p-3">
+              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
+                Style of play — running notes
+              </p>
+              {plan.observations.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">
+                  Add opponent notes in your game reviews to start tracking their tendencies.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {plan.observations.map((o) => (
+                    <li key={o.gameId} className="text-xs">
+                      <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">
+                        {format(parseISO(o.date), 'MMM d, yyyy')}
+                      </p>
+                      <p className="text-foreground leading-relaxed">{o.note}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Opponent detail panel ────────────────────────────────────────────────────
 
 function OpponentDetail({ stats }: { stats: OpponentStats }) {
@@ -90,7 +376,6 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
   }))
 
   const hasConceptData = Object.values(stats.avgConceptRatings).some(v => v != null)
-  const hasNotes = stats.notes.filter(Boolean).length > 0
   const gamesWithScore = stats.games.filter(g => g.goalsFor != null && g.goalsAgainst != null)
   const avgGF = gamesWithScore.length ? stats.totalGoalsFor / gamesWithScore.length : null
   const avgGA = gamesWithScore.length ? stats.totalGoalsAgainst / gamesWithScore.length : null
@@ -146,6 +431,9 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Coaching plan */}
+      <CoachingPlan stats={stats} />
 
       {/* Charts & notes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -258,35 +546,6 @@ function OpponentDetail({ stats }: { stats: OpponentStats }) {
         </CardContent>
       </Card>
 
-      {/* Opponent notes/tendencies */}
-      {hasNotes && (
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <FileText className="w-4 h-4 text-primary" />
-              Scouting Notes &amp; Tendencies
-            </CardTitle>
-            <CardDescription className="text-xs">Collected from all game reviews against {stats.name}.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {stats.reviews
-              .filter(r => r.opponentNotes)
-              .map((r, i) => {
-                const game = stats.games.find(g => g.id === r.gameId)
-                return (
-                  <div key={i} className="rounded-md bg-secondary/30 p-3 space-y-1">
-                    {game && (
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-                        {format(parseISO(game.date), 'MMM d, yyyy')}
-                      </p>
-                    )}
-                    <p className="text-sm text-foreground leading-relaxed">{r.opponentNotes}</p>
-                  </div>
-                )
-              })}
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
