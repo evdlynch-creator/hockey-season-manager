@@ -16,15 +16,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@blinkdotnew/ui'
-import logoUrl from '@/assets/blue-line-iq-logo.svg'
-import iqPlusLogoUrl from '@/assets/iq-plus-logo.svg'
 import {
   LayoutDashboard,
   Calendar,
@@ -34,21 +26,13 @@ import {
   BarChart3,
   TrendingUp,
   Settings,
-  UserCog,
   LogOut,
   PanelLeft,
-  ChevronsRight,
-  ChevronDown,
-  Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { blink } from '@/blink/client'
-import { ViewModeSwitcher } from './ViewModeSwitcher'
-import { useMyTeams, useTeam } from '@/hooks/useTeam'
-import { useActiveTeamId } from '@/hooks/usePreferences'
-import { useQueryClient } from '@tanstack/react-query'
 
 const SIDEBAR_KEY = 'sidebar_collapsed'
 
@@ -66,7 +50,6 @@ const NAV_ITEMS: NavItemDef[] = [
   { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents' },
   { to: '/concepts', icon: <BarChart3 className="h-4 w-4" />, label: 'Concepts' },
   { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends' },
-  { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
   { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
 ]
 
@@ -136,66 +119,39 @@ export function AppSidebarShell() {
             collapsed && 'justify-center px-2'
           )}
         >
-          {collapsed ? (
-            <img
-              src={iqPlusLogoUrl}
-              alt="Blue Line IQ"
-              className="h-7 w-7 mx-auto object-contain select-none"
-              draggable={false}
-            />
-          ) : (
-            <>
-              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                <img
-                  src={logoUrl}
-                  alt="Blue Line IQ"
-                  className="h-7 w-auto object-contain object-left select-none"
-                  draggable={false}
-                />
-                <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
-                    onClick={toggle}
-                  >
-                    <PanelLeft className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Collapse sidebar</TooltipContent>
-              </Tooltip>
-            </>
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-black shrink-0 tracking-tight">
+            IE
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <span className="block font-bold text-sm truncate text-foreground tracking-tight">Inside Edge</span>
+              <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
+            </div>
           )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                onClick={toggle}
+              >
+                <PanelLeft
+                  className={cn(
+                    'h-4 w-4 transition-transform duration-300',
+                    collapsed && 'rotate-180'
+                  )}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* ── Nav (only this section scrolls) ───────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
-          {collapsed && (
-            <div className="pb-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={toggle}
-                    aria-label="Expand sidebar"
-                    className="h-8 w-8 mx-auto flex items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30 hover:bg-primary/25 hover:ring-primary/50 transition-all"
-                  >
-                    <ChevronsRight className="h-4 w-4 shrink-0" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Expand sidebar</TooltipContent>
-              </Tooltip>
-            </div>
-          )}
-          <div className="pb-3">
-            <TeamSwitcher collapsed={collapsed} />
-          </div>
-          <div className="pb-3">
-            <ViewModeSwitcher collapsed={collapsed} />
-          </div>
           {!collapsed && (
             <p className="px-3 pt-2 pb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
               Navigation
@@ -279,94 +235,5 @@ export function AppSidebarShell() {
         </div>
       </div>
     </TooltipProvider>
-  )
-}
-
-function TeamSwitcher({ collapsed }: { collapsed: boolean }) {
-  const { user } = useAuth()
-  const { data: teams = [] } = useMyTeams()
-  const { data: teamData } = useTeam()
-  const [active, setActive] = useActiveTeamId(user?.id)
-  const queryClient = useQueryClient()
-
-  if (teams.length < 2) return null
-
-  const currentId = teamData?.team.id ?? active.activeTeamId ?? teams[0]?.id ?? null
-  const current = teams.find(t => t.id === currentId) ?? teams[0]
-
-  const pick = (id: string) => {
-    setActive({ activeTeamId: id })
-    queryClient.invalidateQueries({ queryKey: ['team'] })
-  }
-
-  if (collapsed) {
-    return (
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="mx-auto flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                aria-label="Switch team"
-              >
-                <Users className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="right">Team: {current?.name}</TooltipContent>
-        </Tooltip>
-        <DropdownMenuContent side="right" align="start" className="min-w-[12rem]">
-          <DropdownMenuLabel>Switch team</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {teams.map(t => (
-            <DropdownMenuItem key={t.id} onClick={() => pick(t.id)} className="gap-2">
-              {t.id === currentId ? (
-                <Check className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <span className="w-3.5" />
-              )}
-              <span className="truncate">{t.name}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    )
-  }
-
-  return (
-    <div className="space-y-1.5">
-      <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
-        Team
-      </p>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/40 border border-border hover:bg-secondary/60 transition-colors text-left"
-          >
-            <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="flex-1 text-xs font-medium truncate">
-              {current?.name ?? 'Select team'}
-            </span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[14rem]">
-          <DropdownMenuLabel>Switch team</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {teams.map(t => (
-            <DropdownMenuItem key={t.id} onClick={() => pick(t.id)} className="gap-2">
-              {t.id === currentId ? (
-                <Check className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <span className="w-3.5" />
-              )}
-              <span className="truncate">{t.name}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
   )
 }

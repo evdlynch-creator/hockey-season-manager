@@ -1,44 +1,26 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Badge, Separator, EmptyState,
 } from '@blinkdotnew/ui'
-import { BarChart3, TrendingUp, TrendingDown, Minus, ClipboardList, Swords, Clock } from 'lucide-react'
+import { BarChart3, TrendingUp, TrendingDown, Minus, ClipboardList, Swords } from 'lucide-react'
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, Legend,
 } from 'recharts'
-import { subDays, subMonths, parseISO, isAfter, isEqual } from 'date-fns'
-import { useFilteredAnalytics } from '@/hooks/useAnalytics'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import type { ConceptSummary } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { CONCEPTS } from '@/types'
 import type { Concept } from '@/types'
 import { cn } from '@/lib/utils'
 
+// Theme colors (HSL values matching our design system)
 const AMBER = '#F59E0B'
 const BLUE = '#3B82F6'
 const MUTED = '#8A8A8E'
 
-type TimeFilter = 'all' | 'month' | '2weeks' | 'week'
-
-const TIME_FILTERS: { key: TimeFilter; label: string }[] = [
-  { key: 'all', label: 'Season' },
-  { key: 'month', label: 'Last Month' },
-  { key: '2weeks', label: '2 Weeks' },
-  { key: 'week', label: '7 Days' },
-]
-
-function cutoffDate(filter: TimeFilter): Date | null {
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  if (filter === 'week') return subDays(now, 7)
-  if (filter === '2weeks') return subDays(now, 14)
-  if (filter === 'month') return subMonths(now, 1)
-  return null
-}
-
-// ── Chart tooltip ─────────────────────────────────────────────────────────────
+// ── Chart tooltip (dark themed) ──────────────────────────────────────────────
 
 function DarkTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
@@ -80,39 +62,18 @@ function TrendBadge({ value }: { value: number }) {
   )
 }
 
-// ── Concept card ──────────────────────────────────────────────────────────────
+// ── Concept card ─────────────────────────────────────────────────────────────
 
 function ConceptCard({
   summary,
-  filteredSummary,
   selected,
-  isPriority,
   onClick,
 }: {
   summary: ConceptSummary
-  filteredSummary: ConceptSummary
   selected: boolean
-  isPriority: boolean
   onClick: () => void
 }) {
-  const hasData = filteredSummary.timeline.length > 0
-
-  // Sub-metric averages from practice (understanding/execution/transfer) aren't
-  // stored in ConceptSummary directly—we use practiceAvg as a proxy here.
-  const practiceVals = filteredSummary.timeline
-    .map(t => t.practiceAvg)
-    .filter(v => v != null) as number[]
-  const gameVals = filteredSummary.timeline
-    .map(t => t.gameRating)
-    .filter(v => v != null) as number[]
-
-  const practiceAvg = practiceVals.length
-    ? practiceVals.reduce((a, b) => a + b, 0) / practiceVals.length
-    : null
-  const gameAvg = gameVals.length
-    ? gameVals.reduce((a, b) => a + b, 0) / gameVals.length
-    : null
-  const gap = practiceAvg != null && gameAvg != null ? practiceAvg - gameAvg : null
+  const hasData = summary.timeline.length > 0
 
   return (
     <button
@@ -126,55 +87,54 @@ function ConceptCard({
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h3 className="font-semibold text-sm text-foreground">{filteredSummary.concept}</h3>
-            {isPriority && (
-              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4">
-                P
-              </Badge>
-            )}
-          </div>
+          <h3 className="font-semibold text-sm text-foreground">{summary.concept}</h3>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {filteredSummary.practicePoints} practice · {filteredSummary.gamePoints} games
+            {summary.practicePoints} practice ratings · {summary.gamePoints} games
           </p>
         </div>
-        <TrendBadge value={filteredSummary.trend} />
+        <TrendBadge value={summary.trend} />
       </div>
 
       {/* Sparkline */}
       <div className="h-10 -mx-1">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={filteredSummary.timeline}>
+            <LineChart data={summary.timeline}>
               <YAxis domain={[0, 5]} hide />
-              <Line type="monotone" dataKey="practiceAvg" stroke={AMBER} strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
-              <Line type="monotone" dataKey="gameRating" stroke={BLUE} strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
+              <Line
+                type="monotone"
+                dataKey="practiceAvg"
+                stroke={AMBER}
+                strokeWidth={1.5}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="gameRating"
+                stroke={BLUE}
+                strokeWidth={1.5}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (
           <div className="h-full flex items-center justify-center">
-            <p className="text-[10px] text-muted-foreground italic">No data in range</p>
+            <p className="text-[10px] text-muted-foreground italic">No data yet</p>
           </div>
         )}
       </div>
 
-      {/* Practice vs Game sub-metrics */}
-      <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
-        <div className="flex gap-3 text-[10px]">
-          <span className="text-muted-foreground">
-            Prac: <span className="font-semibold text-amber-400">{practiceAvg != null ? practiceAvg.toFixed(1) : '—'}</span>
-          </span>
-          <span className="text-muted-foreground">
-            Game: <span className="font-semibold text-blue-400">{gameAvg != null ? gameAvg.toFixed(1) : '—'}</span>
-          </span>
-          {gap != null && Math.abs(gap) > 0.3 && (
-            <span className={cn('font-semibold', gap > 0 ? 'text-emerald-400' : 'text-red-400')}>
-              {gap > 0 ? '+' : ''}{gap.toFixed(1)} gap
-            </span>
-          )}
-        </div>
-        <span className="text-lg font-bold tabular-nums text-foreground">
-          {filteredSummary.latestAvg != null ? filteredSummary.latestAvg.toFixed(1) : '—'}
+      {/* Latest */}
+      <div className="flex items-baseline justify-between mt-2">
+        <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+          Latest
+        </span>
+        <span className="text-xl font-bold tabular-nums text-foreground">
+          {summary.latestAvg != null ? summary.latestAvg.toFixed(1) : '—'}
           <span className="text-xs font-normal text-muted-foreground">/5</span>
         </span>
       </div>
@@ -182,68 +142,19 @@ function ConceptCard({
   )
 }
 
-// ── Main page ──────────────────────────────────────────────────────────────────
+// ── Main page ────────────────────────────────────────────────────────────────
 
 export default function ConceptsPage() {
   const { data: teamData } = useTeam()
-  const { data: analytics, isLoading } = useFilteredAnalytics()
+  const { data: analytics, isLoading } = useAnalytics()
   const [selected, setSelected] = useState<Concept>(CONCEPTS[0])
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
 
   const priorityConcepts: string[] =
     teamData?.season?.priorityConcepts
       ? JSON.parse(teamData.season.priorityConcepts)
       : []
 
-  // Filter concept summaries by time range
-  const filteredAnalytics = useMemo(() => {
-    if (!analytics) return null
-    const cutoff = cutoffDate(timeFilter)
-    if (!cutoff) return analytics
-
-    const byConcept = {} as typeof analytics.byConcept
-    for (const concept of CONCEPTS) {
-      const orig = analytics.byConcept[concept]
-      const timeline = orig.timeline.filter(t => {
-        const d = parseISO(t.date)
-        return isAfter(d, cutoff) || isEqual(d, cutoff)
-      })
-
-      const combined = timeline
-        .map(t => {
-          const vals = [t.practiceAvg, t.gameRating].filter(v => v != null) as number[]
-          return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
-        })
-        .filter(v => v != null) as number[]
-
-      const latestAvg = combined.length ? combined[combined.length - 1] : null
-      const firstAvg = combined.length ? combined[0] : 0
-      const trend = latestAvg != null ? latestAvg - firstAvg : 0
-
-      const practicePoints = timeline.reduce((sum, t) => sum + (t.practiceAvg != null ? 1 : 0), 0)
-      const gamePoints = timeline.reduce((sum, t) => sum + (t.gameRating != null ? 1 : 0), 0)
-
-      byConcept[concept] = { ...orig, timeline, latestAvg, trend, practicePoints, gamePoints }
-    }
-    return { ...analytics, byConcept }
-  }, [analytics, timeFilter])
-
-  const selectedSummary = filteredAnalytics?.byConcept[selected]
-  const fullSelectedSummary = analytics?.byConcept[selected]
-
-  // Insights derived from filtered data
-  const insights = useMemo(() => {
-    if (!filteredAnalytics) return null
-    const all = CONCEPTS.map(c => filteredAnalytics.byConcept[c])
-    const withData = all.filter(s => s.latestAvg != null)
-    if (!withData.length) return null
-    const sorted = [...withData].sort((a, b) => (b.latestAvg ?? 0) - (a.latestAvg ?? 0))
-    const strongest = sorted[0]
-    const weakest = sorted[sorted.length - 1]
-    const mostImproved = [...withData].sort((a, b) => b.trend - a.trend)[0]
-    const declining = [...withData].sort((a, b) => a.trend - b.trend)[0]
-    return { strongest, weakest, mostImproved, declining }
-  }, [filteredAnalytics])
+  const selectedSummary = analytics?.byConcept[selected]
 
   if (isLoading) {
     return (
@@ -267,6 +178,7 @@ export default function ConceptsPage() {
     )
   }
 
+  // Separate practice vs game data for bar chart
   const barData = selectedSummary?.timeline.map(p => ({
     label: p.label,
     'Practice': p.practiceAvg ? Number(p.practiceAvg.toFixed(2)) : null,
@@ -295,88 +207,26 @@ export default function ConceptsPage() {
         </div>
       </div>
 
-      {/* Time filter tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/50 w-fit">
-        <Clock className="w-3.5 h-3.5 text-muted-foreground ml-2 shrink-0" />
-        {TIME_FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setTimeFilter(f.key)}
-            className={cn(
-              'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-              timeFilter === f.key
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
       <Separator />
-
-      {/* Season insights row */}
-      {insights && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="border-border/50">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <TrendingUp className="w-3 h-3 text-emerald-400" />
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Strongest</p>
-              </div>
-              <p className="text-sm font-semibold truncate">{insights.strongest.concept}</p>
-              <p className="text-xs text-emerald-400 font-mono">{insights.strongest.latestAvg?.toFixed(1)}/5</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <TrendingDown className="w-3 h-3 text-red-400" />
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Needs Work</p>
-              </div>
-              <p className="text-sm font-semibold truncate">{insights.weakest.concept}</p>
-              <p className="text-xs text-red-400 font-mono">{insights.weakest.latestAvg?.toFixed(1)}/5</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <TrendingUp className="w-3 h-3 text-primary" />
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Most Improved</p>
-              </div>
-              <p className="text-sm font-semibold truncate">{insights.mostImproved.concept}</p>
-              <p className="text-xs text-primary font-mono">+{insights.mostImproved.trend.toFixed(1)}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <TrendingDown className="w-3 h-3 text-amber-400" />
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Declining</p>
-              </div>
-              <p className="text-sm font-semibold truncate">{insights.declining.concept}</p>
-              <p className="text-xs text-amber-400 font-mono">{insights.declining.trend.toFixed(1)}</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Concept grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {CONCEPTS.map(c => {
           const summary = analytics.byConcept[c]
-          const filtered = filteredAnalytics!.byConcept[c]
           const isPriority = priorityConcepts.includes(c)
           return (
-            <ConceptCard
-              key={c}
-              summary={summary}
-              filteredSummary={filtered}
-              selected={selected === c}
-              isPriority={isPriority}
-              onClick={() => setSelected(c)}
-            />
+            <div key={c} className="relative">
+              <ConceptCard
+                summary={summary}
+                selected={selected === c}
+                onClick={() => setSelected(c)}
+              />
+              {isPriority && (
+                <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[9px] px-1.5 py-0 h-5 shadow-lg shadow-primary/20">
+                  PRIORITY
+                </Badge>
+              )}
+            </div>
           )
         })}
       </div>
@@ -396,18 +246,13 @@ export default function ConceptsPage() {
                 </CardTitle>
                 <CardDescription className="text-xs">
                   Combined signal from practice segment ratings and post-game reviews.
-                  {timeFilter !== 'all' && (
-                    <span className="ml-1 text-primary">
-                      · Filtered: {TIME_FILTERS.find(f => f.key === timeFilter)?.label}
-                    </span>
-                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {selectedSummary.timeline.length === 0 ? (
                   <div className="h-64 flex items-center justify-center">
                     <p className="text-sm text-muted-foreground italic">
-                      No ratings in this time range for {selected}.
+                      No ratings yet for {selected}. Add segments or review games tagged with this concept.
                     </p>
                   </div>
                 ) : (
@@ -415,11 +260,42 @@ export default function ConceptsPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={selectedSummary.timeline} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
                         <CartesianGrid stroke="hsl(0 0% 15%)" strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="label" stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} />
-                        <YAxis domain={[0, 5]} stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} width={28} />
+                        <XAxis
+                          dataKey="label"
+                          stroke={MUTED}
+                          tick={{ fontSize: 11, fill: MUTED }}
+                          tickLine={false}
+                          axisLine={{ stroke: 'hsl(0 0% 15%)' }}
+                        />
+                        <YAxis
+                          domain={[0, 5]}
+                          stroke={MUTED}
+                          tick={{ fontSize: 11, fill: MUTED }}
+                          tickLine={false}
+                          axisLine={{ stroke: 'hsl(0 0% 15%)' }}
+                          width={28}
+                        />
                         <Tooltip content={<DarkTooltip />} cursor={{ stroke: MUTED, strokeDasharray: 3 }} />
-                        <Line name="Practice" type="monotone" dataKey="practiceAvg" stroke={AMBER} strokeWidth={2.5} dot={{ r: 3, fill: AMBER }} activeDot={{ r: 5 }} connectNulls />
-                        <Line name="Game" type="monotone" dataKey="gameRating" stroke={BLUE} strokeWidth={2.5} dot={{ r: 3, fill: BLUE }} activeDot={{ r: 5 }} connectNulls />
+                        <Line
+                          name="Practice"
+                          type="monotone"
+                          dataKey="practiceAvg"
+                          stroke={AMBER}
+                          strokeWidth={2.5}
+                          dot={{ r: 3, fill: AMBER }}
+                          activeDot={{ r: 5 }}
+                          connectNulls
+                        />
+                        <Line
+                          name="Game"
+                          type="monotone"
+                          dataKey="gameRating"
+                          stroke={BLUE}
+                          strokeWidth={2.5}
+                          dot={{ r: 3, fill: BLUE }}
+                          activeDot={{ r: 5 }}
+                          connectNulls
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -432,7 +308,7 @@ export default function ConceptsPage() {
               <Card className="border-border bg-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xs uppercase font-bold tracking-widest text-muted-foreground">
-                    {timeFilter === 'all' ? 'Season' : TIME_FILTERS.find(f => f.key === timeFilter)?.label} Rating
+                    Current Rating
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -444,16 +320,8 @@ export default function ConceptsPage() {
                   </div>
                   <div className="mt-3">
                     <TrendBadge value={selectedSummary.trend} />
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      {timeFilter === 'all' ? 'since season start' : `over ${TIME_FILTERS.find(f => f.key === timeFilter)?.label?.toLowerCase()}`}
-                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1">since season start</p>
                   </div>
-                  {timeFilter !== 'all' && fullSelectedSummary?.latestAvg != null && (
-                    <div className="mt-3 pt-3 border-t border-border/50">
-                      <p className="text-[10px] text-muted-foreground">Season avg:</p>
-                      <p className="text-sm font-semibold">{fullSelectedSummary.latestAvg.toFixed(1)}/5</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
@@ -489,8 +357,7 @@ export default function ConceptsPage() {
               <CardHeader>
                 <CardTitle className="text-base">Session-by-Session Detail</CardTitle>
                 <CardDescription className="text-xs">
-                  Every practice or game where {selected} was rated
-                  {timeFilter !== 'all' ? ` (${TIME_FILTERS.find(f => f.key === timeFilter)?.label})` : ''}.
+                  Every practice or game where {selected} was rated.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -498,8 +365,21 @@ export default function ConceptsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
                       <CartesianGrid stroke="hsl(0 0% 15%)" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="label" stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} />
-                      <YAxis domain={[0, 5]} stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} width={28} />
+                      <XAxis
+                        dataKey="label"
+                        stroke={MUTED}
+                        tick={{ fontSize: 11, fill: MUTED }}
+                        tickLine={false}
+                        axisLine={{ stroke: 'hsl(0 0% 15%)' }}
+                      />
+                      <YAxis
+                        domain={[0, 5]}
+                        stroke={MUTED}
+                        tick={{ fontSize: 11, fill: MUTED }}
+                        tickLine={false}
+                        axisLine={{ stroke: 'hsl(0 0% 15%)' }}
+                        width={28}
+                      />
                       <Tooltip content={<DarkTooltip />} cursor={{ fill: 'hsl(0 0% 10%)' }} />
                       <Legend wrapperStyle={{ fontSize: 11, color: MUTED }} iconType="circle" />
                       <Bar dataKey="Practice" fill={AMBER} radius={[3, 3, 0, 0]} />

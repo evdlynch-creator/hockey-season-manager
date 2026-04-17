@@ -129,17 +129,6 @@ export default function PracticeDetailPage() {
     },
   })
 
-  // Mark reviewed (after ratings entered)
-  const markReviewed = useMutation({
-    mutationFn: () => blink.db.practices.update(practiceId, { status: 'reviewed' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['practice', practiceId] })
-      queryClient.invalidateQueries({ queryKey: ['practices'] })
-      queryClient.invalidateQueries({ queryKey: ['analytics'] })
-      toast.success('Practice marked as reviewed', { description: 'Ratings will now appear in concept trends.' })
-    },
-  })
-
   // Add / edit segment
   const saveSegment = useMutation({
     mutationFn: async (data: SegmentFormData) => {
@@ -224,7 +213,7 @@ export default function PracticeDetailPage() {
           {practice.notes && <p className="text-sm text-muted-foreground">{practice.notes}</p>}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {practice.status === 'draft' || practice.status === 'scheduled' ? (
+          {practice.status !== 'completed' && practice.status !== 'reviewed' && (
             <Button
               variant="outline"
               size="sm"
@@ -235,19 +224,7 @@ export default function PracticeDetailPage() {
               <CheckCircle className="w-4 h-4" />
               Mark Complete
             </Button>
-          ) : practice.status === 'completed' ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
-              onClick={() => markReviewed.mutate()}
-              disabled={markReviewed.isPending || segments.length === 0}
-              title={segments.length === 0 ? 'Add segments with ratings first' : 'Mark as reviewed once all ratings are entered'}
-            >
-              <CheckCircle className="w-4 h-4" />
-              Mark Reviewed
-            </Button>
-          ) : null}
+          )}
           <Button size="sm" className="gap-1.5 shadow-lg shadow-primary/20" onClick={openAdd}>
             <Plus className="w-4 h-4" /> Add Segment
           </Button>

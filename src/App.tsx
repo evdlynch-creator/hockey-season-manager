@@ -18,8 +18,7 @@ import {
   toast,
   EmptyState
 } from '@blinkdotnew/ui'
-import { LogIn, Plus, Rocket, Target, Calendar as CalendarIcon, BarChart3, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
-import logoUrl from '@/assets/blue-line-iq-logo.svg'
+import { LayoutDashboard, LogIn, Plus, Rocket, Target, Calendar as CalendarIcon } from 'lucide-react'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { useState, useEffect } from 'react'
 import {
@@ -41,20 +40,10 @@ import GameDetailPage from './pages/GameDetailPage'
 import CalendarPage from './pages/CalendarPage'
 import ConceptsPage from './pages/ConceptsPage'
 import TrendsPage from './pages/TrendsPage'
-import OpponentsPage from './pages/OpponentsPage'
-import TeamMembersPage from './pages/TeamMembersPage'
-import SettingsPage from './pages/SettingsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
-import { useFilteredAnalytics, filterGamesByMode, buildInsights } from './hooks/useAnalytics'
-import { useGameTypes, useViewMode } from './hooks/usePreferences'
-import { HypeCard } from './components/HypeCard'
-import { InsightsStrip } from './components/InsightsStrip'
-import { NoTeamScreen } from './components/NoTeamScreen'
-import { SessionReissuedBanner } from './components/SessionReissuedBanner'
-import { useOrphanTeams } from './hooks/useTeamRecovery'
 import { format, isAfter, parseISO } from 'date-fns'
-import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
+import { ClipboardList, Swords } from 'lucide-react'
 
 const CONCEPTS = [
   'Breakouts',
@@ -79,7 +68,7 @@ type OnboardingData = z.infer<typeof onboardingSchema>
 
 const rootRoute = createRootRoute({
   component: () => (
-    <SharedAppLayout appName="Blue Line IQ">
+    <SharedAppLayout appName="Inside Edge">
       <Outlet />
     </SharedAppLayout>
   ),
@@ -130,7 +119,7 @@ const gameDetailRoute = createRoute({
 const opponentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/opponents',
-  component: OpponentsPage,
+  component: () => <PlaceholderPage title="Opponents" />,
 })
 
 const conceptsRoute = createRoute({
@@ -148,13 +137,7 @@ const trendsRoute = createRoute({
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
-  component: SettingsPage,
-})
-
-const teamMembersRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/team',
-  component: TeamMembersPage,
+  component: () => <PlaceholderPage title="Settings" />,
 })
 
 const routeTree = rootRoute.addChildren([
@@ -168,7 +151,6 @@ const routeTree = rootRoute.addChildren([
   opponentsRoute,
   conceptsRoute,
   trendsRoute,
-  teamMembersRoute,
   settingsRoute
 ])
 const router = createRouter({ routeTree })
@@ -191,38 +173,18 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth()
-  const { data: teamData, isLoading, isFetching, isSuccess } = useTeam()
+  const { data: teamData, isLoading } = useTeam()
   const { data: practices = [] } = usePractices()
-  const { data: rawGames = [] } = useGames()
-  const teamId = teamData?.team.id
-  const { types: gameTypes } = useGameTypes(teamId)
-  const { mode: viewMode } = useViewMode(teamId)
-  const games = filterGamesByMode(rawGames, gameTypes, viewMode)
-  const { data: analytics } = useFilteredAnalytics()
-  const { data: orphanCandidates = [] } = useOrphanTeams()
+  const { data: games = [] } = useGames()
   const navigate = useNavigate()
 
-  if (authLoading || isLoading) return <LoadingOverlay show />
+  useEffect(() => {
+    if (!isLoading && !teamData) {
+      navigate({ to: '/onboarding' })
+    }
+  }, [teamData, isLoading, navigate])
 
-  // No team for this identity. Show an explicit recovery/setup screen
-  // instead of silently redirecting into onboarding — a transient empty
-  // result must never create a duplicate team.
-  if (user && isSuccess && !isFetching && !teamData) {
-    return <NoTeamScreen />
-  }
-  if (!teamData) return <LoadingOverlay show />
-
-  // Suspicious state: current team has no season AND we found at least
-  // one *other* team the user can prove they own (not just the current
-  // empty team itself). Surface the recovery UI so they can claim the
-  // original team and optionally delete the duplicate.
-  const hasRecoverableOther = orphanCandidates.some(
-    (c) => c.team.id !== teamData.team.id && c.evidence !== 'already_owned_empty',
-  )
-  if (!teamData.season && hasRecoverableOther) {
-    return <NoTeamScreen />
-  }
+  if (isLoading || !teamData) return <LoadingOverlay show />
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -263,70 +225,21 @@ function DashboardPage() {
 
   const completedPractices = practices.filter(p => p.status === 'completed' || p.status === 'reviewed').length
 
-  // ── Team Snapshot (rolling form over last 3-5 completed games) ─────────────
-  const SNAPSHOT_FIELD: Record<string, 'breakoutsRating' | 'forecheckRating' | 'defensiveZoneRating' | 'transitionRating' | 'passingRating' | 'skatingRating'> = {
-    'Breakouts': 'breakoutsRating',
-    'Forecheck': 'forecheckRating',
-    'Defensive Zone': 'defensiveZoneRating',
-    'Transition': 'transitionRating',
-    'Passing': 'passingRating',
-    'Skating': 'skatingRating',
-  }
-  const recentCompleted = [...completedGames]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5)
-  const reviewsByGameId = new Map((analytics?.reviews ?? []).map(r => [r.gameId, r]))
-  const snapshotGF = recentCompleted.reduce((s, g) => s + Number(g.goalsFor ?? 0), 0)
-  const snapshotGA = recentCompleted.reduce((s, g) => s + Number(g.goalsAgainst ?? 0), 0)
-  const snapshotW = recentCompleted.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
-  const snapshotL = recentCompleted.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
-  const snapshotT = recentCompleted.length - snapshotW - snapshotL
-  const conceptAvgs = CONCEPTS
-    .map(c => {
-      const field = SNAPSHOT_FIELD[c]
-      const vals = recentCompleted
-        .map(g => reviewsByGameId.get(g.id))
-        .map(r => (r ? (r as any)[field] : null))
-        .filter(v => v != null)
-        .map(Number)
-      return { concept: c, avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null, count: vals.length }
-    })
-    .filter((x): x is { concept: string; avg: number; count: number } => x.avg != null)
-  const working = [...conceptAvgs].filter(c => c.avg >= 3.5).sort((a, b) => b.avg - a.avg).slice(0, 2)
-  const hurting = [...conceptAvgs].filter(c => c.avg <= 2.7).sort((a, b) => a.avg - b.avg).slice(0, 2)
-  let hurtNarrative = ''
-  if (hurting.length && snapshotGA > 0) {
-    const c = hurting[0]
-    const field = SNAPSHOT_FIELD[c.concept]
-    const badGames = recentCompleted.filter(g => {
-      const r = reviewsByGameId.get(g.id)
-      const v = r ? (r as any)[field] : null
-      return v != null && Number(v) <= 2.5
-    })
-    const gaInBad = badGames.reduce((s, g) => s + Number(g.goalsAgainst ?? 0), 0)
-    if (gaInBad > 0) {
-      const pct = Math.round((gaInBad / snapshotGA) * 100)
-      if (pct >= 30) {
-        hurtNarrative = `${pct}% of goals against came in games where ${c.concept} rated 2.5 or lower.`
-      }
-    }
-  }
-  const avgGF = recentCompleted.length ? snapshotGF / recentCompleted.length : 0
-  const avgGA = recentCompleted.length ? snapshotGA / recentCompleted.length : 0
-
-  const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
+  // Rematch prep: find opponents we've already played
+  const pastOpponents = new Set(completedGames.map(g => g.opponent))
+  const rematchGames = upcomingGames.filter(g => pastOpponents.has(g.opponent))
 
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fade-in">
-      <SessionReissuedBanner />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">{teamData.team.name}</h1>
-          <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}
             </Badge>
-          </div>
+            <span>{teamData.season?.startDate} — {teamData.season?.endDate}</span>
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={() => navigate({ to: '/practices' })}>
@@ -368,24 +281,26 @@ function DashboardPage() {
         </Card>
       </div>
 
-      {topInsights.length > 0 && (
-        <div className="mb-6">
-          <InsightsStrip
-            insights={topInsights}
-            limit={3}
-            onViewAll={() => navigate({ to: '/trends' })}
-          />
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Coaching points / pre-game hype */}
-        <HypeCard
-          className="md:col-span-2"
-          nextGame={upcomingGames[0] ?? null}
-          allGames={analytics?.games ?? games}
-          allReviews={analytics?.reviews ?? []}
-        />
+        {/* Season overview */}
+        <Card className="md:col-span-2 border-primary/10 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-primary" />
+              Season Overview
+            </CardTitle>
+            <CardDescription>Priority concepts this season.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {JSON.parse(teamData.season?.priorityConcepts || '[]').map((concept: string) => (
+                <Badge key={concept} variant="secondary" className="px-3 py-1 bg-background border-border">
+                  {concept}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Next activity */}
         <Card className="border-border/50">
@@ -485,423 +400,102 @@ function DashboardPage() {
 
         <Card className="border-border/50">
           <CardHeader>
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Activity className="w-4 h-4 text-primary" />
-                  Team Snapshot
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  Rolling form over the last {recentCompleted.length || 'few'} game{recentCompleted.length === 1 ? '' : 's'}.
-                </CardDescription>
-              </div>
-              <button
-                onClick={() => navigate({ to: '/trends' })}
-                className="text-[11px] text-primary hover:underline flex items-center gap-0.5 shrink-0 mt-1"
-              >
-                Full trends <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Target className="w-4 h-4 text-primary" />
+              Rematch Prep
+            </CardTitle>
+            <CardDescription className="text-xs">Opponents you've played before.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {recentCompleted.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                Play and review a game to see your rolling form here.
-              </p>
+          <CardContent className="space-y-2">
+            {rematchGames.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No rematches coming up.</p>
             ) : (
-              <>
-                {/* Form / record + goals */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Record</p>
-                    <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-xl font-bold tabular-nums text-emerald-400">{snapshotW}</span>
-                      <span className="text-xs text-muted-foreground">W</span>
-                      <span className="text-xl font-bold tabular-nums text-red-400">{snapshotL}</span>
-                      <span className="text-xs text-muted-foreground">L</span>
-                      {snapshotT > 0 && (
-                        <>
-                          <span className="text-xl font-bold tabular-nums text-muted-foreground">{snapshotT}</span>
-                          <span className="text-xs text-muted-foreground">T</span>
-                        </>
-                      )}
+              rematchGames.map(g => {
+                const past = completedGames.filter(c => c.opponent === g.opponent)
+                const lastGame = past[past.length - 1]
+                const result = lastGame && lastGame.goalsFor != null && lastGame.goalsAgainst != null
+                  ? Number(lastGame.goalsFor) > Number(lastGame.goalsAgainst) ? 'W'
+                    : Number(lastGame.goalsFor) < Number(lastGame.goalsAgainst) ? 'L' : 'T'
+                  : null
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
+                    className="w-full flex items-center gap-3 p-2 rounded-md bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
+                  >
+                    <Swords className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">vs. {g.opponent}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(g.date), 'EEE, MMM d')} · {past.length} prior meeting{past.length !== 1 ? 's' : ''}
+                      </p>
                     </div>
-                    <div className="mt-1.5 flex gap-0.5">
-                      {recentCompleted.slice().reverse().map(g => {
-                        const gf = Number(g.goalsFor)
-                        const ga = Number(g.goalsAgainst)
-                        const r = gf > ga ? 'W' : gf < ga ? 'L' : 'T'
-                        return (
-                          <span
-                            key={g.id}
-                            title={`${g.opponent}: ${gf}–${ga}`}
-                            className={cn(
-                              'flex-1 h-1.5 rounded-sm',
-                              r === 'W' && 'bg-emerald-500',
-                              r === 'L' && 'bg-red-500',
-                              r === 'T' && 'bg-muted-foreground/40',
-                            )}
-                          />
-                        )
-                      })}
-                    </div>
-                  </div>
-                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Goals (avg)</p>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="text-xl font-bold tabular-nums text-foreground">{avgGF.toFixed(1)}</span>
-                      <span className="text-xs text-muted-foreground">for</span>
-                      <span className="text-xl font-bold tabular-nums text-foreground">{avgGA.toFixed(1)}</span>
-                      <span className="text-xs text-muted-foreground">against</span>
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground tabular-nums">
-                      Total: {snapshotGF}–{snapshotGA} ({snapshotGF - snapshotGA >= 0 ? '+' : ''}{snapshotGF - snapshotGA})
-                    </p>
-                  </div>
-                </div>
-
-                {/* What's working */}
-                <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">What's working</p>
-                  </div>
-                  {working.length ? (
-                    <ul className="space-y-1">
-                      {working.map(c => (
-                        <li key={c.concept} className="text-xs text-foreground flex items-center justify-between gap-2">
-                          <span className="font-medium">{c.concept}</span>
-                          <span className="text-emerald-400 tabular-nums font-semibold">
-                            {c.avg.toFixed(1)}/5
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      No concept is consistently grading 3.5+ yet — keep reviewing games to find the bright spots.
-                    </p>
-                  )}
-                </div>
-
-                {/* What's hurting */}
-                <div className="rounded-md border border-red-500/20 bg-red-500/5 p-3">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-red-400">What's hurting you</p>
-                  </div>
-                  {hurting.length ? (
-                    <>
-                      <ul className="space-y-1">
-                        {hurting.map(c => (
-                          <li key={c.concept} className="text-xs text-foreground flex items-center justify-between gap-2">
-                            <span className="font-medium">{c.concept}</span>
-                            <span className="text-red-400 tabular-nums font-semibold">
-                              {c.avg.toFixed(1)}/5
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                      {hurtNarrative && (
-                        <p className="mt-2 text-[11px] text-muted-foreground leading-snug">
-                          {hurtNarrative}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Nothing is grading below 2.7 — no clear weak spot in the recent window.
-                    </p>
-                  )}
-                </div>
-              </>
+                    {result && (
+                      <Badge className={cn(
+                        'shrink-0 text-[10px]',
+                        result === 'W' && 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border',
+                        result === 'L' && 'bg-red-600/20 text-red-400 border-red-600/30 border',
+                        result === 'T' && 'bg-secondary',
+                      )}>
+                        Last: {result}
+                      </Badge>
+                    )}
+                  </button>
+                )
+              })
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Concept trends summary */}
-      <Card className="mt-6 border-border/50">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BarChart3 className="w-4 h-4 text-primary" />
-                Concept Trends
-              </CardTitle>
-              <CardDescription className="text-xs mt-1">
-                Latest combined practice + game ratings, sorted by priority.
-              </CardDescription>
-            </div>
-            <button
-              onClick={() => navigate({ to: '/concepts' })}
-              className="text-[11px] text-primary hover:underline flex items-center gap-0.5 shrink-0 mt-1"
-            >
-              View all concepts <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {(() => {
-            const priorityList: string[] = teamData.season?.priorityConcepts
-              ? JSON.parse(teamData.season.priorityConcepts)
-              : []
-            const allSummaries = analytics
-              ? Object.values(analytics.byConcept)
-              : []
-            const sorted = [...allSummaries].sort((a, b) => {
-              const ap = priorityList.includes(a.concept) ? 0 : 1
-              const bp = priorityList.includes(b.concept) ? 0 : 1
-              if (ap !== bp) return ap - bp
-              return (b.latestAvg ?? 0) - (a.latestAvg ?? 0)
-            })
-
-            if (!sorted.length) {
-              return (
-                <p className="text-sm text-muted-foreground py-4 text-center">
-                  Loading concept analytics…
-                </p>
-              )
-            }
-
-            const hasAnyData = sorted.some(s => s.latestAvg != null)
-            if (!hasAnyData) {
-              return (
-                <EmptyState
-                  title="No ratings yet"
-                  description="Rate practice segments or game performance to populate trends."
-                  className="py-4"
-                />
-              )
-            }
-
-            return (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {sorted.map(s => {
-                  const isPriority = priorityList.includes(s.concept)
-                  const trendUp = s.trend > 0.2
-                  const trendDown = s.trend < -0.2
-                  return (
-                    <button
-                      key={s.concept}
-                      onClick={() => navigate({ to: '/concepts' })}
-                      className={cn(
-                        'text-left rounded-md border p-3 transition-colors hover:bg-secondary/40',
-                        isPriority ? 'border-primary/30 bg-primary/5' : 'border-border/50 bg-background'
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-semibold text-foreground truncate">{s.concept}</p>
-                            {isPriority && (
-                              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4">
-                                P
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {s.practicePoints} prac · {s.gamePoints} games
-                          </p>
-                        </div>
-                        <span className="text-lg font-bold tabular-nums text-foreground">
-                          {s.latestAvg != null ? s.latestAvg.toFixed(1) : '—'}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center gap-1 text-[10px]">
-                        {trendUp && <><TrendingUp className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400 font-mono">+{s.trend.toFixed(1)}</span></>}
-                        {trendDown && <><TrendingDown className="w-3 h-3 text-red-400" /><span className="text-red-400 font-mono">{s.trend.toFixed(1)}</span></>}
-                        {!trendUp && !trendDown && <><Minus className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground font-mono">steady</span></>}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            )
-          })()}
-        </CardContent>
-      </Card>
     </div>
   )
 }
 
 function OnboardingPage() {
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const { data: existingTeam, isFetching: teamFetching, isSuccess: teamSuccess } = useTeam()
-
-  // Only redirect away if BOTH team and season already exist.
-  const hasTeam = !!existingTeam?.team
-  const hasSeason = !!existingTeam?.season
-
-  useEffect(() => {
-    if (!authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
-      navigate({ to: '/', replace: true })
-    }
-  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate])
-
+  
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      concepts: [],
-      teamName: existingTeam?.team.name ?? '',
+      concepts: []
     }
   })
 
   const selectedConcepts = watch('concepts')
 
-  useEffect(() => {
-    if (existingTeam?.team.name) {
-      setValue('teamName', existingTeam.team.name)
-    }
-  }, [existingTeam?.team.name, setValue])
-
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
       if (!user) throw new Error('Not authenticated')
 
-      // Retry helper for transient backend hiccups during onboarding.
-      // Blink occasionally returns "Failed to fetch" or HTTP 5xx mid-flow
-      // and a partial onboarding leaves an orphan team. We retry up to
-      // twice with backoff before surfacing the error.
-      const MAX_ATTEMPTS = 4
-      const retryTransient = async <T,>(label: string, fn: () => Promise<T>): Promise<T> => {
-        const isTransient = (err: unknown) => {
-          const msg = String((err as Error)?.message ?? '')
-          if (/Failed to fetch|NetworkError|network request failed/i.test(msg)) return true
-          const status = (err as { status?: number })?.status
-          return typeof status === 'number' && status >= 500 && status < 600
-        }
-        let lastErr: unknown
-        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-          try {
-            return await fn()
-          } catch (err) {
-            lastErr = err
-            if (!isTransient(err) || attempt === MAX_ATTEMPTS - 1) {
-              if (isTransient(err)) {
-                throw new Error(
-                  "Can't reach the server right now. Please check your connection and try again in a moment.",
-                )
-              }
-              throw err
-            }
-            const delay = 500 * Math.pow(2, attempt)
-            console.warn(
-              `[onboarding] ${label} failed (attempt ${attempt + 1}/${MAX_ATTEMPTS}), retrying in ${delay}ms`,
-              err,
-            )
-            await new Promise((r) => setTimeout(r, delay))
-          }
-        }
-        throw lastErr
-      }
-
-      let teamId = existingTeam?.team.id
+      const teamId = `team_${crypto.randomUUID().slice(0, 8)}`
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
-      if (!teamId) {
-        // Idempotency guard: if a previous attempt in the same session
-        // already created a team owned by this user with this name (e.g.
-        // network blip after team-create but before season-create), reuse
-        // it instead of accumulating orphan teams on every retry.
-        const existingByName = (await retryTransient('teams.list', () =>
-          blink.db.teams.list({
-            where: { userId: user.id, name: data.teamName },
-            limit: 1,
-          }),
-        )) as { id: string }[]
+      await blink.db.teams.create({
+        id: teamId,
+        name: data.teamName,
+        userId: user.id
+      })
 
-        if (existingByName.length > 0) {
-          teamId = existingByName[0].id
-        } else {
-          teamId = `team_${crypto.randomUUID().slice(0, 8)}`
-          await retryTransient('teams.create', () =>
-            blink.db.teams.create({
-              id: teamId!,
-              name: data.teamName,
-              userId: user.id,
-            }),
-          )
-        }
-
-        // Founder gets the owner membership immediately so multi-coach
-        // scoping works the same as for invited coaches. Deterministic id
-        // makes this idempotent across retries.
-        const now = new Date().toISOString()
-        const ownerId = `tm_owner_${teamId}`
-        const existingOwner = (await retryTransient('teamMembers.list', () =>
-          blink.db.teamMembers.list({
-            where: { teamId: teamId!, userId: user.id, role: 'owner' },
-            limit: 1,
-          }),
-        )) as { id: string }[]
-        if (existingOwner.length === 0) {
-          try {
-            await retryTransient('teamMembers.create', () =>
-              blink.db.teamMembers.create({
-                id: ownerId,
-                teamId: teamId!,
-                userId: user.id,
-                email: (user.email ?? '').trim().toLowerCase(),
-                role: 'owner',
-                status: 'active',
-                invitedBy: null,
-                invitedByName: null,
-                createdAt: now,
-                updatedAt: now,
-              }),
-            )
-          } catch (err) {
-            // Don't silently swallow — without a membership, useTeam
-            // won't see this team and the user lands in NoTeamScreen.
-            // The owner-backfill in useTeam will eventually catch it on
-            // a future load, but we need the user to know the call
-            // didn't fully succeed so they can retry.
-            console.error(
-              '[onboarding] owner membership create failed for team',
-              teamId,
-              err,
-            )
-            throw new Error(
-              'Could not finish setting up your team membership. Check your connection and try again.',
-            )
-          }
-        }
-      }
-
-      // Reuse an existing season for this team if one already exists from
-      // a partial prior attempt; otherwise create a fresh one.
-      const existingSeason = (await retryTransient('seasons.list', () =>
-        blink.db.seasons.list({
-          where: { teamId: teamId! },
-          limit: 1,
-        }),
-      )) as { id: string }[]
-      if (existingSeason.length === 0) {
-        await retryTransient('seasons.create', () =>
-          blink.db.seasons.create({
-            id: seasonId,
-            teamId,
-            name: data.seasonName,
-            startDate: data.startDate,
-            endDate: data.endDate,
-            priorityConcepts: JSON.stringify(data.concepts),
-          }),
-        )
-      }
+      await blink.db.seasons.create({
+        id: seasonId,
+        teamId,
+        name: data.seasonName,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        priorityConcepts: JSON.stringify(data.concepts)
+      })
 
       return { teamId, seasonId }
     },
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['team'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] })
       toast.success('Season setup complete!', { description: "You're ready to start coaching." })
-      navigate({ to: '/', replace: true })
+      navigate({ to: '/' })
     },
-    onError: (error: any) => {
-      console.error('Season setup failed:', error)
-      toast.error('Failed to set up season', { description: `${error?.name || 'Error'}: ${error?.message}` })
+    onError: (error) => {
+      toast.error('Failed to set up season', { description: error.message })
     }
   })
 
@@ -921,25 +515,19 @@ function OnboardingPage() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-3xl">
-            {hasTeam ? `Start a new season for ${existingTeam?.team.name}` : 'Set up your season'}
-          </CardTitle>
+          <CardTitle className="text-3xl">Set up your season</CardTitle>
           <CardDescription className="text-base">
-            {hasTeam
-              ? 'Your team is saved. Add a new season to keep coaching.'
-              : 'Configure your team and pick the concepts you want to prioritize this season.'}
+            Configure your team and pick the concepts you want to prioritize this season.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {!hasTeam && (
-                <Field>
-                  <FieldLabel>Team Name</FieldLabel>
-                  <Input {...register('teamName')} placeholder="e.g. Gotham Knights" />
-                  {errors.teamName && <FieldError>{errors.teamName.message}</FieldError>}
-                </Field>
-              )}
+              <Field>
+                <FieldLabel>Team Name</FieldLabel>
+                <Input {...register('teamName')} placeholder="e.g. Gotham Knights" />
+                {errors.teamName && <FieldError>{errors.teamName.message}</FieldError>}
+              </Field>
               <Field>
                 <FieldLabel>Season Name</FieldLabel>
                 <Input {...register('seasonName')} placeholder="e.g. 2026 Winter Season" />
@@ -1033,111 +621,6 @@ function ChevronRight(props: any) {
   )
 }
 
-const isInIframe = typeof window !== 'undefined' && window.self !== window.top
-
-const authSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-type AuthData = z.infer<typeof authSchema>
-
-function EmbeddedSignInForm() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-  const [authError, setAuthError] = useState<string | null>(null)
-
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthData>({
-    resolver: zodResolver(authSchema),
-  })
-
-  const onSubmit = async (data: AuthData) => {
-    setAuthError(null)
-    try {
-      if (mode === 'signup') {
-        await blink.auth.signUp({ email: data.email, password: data.password })
-      } else {
-        await blink.auth.signInWithEmail(data.email, data.password)
-      }
-    } catch (err: any) {
-      setAuthError(err?.message || 'Authentication failed. Please try again.')
-    }
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8">
-          <img
-            src={logoUrl}
-            alt="Blue Line IQ"
-            className="h-12 w-auto mb-4 select-none"
-            draggable={false}
-          />
-          <p className="text-muted-foreground mt-2 text-sm text-center">
-            {mode === 'signin' ? 'Sign in to your coaching account' : 'Create your coaching account'}
-          </p>
-        </div>
-
-        <Card className="border-border/50 shadow-xl">
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <Field>
-                <FieldLabel>Email</FieldLabel>
-                <Input
-                  {...register('email')}
-                  type="email"
-                  placeholder="coach@team.com"
-                  autoComplete="email"
-                />
-                {errors.email && <FieldError>{errors.email.message}</FieldError>}
-              </Field>
-
-              <Field>
-                <FieldLabel>Password</FieldLabel>
-                <Input
-                  {...register('password')}
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                />
-                {errors.password && <FieldError>{errors.password.message}</FieldError>}
-              </Field>
-
-              {authError && (
-                <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
-                  {authError}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full gap-2 font-bold shadow-lg shadow-primary/20"
-                disabled={isSubmitting}
-              >
-                <LogIn className="w-4 h-4" />
-                {isSubmitting
-                  ? mode === 'signin' ? 'Signing in...' : 'Creating account...'
-                  : mode === 'signin' ? 'Sign In' : 'Create Account'}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setAuthError(null) }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {mode === 'signin'
-                  ? "Don't have an account? Sign up"
-                  : 'Already have an account? Sign in'}
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-}
-
 export default function App() {
   const { user, isLoading, isAuthenticated } = useAuth()
 
@@ -1150,24 +633,21 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    if (isInIframe) {
-      return <EmbeddedSignInForm />
-    }
-
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 text-center overflow-hidden">
+        {/* Background Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
           <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
           <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
         </div>
 
         <div className="mb-10 flex flex-col items-center animate-fade-in">
-          <img
-            src={logoUrl}
-            alt="Blue Line IQ"
-            className="h-20 sm:h-24 w-auto mb-2 select-none"
-            draggable={false}
-          />
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-primary/20">
+            <LayoutDashboard className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h1 className="text-5xl font-black tracking-tight sm:text-6xl text-foreground">
+            Inside<span className="text-primary">Edge</span>
+          </h1>
           <p className="text-muted-foreground mt-4 max-w-md text-base leading-relaxed">
             The platform built for hockey coaches who demand precision, tracking, and continuous improvement.
           </p>
