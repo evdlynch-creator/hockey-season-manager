@@ -771,8 +771,6 @@ function OnboardingPage() {
           id: teamId,
           name: data.teamName,
           userId: user.id,
-          plan: 'beta_free',
-          seatLimit: null,
         })
         // Founder gets the owner membership immediately so multi-coach
         // scoping works the same as for invited coaches. Deterministic id

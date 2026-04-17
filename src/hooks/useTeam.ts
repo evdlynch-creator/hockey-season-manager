@@ -83,8 +83,7 @@ interface MemberQueryClause {
  * Side effects (idempotent, run on every call but only do work when needed):
  *  1. Auto-claim pending invites whose email matches the signed-in user.
  *  2. Backfill an `owner` membership for legacy teams where `teams.userId == me`
- *     but no membership row exists yet. Also stamps `plan` and `seatLimit` if
- *     missing so monetization fields are present on every team.
+ *     but no membership row exists yet.
  */
 async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution> {
   const myEmail = normalizeEmail(user.email ?? '')
@@ -273,25 +272,11 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
     where: { id: { in: teamIds } },
   })) as Team[]
 
-  // 5. Stamp plan/seatLimit defaults on any team that's missing them so the
-  //    monetization fields are guaranteed present (one-time per team).
-  const needsPlanStamp = teamsRaw.filter(
-    (t) => t.plan == null || t.plan === undefined,
-  )
-  if (needsPlanStamp.length > 0) {
-    await Promise.all(
-      needsPlanStamp.map((t) =>
-        blink.db.teams
-          .update(t.id, { plan: 'beta_free', seatLimit: null })
-          .catch((err) => {
-            // Stamping the plan default is best-effort; another tab may have
-            // already done it. Log so real schema/permission errors aren't
-            // silently swallowed.
-            console.warn('[useTeam] could not stamp plan defaults on team', t.id, err)
-          }),
-      ),
-    )
-  }
+  // `plan` and `seatLimit` are not real columns on `teams` (the SQLite
+  // schema doesn't have them). They're computed/defaulted client-side
+  // here so the rest of the app — Coaching Staff plan label, future
+  // paywall helpers — can read them uniformly. Future paywall work that
+  // needs to persist these will have to add real columns first.
   const teams = teamsRaw.map((t) => ({
     ...t,
     plan: t.plan ?? 'beta_free',
