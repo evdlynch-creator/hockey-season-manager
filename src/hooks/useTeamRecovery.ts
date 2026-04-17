@@ -174,7 +174,9 @@ export function useOrphanTeams() {
               practiceCount,
               gameCount,
               lastActivity,
-              isEmpty: seasons.length === 0,
+              isEmpty:
+                seasons.length === 0 ||
+                (seasons.length === 1 && practiceCount === 0 && gameCount === 0),
               evidence,
             } as OrphanTeamCandidate
           }),
@@ -208,11 +210,21 @@ export function useClaimTeam() {
 
       const ownerRows = (await blink.db.teamMembers.list({
         where: { teamId, role: 'owner' },
-        limit: 1,
       })) as TeamMember[]
 
-      if (ownerRows.length > 0) {
-        await blink.db.teamMembers.update(ownerRows[0].id, {
+      // Prefer the email-matched owner row (the one our authorization
+      // evidence pointed at). Fall back to the deterministic owner id,
+      // then to the first row only as a last resort. This avoids
+      // accidentally rewriting the wrong row when malformed data has
+      // multiple owner rows for a single team.
+      const target =
+        ownerRows.find((r) => normalizeEmail(r.email) === myEmail) ??
+        ownerRows.find((r) => r.id === `tm_owner_${teamId}`) ??
+        ownerRows[0] ??
+        null
+
+      if (target) {
+        await blink.db.teamMembers.update(target.id, {
           userId: user.id,
           email: myEmail,
           status: 'active',
@@ -273,13 +285,23 @@ export function useDeleteEmptyTeam() {
         where: { teamId },
       })) as Season[]
 
-      // Tightened "empty" definition: zero seasons. Season metadata
-      // (priority concepts, dates) is considered meaningful by itself,
-      // so we only allow deleting truly never-used teams.
-      if (seasons.length > 0) {
+      // "Empty" = zero seasons, OR exactly one season with no practices
+      // and no games (the incident-created empty-default-season case).
+      // Anything beyond that is treated as meaningful and refused.
+      let allowDelete = seasons.length === 0
+      if (!allowDelete && seasons.length === 1) {
+        const s = seasons[0]
+        const [practices, games] = await Promise.all([
+          blink.db.practices.list({ where: { seasonId: s.id } }) as Promise<Practice[]>,
+          blink.db.games.list({ where: { seasonId: s.id } }) as Promise<Game[]>,
+        ])
+        allowDelete = practices.length === 0 && games.length === 0
+      }
+      if (!allowDelete) {
         throw new Error("This team isn't empty — refusing to delete")
       }
 
+      await Promise.all(seasons.map((s) => blink.db.seasons.delete(s.id)))
       const members = (await blink.db.teamMembers.list({
         where: { teamId },
       })) as TeamMember[]

@@ -225,11 +225,17 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
       const now = new Date().toISOString()
       const ownerRows = (await blink.db.teamMembers.list({
         where: { teamId, role: 'owner' },
-        limit: 1,
       })) as TeamMember[]
-      if (ownerRows.length > 0) {
+      // Target the email-matched row (the one that is our evidence).
+      // Fall back to the deterministic owner id, then to the first row.
+      const target =
+        ownerRows.find((r) => normalizeEmail(r.email) === myEmail) ??
+        ownerRows.find((r) => r.id === `tm_owner_${teamId}`) ??
+        ownerRows[0] ??
+        null
+      if (target) {
         try {
-          await blink.db.teamMembers.update(ownerRows[0].id, {
+          await blink.db.teamMembers.update(target.id, {
             userId: user.id,
             email: myEmail,
             status: 'active',
@@ -237,7 +243,7 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
           })
           memberships = [
             ...memberships,
-            { ...ownerRows[0], userId: user.id, email: myEmail, status: 'active', updatedAt: now },
+            { ...target, userId: user.id, email: myEmail, status: 'active', updatedAt: now },
           ]
           try {
             await blink.db.teams.update(teamId, { userId: user.id })
