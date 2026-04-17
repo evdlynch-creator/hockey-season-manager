@@ -31,14 +31,24 @@ function MiniMonth({
   cursor,
   setCursor,
   eventDates,
+  view,
+  setView,
 }: {
   cursor: Date
   setCursor: (d: Date) => void
   eventDates: Set<string>
+  view: 'week' | 'month'
+  setView: (v: 'week' | 'month') => void
 }) {
   const [monthCursor, setMonthCursor] = useState(cursor)
 
   const weeks = useMemo(() => {
+    if (view === 'week') {
+      const start = startOfWeek(monthCursor, { weekStartsOn: 1 })
+      const week: Date[] = []
+      for (let i = 0; i < 7; i++) week.push(addDays(start, i))
+      return [week]
+    }
     const start = startOfWeek(startOfMonth(monthCursor), { weekStartsOn: 1 })
     const end = endOfWeek(endOfMonth(monthCursor), { weekStartsOn: 1 })
     const days: Date[] = []
@@ -50,31 +60,68 @@ function MiniMonth({
     const weeks: Date[][] = []
     for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
     return weeks
-  }, [monthCursor])
+  }, [monthCursor, view])
+
+  const goPrev = () => setMonthCursor(view === 'week' ? addDays(monthCursor, -7) : subMonths(monthCursor, 1))
+  const goNext = () => setMonthCursor(view === 'week' ? addDays(monthCursor, 7) : addMonths(monthCursor, 1))
+
+  const headerLabel = view === 'week'
+    ? (() => {
+        const wkStart = startOfWeek(monthCursor, { weekStartsOn: 1 })
+        const wkEnd = addDays(wkStart, 6)
+        const sameMonth = isSameMonth(wkStart, wkEnd)
+        return sameMonth
+          ? `${format(wkStart, 'MMM d')} – ${format(wkEnd, 'd')}`
+          : `${format(wkStart, 'MMM d')} – ${format(wkEnd, 'MMM d')}`
+      })()
+    : format(monthCursor, 'MMMM')
 
   return (
     <div>
-      {/* Month header */}
-      <div className="flex items-center justify-between mb-2 px-0.5">
-        <h2 className="text-base font-semibold text-white">
-          {format(monthCursor, 'MMMM')}{' '}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2 px-0.5 gap-3">
+        <h2 className="text-base font-semibold text-white truncate">
+          {headerLabel}{' '}
           <span className="text-primary">{format(monthCursor, 'yyyy')}</span>
         </h2>
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={() => setMonthCursor(subMonths(monthCursor, 1))}
-            className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setMonthCursor(addMonths(monthCursor, 1))}
-            className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
-            aria-label="Next month"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* View toggle */}
+          <div className="flex items-center rounded-md bg-white/5 p-0.5">
+            <button
+              onClick={() => setView('week')}
+              className={cn(
+                'px-2 py-0.5 text-[11px] font-medium rounded transition-colors',
+                view === 'week' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+              )}
+            >
+              Week
+            </button>
+            <button
+              onClick={() => setView('month')}
+              className={cn(
+                'px-2 py-0.5 text-[11px] font-medium rounded transition-colors',
+                view === 'month' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+              )}
+            >
+              Month
+            </button>
+          </div>
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={goPrev}
+              className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+              aria-label={view === 'week' ? 'Previous week' : 'Previous month'}
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={goNext}
+              className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+              aria-label={view === 'week' ? 'Next week' : 'Next month'}
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -199,6 +246,7 @@ export default function CalendarPage() {
   const { data: practices = [] } = usePractices()
   const { data: games = [] } = useGames()
   const [cursor, setCursor] = useState(new Date())
+  const [calView, setCalView] = useState<'week' | 'month'>('week')
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
@@ -299,7 +347,7 @@ export default function CalendarPage() {
         <div className="space-y-6">
           {/* Mini month — narrow, sits above the agenda */}
           <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:p-5">
-            <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} />
+            <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} view={calView} setView={setCalView} />
           </div>
 
           {/* Agenda zones */}
