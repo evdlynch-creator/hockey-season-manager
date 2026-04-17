@@ -295,10 +295,10 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        {/* Two-column on md+ : compact calendar left, agenda right */}
-        <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-          {/* Mini month — narrow */}
-          <div className="rounded-xl bg-sidebar border border-sidebar-border p-3">
+        {/* Stacked: compact calendar on top, agenda below */}
+        <div className="space-y-6">
+          {/* Mini month — narrow, sits above the agenda */}
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-3 max-w-xs">
             <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} />
           </div>
 
