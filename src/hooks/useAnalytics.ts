@@ -237,7 +237,12 @@ function gameResult(gf?: number, ga?: number): 'W' | 'L' | 'T' | null {
 }
 
 export function buildInsights(analytics: SeasonAnalytics): Insight[] {
-  const insights: Insight[] = []
+  const correlationInsights: Insight[] = []
+  const bestLeverInsights: Insight[] = []
+  const weakestInsights: Insight[] = []
+  const trendUpInsights: Insight[] = []
+  const trendDownInsights: Insight[] = []
+  const goalDiffInsights: Insight[] = []
 
   const gameById = new Map(analytics.games.map(g => [g.id, g]))
   const completedGames = analytics.games.filter(
@@ -245,7 +250,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   )
 
   if (completedGames.length === 0 || analytics.reviews.length === 0) {
-    return insights
+    return []
   }
 
   // Season win rate baseline (excluding ties from denominator? No — use all decided games)
@@ -308,15 +313,18 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
       const tone: InsightTone = lift >= 0.1 ? 'positive' : lift <= -0.1 ? 'negative' : 'neutral'
       const liftPct = Math.round(Math.abs(lift) * 100)
       const liftPhrase =
-        lift >= 0.05 ? ` — that's ${liftPct} pts above season average.`
-        : lift <= -0.05 ? ` — that's ${liftPct} pts below season average.`
+        lift >= 0.05 ? ` ${liftPct} pts above season average.`
+        : lift <= -0.05 ? ` ${liftPct} pts below season average.`
         : ''
-      insights.push({
+      const lowPart = low > 0
+        ? ` Low (≤2.5): ${Math.round((lowW / low) * 100)}% (${lowW}-${low - lowW} in ${low}).`
+        : ' No games rated ≤ 2.5 yet.'
+      correlationInsights.push({
         id: `corr-${concept}`,
         kind: 'concept-correlation',
         tone,
         headline: `When ${concept} is rated 4+ , you win {{${pct}%}} of games.`,
-        detail: `Sample: ${highW}-${high - highW} in ${high} game${high === 1 ? '' : 's'}.${liftPhrase}`,
+        detail: `High (≥4.0): ${highW}-${high - highW} in ${high} game${high === 1 ? '' : 's'}.${lowPart}${liftPhrase}`,
       })
     }
   }
@@ -328,23 +336,22 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
       (b.highWinPct - seasonWinPct) > (a.highWinPct - seasonWinPct) ? b : a,
     )
     const lift = best.highWinPct - seasonWinPct
-    if (lift >= 0.1) {
-      const liftPts = Math.round(lift * 100)
-      insights.push({
-        id: 'best-lever',
-        kind: 'best-lever',
-        tone: 'positive',
-        headline: `Biggest swing factor: {{${best.concept}}} (+${liftPts} pts win rate).`,
-        detail: `Lock this in and your win rate jumps from ${Math.round(seasonWinPct * 100)}% to ${Math.round(best.highWinPct * 100)}%.`,
-      })
-    }
+    const liftPts = Math.round(lift * 100)
+    const sign = liftPts >= 0 ? '+' : ''
+    bestLeverInsights.push({
+      id: 'best-lever',
+      kind: 'best-lever',
+      tone: lift >= 0 ? 'positive' : 'neutral',
+      headline: `Biggest swing factor: {{${best.concept}}} (${sign}${liftPts} pts win rate).`,
+      detail: `When ${best.concept} is rated 4+ , win rate is ${Math.round(best.highWinPct * 100)}% vs season ${Math.round(seasonWinPct * 100)}% (n=${best.highGames}).`,
+    })
   }
 
   // ── Weakest concept (lowest season-average rating, ≥ 3 ratings) ──────────
   const ratedConcepts = conceptStats.filter(s => s.ratingCount >= MIN_CONCEPT_RATINGS)
   if (ratedConcepts.length) {
     const weakest = ratedConcepts.reduce((a, b) => (b.avgRating < a.avgRating ? b : a))
-    insights.push({
+    weakestInsights.push({
       id: 'weakest',
       kind: 'weakest-concept',
       tone: 'negative',
@@ -361,7 +368,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
   if (conceptsWithTrend.length) {
     const up = conceptsWithTrend.reduce((a, b) => (b.summary.trend > a.summary.trend ? b : a))
     if (up.summary.trend >= TREND_THRESHOLD) {
-      insights.push({
+      trendUpInsights.push({
         id: 'trending-up',
         kind: 'trending-up',
         tone: 'positive',
@@ -372,7 +379,7 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
 
     const down = conceptsWithTrend.reduce((a, b) => (b.summary.trend < a.summary.trend ? b : a))
     if (down.summary.trend <= -TREND_THRESHOLD) {
-      insights.push({
+      trendDownInsights.push({
         id: 'trending-down',
         kind: 'trending-down',
         tone: 'negative',
@@ -406,19 +413,46 @@ export function buildInsights(analytics: SeasonAnalytics): Insight[] {
         const lowDiff = lowHalf.reduce((a, b) => a + b.diff, 0) / lowHalf.length
         const highDiff = highHalf.reduce((a, b) => a + b.diff, 0) / highHalf.length
         const swing = highDiff - lowDiff
-        if (Math.abs(swing) >= 1.0) {
-          insights.push({
-            id: 'goal-diff',
-            kind: 'goal-differential',
-            tone: swing > 0 ? 'positive' : 'negative',
-            headline: `High-rated games swing goal differential by {{${swing >= 0 ? '+' : ''}${swing.toFixed(1)}}} per game.`,
-            detail: `Top half average ${highDiff >= 0 ? '+' : ''}${highDiff.toFixed(1)} vs bottom half ${lowDiff >= 0 ? '+' : ''}${lowDiff.toFixed(1)} (n=${perGame.length}).`,
-          })
-        }
+        goalDiffInsights.push({
+          id: 'goal-diff',
+          kind: 'goal-differential',
+          tone: swing > 0 ? 'positive' : swing < 0 ? 'negative' : 'neutral',
+          headline: `High-rated games swing goal differential by {{${swing >= 0 ? '+' : ''}${swing.toFixed(1)}}} per game.`,
+          detail: `Top half average ${highDiff >= 0 ? '+' : ''}${highDiff.toFixed(1)} vs bottom half ${lowDiff >= 0 ? '+' : ''}${lowDiff.toFixed(1)} (n=${perGame.length}).`,
+        })
       }
     }
   }
 
-  // Cap to a reasonable number, prioritizing variety
-  return insights.slice(0, 6)
+  // ── Selection: reserve one slot per family first, then fill with extras ──
+  const families: Insight[][] = [
+    bestLeverInsights,
+    weakestInsights,
+    trendUpInsights,
+    trendDownInsights,
+    goalDiffInsights,
+    correlationInsights,
+  ]
+
+  const MAX = 6
+  const ordered: Insight[] = []
+  // Pass 1: take up to one from each family in priority order
+  for (const fam of families) {
+    if (ordered.length >= MAX) break
+    if (fam.length) ordered.push(fam[0])
+  }
+  // Pass 2: fill remaining slots from leftover correlations (most varied family)
+  const seen = new Set(ordered.map(i => i.id))
+  for (const fam of families) {
+    for (const item of fam) {
+      if (ordered.length >= MAX) break
+      if (!seen.has(item.id)) {
+        ordered.push(item)
+        seen.add(item.id)
+      }
+    }
+    if (ordered.length >= MAX) break
+  }
+
+  return ordered
 }
