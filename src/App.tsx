@@ -765,23 +765,31 @@ function OnboardingPage() {
       // Blink occasionally returns "Failed to fetch" or HTTP 5xx mid-flow
       // and a partial onboarding leaves an orphan team. We retry up to
       // twice with backoff before surfacing the error.
+      const MAX_ATTEMPTS = 4
       const retryTransient = async <T,>(label: string, fn: () => Promise<T>): Promise<T> => {
         const isTransient = (err: unknown) => {
           const msg = String((err as Error)?.message ?? '')
-          if (/Failed to fetch/i.test(msg)) return true
+          if (/Failed to fetch|NetworkError|network request failed/i.test(msg)) return true
           const status = (err as { status?: number })?.status
           return typeof status === 'number' && status >= 500 && status < 600
         }
         let lastErr: unknown
-        for (let attempt = 0; attempt < 3; attempt++) {
+        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
           try {
             return await fn()
           } catch (err) {
             lastErr = err
-            if (!isTransient(err) || attempt === 2) throw err
+            if (!isTransient(err) || attempt === MAX_ATTEMPTS - 1) {
+              if (isTransient(err)) {
+                throw new Error(
+                  "Can't reach the server right now. Please check your connection and try again in a moment.",
+                )
+              }
+              throw err
+            }
             const delay = 500 * Math.pow(2, attempt)
             console.warn(
-              `[onboarding] ${label} failed (attempt ${attempt + 1}/3), retrying in ${delay}ms`,
+              `[onboarding] ${label} failed (attempt ${attempt + 1}/${MAX_ATTEMPTS}), retrying in ${delay}ms`,
               err,
             )
             await new Promise((r) => setTimeout(r, delay))
