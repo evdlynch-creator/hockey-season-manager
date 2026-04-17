@@ -138,6 +138,17 @@ export const DEMO_GAMES: Game[] = [
     location: 'home',
     status: 'scheduled',
     createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-game-5',
+    seasonId: DEMO_SEASON_ID,
+    date: format(subDays(new Date(), 14), 'yyyy-MM-dd'),
+    opponent: 'Toronto Maple Leafs',
+    location: 'away',
+    goalsFor: 2,
+    goalsAgainst: 4,
+    status: 'reviewed',
+    createdAt: new Date().toISOString(),
   }
 ]
 
@@ -176,6 +187,19 @@ export const DEMO_REVIEWS: GameReview[] = [
     passingRating: 2,
     skatingRating: 3,
     notes: 'Slow start and never recovered. D-zone was a mess.',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-rev-4',
+    gameId: 'demo-game-5',
+    breakoutsRating: 3,
+    forecheckRating: 4,
+    defensiveZoneRating: 2,
+    transitionRating: 3,
+    passingRating: 4,
+    skatingRating: 4,
+    notes: 'Competitive game, but struggled to clear the zone under pressure. Toronto exploited our weak side D-to-D passes.',
+    opponentNotes: 'High pressure forecheck, very fast transition. Watch out for #34 in the slot.',
     createdAt: new Date().toISOString(),
   }
 ]
