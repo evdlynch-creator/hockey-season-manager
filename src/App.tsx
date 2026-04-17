@@ -603,43 +603,57 @@ function OnboardingPage() {
   const navigate = useNavigate()
   const { data: existingTeam, isFetching: teamFetching, isSuccess: teamSuccess } = useTeam()
 
+  // Only redirect away if BOTH team and season already exist.
+  const hasTeam = !!existingTeam?.team
+  const hasSeason = !!existingTeam?.season
+
   useEffect(() => {
-    if (!authLoading && user && teamSuccess && !teamFetching && existingTeam) {
+    if (!authLoading && user && teamSuccess && !teamFetching && hasTeam && hasSeason) {
       navigate({ to: '/', replace: true })
     }
-  }, [existingTeam, teamSuccess, teamFetching, authLoading, user, navigate])
+  }, [hasTeam, hasSeason, teamSuccess, teamFetching, authLoading, user, navigate])
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      concepts: []
+      concepts: [],
+      teamName: existingTeam?.team.name ?? '',
     }
   })
 
   const selectedConcepts = watch('concepts')
 
+  useEffect(() => {
+    if (existingTeam?.team.name) {
+      setValue('teamName', existingTeam.team.name)
+    }
+  }, [existingTeam?.team.name, setValue])
+
   const mutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
       if (!user) throw new Error('Not authenticated')
 
-      const teamId = `team_${crypto.randomUUID().slice(0, 8)}`
+      let teamId = existingTeam?.team.id
       const seasonId = `season_${crypto.randomUUID().slice(0, 8)}`
 
-      await blink.db.teams.create({
-        id: teamId,
-        name: data.teamName,
-        userId: user.id
-      })
+      if (!teamId) {
+        teamId = `team_${crypto.randomUUID().slice(0, 8)}`
+        await blink.db.teams.create({
+          id: teamId,
+          name: data.teamName,
+          userId: user.id
+        })
 
-      const userEmail = (user as any).email?.toLowerCase?.() ?? ''
-      await blink.db.teamMembers.create({
-        id: `tm_${crypto.randomUUID().slice(0, 8)}`,
-        teamId,
-        userId: user.id,
-        email: userEmail,
-        role: 'owner',
-        status: 'active',
-      })
+        const userEmail = (user as any).email?.toLowerCase?.() ?? ''
+        await blink.db.teamMembers.create({
+          id: `tm_${crypto.randomUUID().slice(0, 8)}`,
+          teamId,
+          userId: user.id,
+          email: userEmail,
+          role: 'owner',
+          status: 'active',
+        })
+      }
 
       await blink.db.seasons.create({
         id: seasonId,
@@ -679,19 +693,25 @@ function OnboardingPage() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-3xl">Set up your season</CardTitle>
+          <CardTitle className="text-3xl">
+            {hasTeam ? `Start a new season for ${existingTeam?.team.name}` : 'Set up your season'}
+          </CardTitle>
           <CardDescription className="text-base">
-            Configure your team and pick the concepts you want to prioritize this season.
+            {hasTeam
+              ? 'Your team is saved. Add a new season to keep coaching.'
+              : 'Configure your team and pick the concepts you want to prioritize this season.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Field>
-                <FieldLabel>Team Name</FieldLabel>
-                <Input {...register('teamName')} placeholder="e.g. Gotham Knights" />
-                {errors.teamName && <FieldError>{errors.teamName.message}</FieldError>}
-              </Field>
+              {!hasTeam && (
+                <Field>
+                  <FieldLabel>Team Name</FieldLabel>
+                  <Input {...register('teamName')} placeholder="e.g. Gotham Knights" />
+                  {errors.teamName && <FieldError>{errors.teamName.message}</FieldError>}
+                </Field>
+              )}
               <Field>
                 <FieldLabel>Season Name</FieldLabel>
                 <Input {...register('seasonName')} placeholder="e.g. 2026 Winter Season" />

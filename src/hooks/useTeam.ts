@@ -53,10 +53,17 @@ export function useTeam() {
           })
         }
       } else {
-        // Pick most recent active team. If user belongs to multiple, take first.
-        const teamIds = memberships.map((m) => m.teamId)
-        const teamList = (await blink.db.teams.list({})) as Team[]
-        team = teamList.find((t) => teamIds.includes(t.id)) ?? null
+        // Pick most recent active team. Query each by id to avoid SDK quirks with empty `where`.
+        for (const m of memberships) {
+          const found = (await blink.db.teams.list({
+            where: { id: m.teamId },
+            limit: 1,
+          })) as Team[]
+          if (found[0]) {
+            team = found[0]
+            break
+          }
+        }
       }
 
       if (!team) return null
