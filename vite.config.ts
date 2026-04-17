@@ -14,5 +14,19 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      '/blink-proxy/auth': {
+        target: 'https://blink.new',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/blink-proxy\/auth/, ''),
+      },
+      '/blink-proxy/core': {
+        target: 'https://core.blink.new',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/blink-proxy\/core/, ''),
+      },
+    },
   }
 });

@@ -9,6 +9,9 @@ import './index.css'
 const queryClient = new QueryClient()
 
 const isInIframe = window.self !== window.top
+const proxiedUrls = isInIframe
+  ? { authUrl: `${window.location.origin}/blink-proxy/auth`, coreUrl: `${window.location.origin}/blink-proxy/core` }
+  : {}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -16,7 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BlinkProvider
         projectId={import.meta.env.VITE_BLINK_PROJECT_ID}
         publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY}
-        auth={{ mode: isInIframe ? 'headless' : 'managed' }}
+        auth={{ mode: isInIframe ? 'headless' : 'managed', ...proxiedUrls }}
       >
         <BlinkUIProvider theme="linear" darkMode="dark">
           <Toaster />
