@@ -14,8 +14,10 @@ import {
   PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip,
 } from 'recharts'
 import { format, parseISO, isAfter } from 'date-fns'
-import { useAnalytics } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics, filterGamesByMode } from '@/hooks/useAnalytics'
 import { useGames } from '@/hooks/useGames'
+import { useTeam } from '@/hooks/useTeam'
+import { useGameTypes, useViewMode } from '@/hooks/usePreferences'
 import type { Game, GameReview } from '@/types'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
@@ -605,8 +607,13 @@ function OpponentListItem({
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function OpponentsPage() {
-  const { data: analytics, isLoading } = useAnalytics()
-  const { data: allGames = [] } = useGames()
+  const { data: analytics, isLoading } = useFilteredAnalytics()
+  const { data: rawGames = [] } = useGames()
+  const { data: teamData } = useTeam()
+  const teamId = teamData?.team.id
+  const { types } = useGameTypes(teamId)
+  const { mode } = useViewMode(teamId)
+  const allGames = useMemo(() => filterGamesByMode(rawGames, types, mode), [rawGames, types, mode])
   const [selected, setSelected] = useState<string | null>(null)
 
   const today = new Date()

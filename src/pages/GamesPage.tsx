@@ -14,12 +14,37 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent,
   EmptyState, toast, Separator,
 } from '@blinkdotnew/ui'
-import { Plus, Eye, Calendar, Swords, MapPin, Trophy } from 'lucide-react'
+import { Plus, Eye, Calendar, Swords, MapPin, Trophy, Award, Sparkles } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
+import { useGameTypes, useViewMode } from '@/hooks/usePreferences'
+import type { GameType } from '@/hooks/usePreferences'
+import { filterGamesByMode } from '@/hooks/useAnalytics'
 import { cn } from '@/lib/utils'
 import type { Game } from '@/types'
+
+function GameTypeBadge({ type }: { type: GameType }) {
+  if (type === 'tournament') {
+    return (
+      <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border gap-1">
+        <Award className="w-3 h-3" /> Tournament
+      </Badge>
+    )
+  }
+  if (type === 'exhibition') {
+    return (
+      <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border gap-1">
+        <Sparkles className="w-3 h-3" /> Exhibition
+      </Badge>
+    )
+  }
+  return (
+    <Badge variant="outline" className="text-muted-foreground border-border gap-1">
+      <Trophy className="w-3 h-3" /> League
+    </Badge>
+  )
+}
 
 const createSchema = z.object({
   opponent: z.string().min(1, 'Opponent is required'),
@@ -44,7 +69,7 @@ function ResultBadge({ game }: { game: Game }) {
   return <Badge variant="secondary">T {gf}-{ga}</Badge>
 }
 
-function GameCard({ game }: { game: Game }) {
+function GameCard({ game, type }: { game: Game; type: GameType }) {
   const navigate = useNavigate()
   const dateStr = game.date ? format(new Date(game.date + 'T00:00:00'), 'MMM d, yyyy') : '—'
 
@@ -55,6 +80,7 @@ function GameCard({ game }: { game: Game }) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <GameTypeBadge type={type} />
               <StatusBadge status={game.status} />
               <ResultBadge game={game} />
               <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -178,10 +204,14 @@ export default function GamesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [tab, setTab] = useState<TabValue>('all')
   const { data: teamData } = useTeam()
-  const { data: games = [], isLoading } = useGames()
+  const teamId = teamData?.team.id
+  const { data: rawGames = [], isLoading } = useGames()
+  const { types: gameTypes, getType } = useGameTypes(teamId)
+  const { mode } = useViewMode(teamId)
 
   const seasonId = teamData?.season?.id ?? ''
 
+  const games = filterGamesByMode(rawGames, gameTypes, mode)
   const filtered = tab === 'all' ? games : games.filter(g => g.status === tab)
 
   // Stats
@@ -242,7 +272,7 @@ export default function GamesPage() {
                 action={t === 'all' ? { label: 'New Game', onClick: () => setCreateOpen(true) } : undefined}
               />
             ) : (
-              filtered.map(g => <GameCard key={g.id} game={g} />)
+              filtered.map(g => <GameCard key={g.id} game={g} type={getType(g.id)} />)
             )}
           </TabsContent>
         ))}

@@ -110,3 +110,60 @@ export function useRecentColors(teamId?: string) {
 export function useSeasonState(teamId?: string) {
   return usePersistedJson<SeasonState>(teamId ? `season-state:${teamId}` : null, DEFAULT_SEASON_STATE)
 }
+
+// ── Game classification (exhibition / tournament / league) ────────────────────
+
+export type GameType = 'league' | 'tournament' | 'exhibition'
+export type ViewMode = 'season' | GameType
+
+export const GAME_TYPE_LABEL: Record<GameType, string> = {
+  league: 'League',
+  tournament: 'Tournament',
+  exhibition: 'Exhibition',
+}
+
+export const VIEW_MODE_LABEL: Record<ViewMode, string> = {
+  season: 'Season',
+  league: 'League',
+  tournament: 'Tournament',
+  exhibition: 'Exhibition',
+}
+
+interface GameTypesMap {
+  byId: Record<string, GameType>
+}
+
+const DEFAULT_GAME_TYPES: GameTypesMap = { byId: {} }
+
+interface ViewModeState {
+  mode: ViewMode
+}
+
+const DEFAULT_VIEW_MODE: ViewModeState = { mode: 'season' }
+
+export function useGameTypes(teamId?: string) {
+  const [state, setState] = usePersistedJson<GameTypesMap>(
+    teamId ? `game-types:${teamId}` : null,
+    DEFAULT_GAME_TYPES,
+  )
+  const getType = useCallback(
+    (gameId: string): GameType => state.byId[gameId] ?? 'league',
+    [state.byId],
+  )
+  const setType = useCallback(
+    (gameId: string, type: GameType) => {
+      setState((prev) => ({ byId: { ...prev.byId, [gameId]: type } }))
+    },
+    [setState],
+  )
+  return { types: state.byId, getType, setType }
+}
+
+export function useViewMode(teamId?: string) {
+  const [state, setState] = usePersistedJson<ViewModeState>(
+    teamId ? `view-mode:${teamId}` : null,
+    DEFAULT_VIEW_MODE,
+  )
+  const setMode = useCallback((mode: ViewMode) => setState({ mode }), [setState])
+  return { mode: state.mode, setMode }
+}

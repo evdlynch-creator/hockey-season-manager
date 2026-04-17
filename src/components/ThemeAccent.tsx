@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useTeam } from '../hooks/useTeam'
-import { useTeamPreferences } from '../hooks/usePreferences'
+import { useTeamPreferences, useViewMode } from '../hooks/usePreferences'
 
 interface Hsl {
   h: number
@@ -56,14 +56,21 @@ function clearAccent() {
   ;[...VARS, ...FG_VARS].forEach((v) => root.style.removeProperty(v))
 }
 
+// Tournament view always paints in gold, regardless of team color preference.
+const TOURNAMENT_HSL: Hsl = { h: 43, s: 96, l: 56 }
+
 export function ThemeAccent() {
   const { data: teamData } = useTeam()
   const teamId = teamData?.team.id
   const [prefs] = useTeamPreferences(teamId)
+  const { mode } = useViewMode(teamId)
 
   useEffect(() => {
+    if (mode === 'tournament') {
+      applyAccent(TOURNAMENT_HSL)
+      return () => clearAccent()
+    }
     if (!teamId || !prefs.primaryColor) {
-      // Restore stylesheet defaults.
       const value = `${DEFAULT_HSL.h} ${DEFAULT_HSL.s}% ${DEFAULT_HSL.l}%`
       VARS.forEach((v) => document.documentElement.style.setProperty(v, value))
       FG_VARS.forEach((v) => document.documentElement.style.setProperty(v, DEFAULT_FG))
@@ -73,7 +80,7 @@ export function ThemeAccent() {
     if (!hsl) return
     applyAccent(hsl)
     return () => clearAccent()
-  }, [teamId, prefs.primaryColor])
+  }, [teamId, prefs.primaryColor, mode])
 
   return null
 }

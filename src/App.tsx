@@ -45,7 +45,8 @@ import TeamMembersPage from './pages/TeamMembersPage'
 import SettingsPage from './pages/SettingsPage'
 import { usePractices } from './hooks/usePractices'
 import { useGames } from './hooks/useGames'
-import { useAnalytics } from './hooks/useAnalytics'
+import { useFilteredAnalytics, filterGamesByMode } from './hooks/useAnalytics'
+import { useGameTypes, useViewMode } from './hooks/usePreferences'
 import { HypeCard } from './components/HypeCard'
 import { format, isAfter, parseISO } from 'date-fns'
 import { ClipboardList, Swords, ChevronRight } from 'lucide-react'
@@ -188,8 +189,12 @@ function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth()
   const { data: teamData, isLoading, isFetching, isSuccess } = useTeam()
   const { data: practices = [] } = usePractices()
-  const { data: games = [] } = useGames()
-  const { data: analytics } = useAnalytics()
+  const { data: rawGames = [] } = useGames()
+  const teamId = teamData?.team.id
+  const { types: gameTypes } = useGameTypes(teamId)
+  const { mode: viewMode } = useViewMode(teamId)
+  const games = filterGamesByMode(rawGames, gameTypes, viewMode)
+  const { data: analytics } = useFilteredAnalytics()
   const navigate = useNavigate()
 
   useEffect(() => {

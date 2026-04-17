@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils'
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { blink } from '@/blink/client'
+import { ViewModeSwitcher } from './ViewModeSwitcher'
 
 const SIDEBAR_KEY = 'sidebar_collapsed'
 
@@ -154,6 +155,9 @@ export function AppSidebarShell() {
 
         {/* ── Nav (only this section scrolls) ───────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
+          <div className={cn('pb-3', collapsed ? 'flex justify-center' : 'px-1')}>
+            <ViewModeSwitcher collapsed={collapsed} />
+          </div>
           {!collapsed && (
             <p className="px-3 pt-2 pb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
               Navigation

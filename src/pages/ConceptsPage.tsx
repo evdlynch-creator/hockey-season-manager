@@ -9,7 +9,7 @@ import {
   BarChart, Bar, Legend,
 } from 'recharts'
 import { subDays, subMonths, parseISO, isAfter, isEqual } from 'date-fns'
-import { useAnalytics } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics } from '@/hooks/useAnalytics'
 import type { ConceptSummary } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { CONCEPTS } from '@/types'
@@ -186,7 +186,7 @@ function ConceptCard({
 
 export default function ConceptsPage() {
   const { data: teamData } = useTeam()
-  const { data: analytics, isLoading } = useAnalytics()
+  const { data: analytics, isLoading } = useFilteredAnalytics()
   const [selected, setSelected] = useState<Concept>(CONCEPTS[0])
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
 

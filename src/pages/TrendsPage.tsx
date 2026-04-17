@@ -9,7 +9,7 @@ import {
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
-import { useAnalytics } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
@@ -55,7 +55,7 @@ function heatmapColor(value: number | null): string {
 
 export default function TrendsPage() {
   const { data: teamData } = useTeam()
-  const { data: analytics, isLoading } = useAnalytics()
+  const { data: analytics, isLoading } = useFilteredAnalytics()
 
   // Goals trend data
   const goalsData = useMemo(() => {
