@@ -45,7 +45,7 @@ export function ViewModeSwitcher({ collapsed = false }: { collapsed?: boolean })
 
   return (
     <div className="space-y-1.5">
-      <p className="px-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
+      <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
         View
       </p>
       <Tabs value={mode} onValueChange={v => setMode(v as ViewMode)} className="w-full">

@@ -174,7 +174,7 @@ export function AppSidebarShell() {
 
         {/* ── Nav (only this section scrolls) ───────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
-          <div className={cn('pb-3', collapsed ? 'flex justify-center' : 'px-1')}>
+          <div className={cn('pb-3', collapsed && 'flex justify-center')}>
             <ViewModeSwitcher collapsed={collapsed} />
           </div>
           {!collapsed && (
