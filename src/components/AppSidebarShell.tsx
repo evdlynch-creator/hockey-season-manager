@@ -174,6 +174,23 @@ export function AppSidebarShell() {
 
         {/* ── Nav (only this section scrolls) ───────────── */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
+          {collapsed && (
+            <div className="pb-3 flex justify-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    aria-label="Expand sidebar"
+                    className="h-8 w-8 mx-auto flex items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30 hover:bg-primary/25 hover:ring-primary/50 transition-all"
+                  >
+                    <ChevronsRight className="h-4 w-4 shrink-0" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Expand sidebar</TooltipContent>
+              </Tooltip>
+            </div>
+          )}
           <div className="pb-3">
             <ViewModeSwitcher collapsed={collapsed} />
           </div>
@@ -227,25 +244,6 @@ export function AppSidebarShell() {
                 </p>
               </div>
             </div>
-          )}
-
-          {/* Expand sidebar (collapsed only) */}
-          {collapsed && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
-                  onClick={toggle}
-                  aria-label="Expand sidebar"
-                >
-                  <ChevronsRight className="h-4 w-4 shrink-0" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Expand sidebar</TooltipContent>
-            </Tooltip>
           )}
 
           {/* Sign out */}
