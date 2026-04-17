@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import type { BlinkUser } from '@blinkdotnew/sdk'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import { useActiveTeamId } from './usePreferences'
@@ -67,6 +68,15 @@ interface MembershipResolution {
   teams: Team[]
 }
 
+interface MemberQueryClause {
+  teamId?: string
+  userId?: string | null
+  email?: string
+  status?: string
+  role?: string
+  id?: string
+}
+
 /**
  * Resolves the current user's memberships and the teams they cover.
  *
@@ -76,14 +86,11 @@ interface MembershipResolution {
  *     but no membership row exists yet. Also stamps `plan` and `seatLimit` if
  *     missing so monetization fields are present on every team.
  */
-async function resolveMemberships(user: {
-  id: string
-  email?: string | null
-}): Promise<MembershipResolution> {
-  const myEmail = normalizeEmail((user as any).email ?? '')
+async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution> {
+  const myEmail = normalizeEmail(user.email ?? '')
 
   // 1. Memberships I'm linked to via userId, plus pending invites matching my email.
-  const orClauses: any[] = [{ userId: user.id }]
+  const orClauses: MemberQueryClause[] = [{ userId: user.id }]
   if (myEmail) orClauses.push({ email: myEmail, status: 'pending' })
 
   let memberships = (await blink.db.teamMembers.list({
@@ -157,8 +164,16 @@ async function resolveMemberships(user: {
             createdAt: now,
             updatedAt: now,
           } as TeamMember
-        } catch {
-          // Another tab won the race — re-fetch and use whatever owner row exists.
+        } catch (err) {
+          // Most likely another tab won the race and wrote the owner row first
+          // (deterministic id collision). Re-fetch to recover. Log so real
+          // schema/permission errors aren't silently swallowed.
+          console.warn(
+            '[useTeam] owner-backfill create failed for team',
+            team.id,
+            '— falling back to existing row',
+            err,
+          )
           const existing = (await blink.db.teamMembers.list({
             where: { teamId: team.id, role: 'owner' },
             limit: 1,
@@ -188,7 +203,12 @@ async function resolveMemberships(user: {
       needsPlanStamp.map((t) =>
         blink.db.teams
           .update(t.id, { plan: 'beta_free', seatLimit: null })
-          .catch(() => undefined),
+          .catch((err) => {
+            // Stamping the plan default is best-effort; another tab may have
+            // already done it. Log so real schema/permission errors aren't
+            // silently swallowed.
+            console.warn('[useTeam] could not stamp plan defaults on team', t.id, err)
+          }),
       ),
     )
   }

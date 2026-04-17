@@ -764,7 +764,7 @@ function OnboardingPage() {
             id: `tm_owner_${teamId}`,
             teamId,
             userId: user.id,
-            email: ((user as any).email ?? '').toString().trim().toLowerCase(),
+            email: (user.email ?? '').trim().toLowerCase(),
             role: 'owner',
             status: 'active',
             invitedBy: null,
@@ -772,8 +772,15 @@ function OnboardingPage() {
             createdAt: now,
             updatedAt: now,
           })
-        } catch {
-          // Backfill in useTeam will create/repair if this somehow loses a race.
+        } catch (err) {
+          // Most likely another tab/session already created the deterministic
+          // owner row. The backfill in useTeam will recover. Log so real
+          // schema/permission errors aren't masked.
+          console.warn(
+            '[onboarding] owner membership create failed for team',
+            teamId,
+            err,
+          )
         }
       }
 

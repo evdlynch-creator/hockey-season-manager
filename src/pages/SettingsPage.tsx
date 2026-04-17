@@ -820,11 +820,10 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
   const [confirmLeave, setConfirmLeave] = useState(false)
   const { user } = useAuth()
   const { data: members = [] } = useTeamMembers(teamId)
+  const myEmail = (user?.email ?? '').toLowerCase()
   const myMembership =
     members.find((m) => m.userId === user?.id) ??
-    members.find(
-      (m) => m.email.toLowerCase() === ((user as any)?.email ?? '').toString().toLowerCase(),
-    ) ??
+    members.find((m) => m.email.toLowerCase() === myEmail) ??
     null
   const isOwner = myMembership?.role === 'owner'
   const removeMember = useRemoveMember()
@@ -838,8 +837,9 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
       // Force the team scope to re-resolve and pick up another team (or land on onboarding).
       queryClient.invalidateQueries({ queryKey: ['team'] })
       queryClient.invalidateQueries({ queryKey: ['myTeams'] })
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not leave team')
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : 'Could not leave team'
+      toast.error(msg)
     }
   }
 

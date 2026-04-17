@@ -51,6 +51,11 @@ function initialsOf(email: string): string {
   return (email || '?').slice(0, 2).toUpperCase()
 }
 
+function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message) return err.message
+  return fallback
+}
+
 export default function TeamMembersPage() {
   const { user } = useAuth()
   const { data: teamData, isLoading: teamLoading } = useTeam()
@@ -66,7 +71,7 @@ export default function TeamMembersPage() {
   const remove = useRemoveMember()
   const [pendingRemove, setPendingRemove] = useState<TeamMember | null>(null)
 
-  const myEmail = ((user as any)?.email ?? '').toString().toLowerCase()
+  const myEmail = (user?.email ?? '').toLowerCase()
 
   if (teamLoading || membersLoading) {
     return (
@@ -99,8 +104,8 @@ export default function TeamMembersPage() {
       toast.success('Invite added', {
         description: `${cleaned} will join the team the next time they sign in.`,
       })
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not add invite')
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not add invite'))
     }
   }
 
@@ -119,8 +124,8 @@ export default function TeamMembersPage() {
     try {
       await revoke.mutateAsync(m)
       toast.success('Invite revoked')
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not revoke invite')
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not revoke invite'))
     }
   }
 
@@ -130,8 +135,8 @@ export default function TeamMembersPage() {
       await remove.mutateAsync(pendingRemove)
       toast.success('Coach removed from team')
       setPendingRemove(null)
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not remove coach')
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not remove coach'))
     }
   }
 

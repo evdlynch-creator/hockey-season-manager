@@ -1,8 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { BlinkUser } from '@blinkdotnew/sdk'
 import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import { useTeam } from './useTeam'
 import type { TeamMember, TeamPlan } from '../types'
+
+interface MemberQueryClause {
+  teamId?: string
+  userId?: string | null
+  email?: string
+  role?: string
+  status?: string
+  id?: string
+}
+
+function userEmail(user: BlinkUser | null): string {
+  return (user?.email ?? '').trim().toLowerCase()
+}
 
 function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase()
@@ -24,12 +38,12 @@ export function newMembershipId(): string {
  * accidentally — or from devtools — by a coach who somehow bypasses the UI.
  */
 async function assertOwner(
-  user: { id: string; email?: string | null } | null,
+  user: BlinkUser | null,
   teamId: string,
 ): Promise<void> {
   if (!user) throw new Error('Not signed in')
-  const myEmail = ((user as any).email ?? '').toString().trim().toLowerCase()
-  const orClauses: any[] = [{ teamId, userId: user.id }]
+  const myEmail = userEmail(user)
+  const orClauses: MemberQueryClause[] = [{ teamId, userId: user.id }]
   if (myEmail) orClauses.push({ teamId, email: myEmail })
   const rows = (await blink.db.teamMembers.list({
     where: orClauses.length === 1 ? orClauses[0] : { OR: orClauses },
@@ -45,7 +59,7 @@ async function assertOwner(
  * the action at a row in a different team.
  */
 async function loadAuthorizedMember(
-  user: { id: string; email?: string | null } | null,
+  user: BlinkUser | null,
   memberId: string,
 ): Promise<TeamMember> {
   if (!user) throw new Error('Not signed in')
@@ -89,7 +103,7 @@ export function useMyMembership(teamId: string | undefined) {
   if (!user || !teamId) {
     return { role: null as 'owner' | 'coach' | null, status: null, isOwner: false }
   }
-  const email = normalizeEmail((user as any).email ?? '')
+  const email = userEmail(user)
   const mine =
     members.find((m) => m.userId === user.id) ??
     members.find((m) => normalizeEmail(m.email) === email)
@@ -131,7 +145,7 @@ export function useInviteCoach() {
       await assertOwner(user, teamId)
       const cleaned = normalizeEmail(email)
       if (!isValidEmail(cleaned)) throw new Error('Enter a valid email address')
-      const myEmail = normalizeEmail((user as any).email ?? '')
+      const myEmail = userEmail(user)
       if (cleaned === myEmail) throw new Error("You can't invite yourself")
 
       const existing = (await blink.db.teamMembers.list({
@@ -151,7 +165,7 @@ export function useInviteCoach() {
         role: 'coach',
         status: 'pending',
         invitedBy: user.id,
-        invitedByName: (user as any).email ?? null,
+        invitedByName: user.email ?? null,
         createdAt: now,
         updatedAt: now,
       })
@@ -171,6 +185,9 @@ export function useResendInvite() {
       // Re-fetch + authorize against the row's actual teamId — a caller
       // can't redirect this update at a row in another team.
       const row = await loadAuthorizedMember(user, member.id)
+      if (row.status !== 'pending') {
+        throw new Error('Only pending invites can be resent')
+      }
       // We don't actually send an email — invites are claimed at sign-in.
       // Touching updatedAt gives the user a visible "just resent" signal.
       await blink.db.teamMembers.update(row.id, {
@@ -223,7 +240,7 @@ export function useRemoveMember() {
       if (!row) throw new Error('Member not found')
       if (row.role === 'owner') throw new Error("Owner can't be removed")
 
-      const myEmail = ((user as any).email ?? '').toString().trim().toLowerCase()
+      const myEmail = userEmail(user)
       const isSelf =
         row.userId === user.id ||
         (myEmail !== '' && row.email.trim().toLowerCase() === myEmail)
