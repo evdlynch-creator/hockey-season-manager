@@ -125,43 +125,50 @@ export function AppSidebarShell() {
           )}
         >
           {collapsed ? (
-            <img
-              src={iqPlusLogoUrl}
-              alt="Blue Line IQ"
-              className="h-8 w-8 object-contain shrink-0 select-none"
-              draggable={false}
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={toggle}
+                  className="h-8 w-8 mx-auto flex items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors"
+                  aria-label="Expand sidebar"
+                >
+                  <img
+                    src={iqPlusLogoUrl}
+                    alt="Blue Line IQ"
+                    className="h-7 w-7 object-contain select-none"
+                    draggable={false}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expand sidebar</TooltipContent>
+            </Tooltip>
           ) : (
-            <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-              <img
-                src={logoUrl}
-                alt="Blue Line IQ"
-                className="h-7 w-auto object-contain object-left select-none"
-                draggable={false}
-              />
-              <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
-            </div>
-          )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
-                onClick={toggle}
-              >
-                <PanelLeft
-                  className={cn(
-                    'h-4 w-4 transition-transform duration-300',
-                    collapsed && 'rotate-180'
-                  )}
+            <>
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <img
+                  src={logoUrl}
+                  alt="Blue Line IQ"
+                  className="h-7 w-auto object-contain object-left select-none"
+                  draggable={false}
                 />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            </TooltipContent>
-          </Tooltip>
+                <span className="block text-[10px] text-muted-foreground truncate uppercase font-semibold tracking-wider">Coach Pro</span>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                    onClick={toggle}
+                  >
+                    <PanelLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Collapse sidebar</TooltipContent>
+              </Tooltip>
+            </>
+          )}
         </div>
 
         {/* ── Nav (only this section scrolls) ───────────── */}
