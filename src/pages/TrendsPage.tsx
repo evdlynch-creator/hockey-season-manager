@@ -3,13 +3,13 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Separator, EmptyState, Badge,
 } from '@blinkdotnew/ui'
-import { TrendingUp, Trophy, Target, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, Trophy, Target, Activity, Lightbulb, Sparkles, AlertTriangle } from 'lucide-react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
-import { useFilteredAnalytics } from '@/hooks/useAnalytics'
+import { useFilteredAnalytics, buildInsights, type Insight } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
@@ -38,6 +38,38 @@ function DarkTooltip({ active, payload, label }: any) {
       ))}
     </div>
   )
+}
+
+// ── Insight highlight renderer ───────────────────────────────────────────────
+
+function renderHighlighted(text: string) {
+  const parts = text.split(/(\{\{[^}]+\}\})/g)
+  return parts.map((part, i) => {
+    const m = part.match(/^\{\{(.+)\}\}$/)
+    if (m) {
+      return (
+        <span key={i} className="text-primary font-bold">{m[1]}</span>
+      )
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
+function insightIcon(insight: Insight) {
+  switch (insight.kind) {
+    case 'trending-up':
+    case 'best-lever':
+      return <TrendingUp className="w-4 h-4 text-emerald-400" />
+    case 'trending-down':
+      return <TrendingDown className="w-4 h-4 text-red-400" />
+    case 'weakest-concept':
+      return <AlertTriangle className="w-4 h-4 text-amber-400" />
+    case 'goal-differential':
+      return <Sparkles className="w-4 h-4 text-primary" />
+    case 'concept-correlation':
+    default:
+      return <Target className="w-4 h-4 text-primary" />
+  }
 }
 
 // ── Heatmap cell ─────────────────────────────────────────────────────────────
@@ -119,15 +151,22 @@ export default function TrendsPage() {
     CONCEPTS.forEach(c => {
       const orig = rawAnalytics.byConcept[c]
       const timeline = orig.timeline.filter(t => inRange(t.date))
-      const ratings: number[] = []
-      timeline.forEach(t => {
-        if (t.gameRating != null) ratings.push(t.gameRating)
-        if (t.practiceAvg != null) ratings.push(t.practiceAvg)
-      })
-      const latestAvg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null
-      const firstAvg = ratings.length ? ratings[0] : 0
+      const combined = timeline
+        .map(t => {
+          const vals = [t.practiceAvg, t.gameRating].filter(v => v != null) as number[]
+          return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+        })
+        .filter((v): v is number => v != null)
+      const latestAvg = combined.length ? combined[combined.length - 1] : null
+      const firstAvg = combined.length ? combined[0] : 0
       const trend = latestAvg != null ? latestAvg - firstAvg : 0
-      byConcept[c] = { ...orig, timeline, latestAvg, trend }
+      let practicePoints = 0
+      let gamePoints = 0
+      timeline.forEach(t => {
+        if (t.practiceAvg != null) practicePoints++
+        if (t.gameRating != null) gamePoints++
+      })
+      byConcept[c] = { ...orig, timeline, latestAvg, trend, practicePoints, gamePoints }
     })
     return { ...rawAnalytics, games, byConcept }
   }, [rawAnalytics, windowMode, selectedMonth, availableMonths])
@@ -211,6 +250,8 @@ export default function TrendsPage() {
   const totalGoalsAgainst = completedGames.reduce((sum, g) => sum + Number(g.goalsAgainst ?? 0), 0)
   const avgGoalsFor = completedGames.length ? totalGoalsFor / completedGames.length : 0
   const avgGoalsAgainst = completedGames.length ? totalGoalsAgainst / completedGames.length : 0
+
+  const insights = useMemo(() => analytics ? buildInsights(analytics) : [], [analytics])
 
   const strongest = analytics
     ? [...CONCEPTS].sort((a, b) => (analytics.byConcept[b].latestAvg ?? 0) - (analytics.byConcept[a].latestAvg ?? 0))[0]
@@ -496,6 +537,43 @@ export default function TrendsPage() {
                 </div>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Tracked Insights */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Lightbulb className="w-4 h-4 text-primary" />
+            <CardTitle className="text-base">Tracked Insights</CardTitle>
+          </div>
+          <CardDescription className="text-xs">
+            Plain-English signals from your ratings and results. Updates as more games are reviewed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {insights.length === 0 ? (
+            <div className="py-8 text-center">
+              <Lightbulb className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Insights appear here once you've reviewed a few games in this window.
+              </p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {insights.map(insight => (
+                <li key={insight.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="mt-0.5 shrink-0">{insightIcon(insight)}</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground leading-snug">
+                      {renderHighlighted(insight.headline)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{insight.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>
