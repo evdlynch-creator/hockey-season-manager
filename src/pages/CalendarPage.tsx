@@ -67,16 +67,21 @@ function MiniMonth({
 
   const wkStart = startOfWeek(monthCursor, { weekStartsOn: 1 })
   const wkEnd = addDays(wkStart, 6)
-  const headerLabel = view === 'week'
-    ? `${format(wkStart, 'MM/dd/yyyy')} – ${format(wkEnd, 'MM/dd/yyyy')}`
-    : `${format(monthCursor, 'MMMM')} ${format(monthCursor, 'yyyy')}`
-
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-2 px-0.5 gap-3">
-        <h2 className="text-base font-semibold text-white truncate">
-          {headerLabel}
+        <h2 className="text-base font-semibold truncate">
+          {view === 'week' ? (
+            <span className="text-primary tabular-nums">
+              {format(wkStart, 'MM/dd/yyyy')} – {format(wkEnd, 'MM/dd/yyyy')}
+            </span>
+          ) : (
+            <>
+              <span className="text-white">{format(monthCursor, 'MMMM')}</span>{' '}
+              <span className="text-primary">{format(monthCursor, 'yyyy')}</span>
+            </>
+          )}
         </h2>
         <div className="flex items-center gap-2 shrink-0">
           {/* View toggle */}
@@ -149,7 +154,7 @@ function MiniMonth({
                       !isCurrentMonth && 'text-white/25',
                       isCurrentMonth && !selected && !today && (isWeekend ? 'text-white/60' : 'text-white/85'),
                       today && !selected && 'text-primary font-semibold',
-                      selected && 'bg-white text-black font-semibold',
+                      selected && 'bg-primary text-primary-foreground font-semibold',
                       !selected && 'hover:bg-white/10',
                     )}
                   >
