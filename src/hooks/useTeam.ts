@@ -103,10 +103,16 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
   })) as TeamMember[]
 
   // 2. Reclaim memberships matching my email whose userId isn't me yet.
-  //    Pending rows also get flipped to active. Owner-role rows keep their
-  //    role — we just re-attach the identity.
+  //    Pending invites get flipped to active and re-attached.
+  //    Owner-role rows are intentionally NOT auto-reclaimed here — those
+  //    are gated behind step 3b's exactly-one-orphan check (or the manual
+  //    recovery UI) to avoid silently switching ownership when there's
+  //    ambiguity across multiple matching owner rows.
   const claimable = memberships.filter(
-    (m) => normalizeEmail(m.email) === myEmail && m.userId !== user.id,
+    (m) =>
+      normalizeEmail(m.email) === myEmail &&
+      m.userId !== user.id &&
+      m.role !== 'owner',
   )
   if (claimable.length > 0) {
     const now = new Date().toISOString()
@@ -129,6 +135,12 @@ async function resolveMemberships(user: BlinkUser): Promise<MembershipResolution
         : m,
     )
   }
+
+  // Drop any rows whose userId still isn't me — those are un-reclaimed
+  // owner-orphan rows that step 3b (or the manual recovery UI) handles.
+  // Without this filter their teamId would leak into step 4 and load
+  // teams I don't actually have a confirmed membership for.
+  memberships = memberships.filter((m) => m.userId === user.id)
 
   // 3. Backfill owner row for legacy teams owned by this user.
   //    Uses a DETERMINISTIC id (`tm_owner_${teamId}`) so that concurrent first

@@ -174,7 +174,7 @@ export function useOrphanTeams() {
               practiceCount,
               gameCount,
               lastActivity,
-              isEmpty: practiceCount === 0 && gameCount === 0,
+              isEmpty: seasons.length === 0,
               evidence,
             } as OrphanTeamCandidate
           }),
@@ -273,17 +273,13 @@ export function useDeleteEmptyTeam() {
         where: { teamId },
       })) as Season[]
 
-      for (const s of seasons) {
-        const [practices, games] = await Promise.all([
-          blink.db.practices.list({ where: { seasonId: s.id } }) as Promise<Practice[]>,
-          blink.db.games.list({ where: { seasonId: s.id } }) as Promise<Game[]>,
-        ])
-        if (practices.length > 0 || games.length > 0) {
-          throw new Error("This team isn't empty — refusing to delete")
-        }
+      // Tightened "empty" definition: zero seasons. Season metadata
+      // (priority concepts, dates) is considered meaningful by itself,
+      // so we only allow deleting truly never-used teams.
+      if (seasons.length > 0) {
+        throw new Error("This team isn't empty — refusing to delete")
       }
 
-      await Promise.all(seasons.map((s) => blink.db.seasons.delete(s.id)))
       const members = (await blink.db.teamMembers.list({
         where: { teamId },
       })) as TeamMember[]
