@@ -128,7 +128,7 @@ export default function GameDetailPage() {
       if (review) {
         await blink.db.gameReviews.update(review.id, payload)
       } else {
-        const { user } = await blink.auth.me()
+        const user = await blink.auth.me()
         if (!user) throw new Error('Not authenticated')
 
         await blink.db.gameReviews.create({

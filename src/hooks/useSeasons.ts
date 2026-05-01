@@ -37,7 +37,7 @@ export function useCreateSeason() {
   return useMutation({
     mutationFn: async (input: CreateSeasonInput) => {
       if (!teamId) throw new Error('No team')
-      const { user } = await blink.auth.me()
+      const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
       const id = `season_${crypto.randomUUID().slice(0, 8)}`

@@ -162,7 +162,7 @@ export default function PracticeDetailPage() {
           link: data.link ?? '',
         })
       } else {
-        const { user } = await blink.auth.me()
+        const user = await blink.auth.me()
         if (!user) throw new Error('Not authenticated')
 
         await blink.db.practiceSegments.create({

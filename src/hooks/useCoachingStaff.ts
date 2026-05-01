@@ -42,7 +42,7 @@ export function useInviteCoach() {
   return useMutation({
     mutationFn: async ({ email, role }: { email: string; role: SeasonRole }) => {
       if (!seasonId) throw new Error('No active season')
-      const { user } = await blink.auth.me()
+      const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
       
       const token = crypto.randomUUID()

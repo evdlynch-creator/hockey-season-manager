@@ -127,7 +127,7 @@ function CreatePracticeDialog({
 
   const mutation = useMutation({
     mutationFn: async (data: CreateForm) => {
-      const { user } = await blink.auth.me()
+      const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
       await blink.db.practices.create({
@@ -212,7 +212,7 @@ export default function PracticesPage() {
 
   const duplicate = useMutation({
     mutationFn: async (practice: Practice) => {
-      const { user } = await blink.auth.me()
+      const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
       const newId = crypto.randomUUID()

@@ -126,7 +126,7 @@ function CreateGameDialog({
 
   const mutation = useMutation({
     mutationFn: async (data: CreateForm) => {
-      const { user } = await blink.auth.me()
+      const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
       await blink.db.games.create({
