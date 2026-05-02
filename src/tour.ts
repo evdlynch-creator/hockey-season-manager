@@ -129,6 +129,23 @@ export function startTour(navigate: (path: string) => void) {
   })
 
   tour.addStep({
+    id: 'analytics',
+    title: 'Analytics',
+    text: 'Deep dive into your season performance. Track win rates, goal differentials, and tactical momentum to see exactly how your team is trending.',
+    attachTo: {
+      element: '#tour-analytics-performance',
+      on: 'top'
+    },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/analytics')
+        setTimeout(resolve, 300)
+      })
+    },
+    buttons: commonButtons
+  })
+
+  tour.addStep({
     id: 'concepts',
     title: 'Concepts tab',
     text: 'Track how each core concept is developing across both practices and games. This is where you see whether your coaching is actually moving the needle.',

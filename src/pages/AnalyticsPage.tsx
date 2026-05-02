@@ -157,7 +157,7 @@ export default function AnalyticsPage() {
       </motion.div>
 
       {/* KPI Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div id="tour-analytics-kpis" className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <motion.div variants={staggerItem}>
           <Card className="bg-card/50 backdrop-blur-sm border-border/40 rounded-[2rem]">
             <CardContent className="p-6">
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Row 1: Season Performance Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div id="tour-analytics-performance" className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div variants={staggerItem} className="lg:col-span-2">
           <Card className="bg-card border-border rounded-[2rem] overflow-hidden">
             <CardHeader>

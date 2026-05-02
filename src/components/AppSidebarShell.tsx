@@ -127,7 +127,7 @@ export function AppSidebarShell() {
     ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
     ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
     { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents', id: 'tour-opponents' },
-    { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics' },
+    { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
     { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
     { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
     { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
