@@ -40,11 +40,14 @@ import {
   ChevronsRight,
   Plus,
   ChevronDown,
+  Contact,
+  Library,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { useTeam } from '@/hooks/useTeam'
+import { useTeamPreferences } from '@/hooks/usePreferences'
 import { useDemoMode } from '@/hooks/useDemoData'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
@@ -56,18 +59,6 @@ interface NavItemDef {
   icon: ReactNode
   label: string
 }
-
-const NAV_ITEMS: NavItemDef[] = [
-  { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard' },
-  { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar' },
-  { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices' },
-  { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games' },
-  { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents' },
-  { to: '/concepts', icon: <BarChart3 className="h-4 w-4" />, label: 'Concepts' },
-  { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends' },
-  { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
-  { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
-]
 
 function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) {
   const location = useLocation()
@@ -105,6 +96,7 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
 export function AppSidebarShell() {
   const { user } = useAuth()
   const { data: teamData, switchTeam } = useTeam()
+  const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
   const { isDemo, exitDemo } = useDemoMode()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => {
@@ -123,6 +115,20 @@ export function AppSidebarShell() {
   const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
   const teams = teamData?.teams ?? []
   const currentTeam = teamData?.team
+
+  const navItems = [
+    { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard' },
+    { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar' },
+    { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices' },
+    { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games' },
+    ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
+    ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
+    { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents' },
+    { to: '/concepts', icon: <BarChart3 className="h-4 w-4" />, label: 'Concepts' },
+    { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends' },
+    { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
+    { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
+  ]
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -165,7 +171,7 @@ export function AppSidebarShell() {
                   draggable={false}
                 />
                 {isDemo && (
-                  <button 
+                  <button
                     onClick={exitDemo}
                     className="text-[9px] text-amber-500 font-bold uppercase tracking-tighter hover:underline text-center"
                   >
@@ -268,7 +274,7 @@ export function AppSidebarShell() {
               Navigation
             </p>
           )}
-          {NAV_ITEMS.map(item => (
+          {navItems.map(item => (
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
         </div>

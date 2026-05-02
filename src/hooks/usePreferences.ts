@@ -4,6 +4,7 @@ export interface TeamPreferences {
   ageGroup: string
   teamLevel: string
   primaryColor: string
+  enableAttendance: boolean
 }
 
 export interface NotificationPreferences {
@@ -22,6 +23,7 @@ const DEFAULT_TEAM_PREFS: TeamPreferences = {
   ageGroup: '',
   teamLevel: '',
   primaryColor: '#5b8def',
+  enableAttendance: false,
 }
 
 const DEFAULT_NOTIFS: NotificationPreferences = {

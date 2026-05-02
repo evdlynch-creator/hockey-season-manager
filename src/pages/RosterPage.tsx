@@ -26,6 +26,8 @@ import {
 } from '@blinkdotnew/ui'
 import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding } from 'lucide-react'
 import { usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer } from '../hooks/usePlayers'
+import { useTeam } from '../hooks/useTeam'
+import { useTeamPreferences } from '../hooks/usePreferences'
 import { useCanEdit } from '../hooks/usePermissions'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -45,6 +47,8 @@ type PlayerFormData = z.infer<typeof playerSchema>
 const POSITIONS = ['Goalie', 'Defense', 'Forward', 'Center', 'Left Wing', 'Right Wing']
 
 export default function RosterPage() {
+  const { data: teamData } = useTeam()
+  const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
   const { data: players = [], isLoading } = usePlayers()
   const createPlayer = useCreatePlayer()
   const updatePlayer = useUpdatePlayer()
@@ -98,6 +102,19 @@ export default function RosterPage() {
   }
 
   if (isLoading) return <div className="p-8">Loading roster...</div>
+
+  if (!teamPrefs.enableAttendance) {
+    return (
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <EmptyState
+          icon={<Users className="w-12 h-12 text-muted-foreground/40" />}
+          title="Attendance Tracking Disabled"
+          description="Roster management and attendance tracking are currently disabled. You can enable them in the team settings."
+          action={{ label: 'Go to Settings', onClick: () => window.location.hash = '#/settings' }}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in space-y-8">

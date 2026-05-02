@@ -7,40 +7,20 @@ import {
   EmptyState, toast, Separator,
 } from '@blinkdotnew/ui'
 import {
-  ArrowLeft, Plus, Pencil, Trash2, CheckCircle, ClipboardList,
+  ArrowLeft, Plus, Pencil, Trash2, CheckCircle, ClipboardList, BookOpen,
 } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { usePractice, usePracticeSegments } from '@/hooks/usePractices'
+import { usePlayers } from '@/hooks/usePlayers'
+import { useTeam } from '@/hooks/useTeam'
+import { useTeamPreferences } from '@/hooks/usePreferences'
 import { SegmentDialog } from './SegmentDialog'
 import type { SegmentFormData } from './SegmentDialog'
+import { SegmentCard } from '@/components/practices/SegmentCard'
+import { AttendanceTable } from '@/components/practices/AttendanceTable'
+import { DrillPicker } from '@/components/practices/DrillPicker'
 import { cn } from '@/lib/utils'
 import type { PracticeSegment } from '@/types'
-
-// ── Rating field ───────────────────────────────────────────────────────────────
-function RatingField({ label, value, onChange }: { label: string; value?: number; onChange: (v: number) => void }) {
-  return (
-    <div className="text-center">
-      <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1.5">{label}</p>
-      <div className="flex gap-0.5 justify-center">
-        {[1, 2, 3, 4, 5].map(n => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(n)}
-            className={cn(
-              'w-7 h-7 rounded text-xs font-bold transition-all',
-              (value ?? 0) >= n
-                ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/30'
-                : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-            )}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 // ── Status badge ───────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
@@ -50,79 +30,20 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border">Reviewed</Badge>
 }
 
-// ── Segment card ───────────────────────────────────────────────────────────────
-function SegmentCard({
-  segment,
-  practiceId,
-  onEdit,
-  onDelete,
-}: { segment: PracticeSegment; practiceId: string; onEdit: (s: PracticeSegment) => void; onDelete: (id: string) => void }) {
-  const queryClient = useQueryClient()
-
-  const updateRating = async (field: 'understandingRating' | 'executionRating' | 'transferRating', value: number) => {
-    await blink.db.practiceSegments.update(segment.id, { [field]: value })
-    queryClient.invalidateQueries({ queryKey: ['practice-segments', practiceId] })
-  }
-
-  return (
-    <Card className="border-border bg-card">
-      <CardHeader className="flex-row items-start justify-between pb-2 pt-4 px-4">
-        <div className="flex-1 min-w-0">
-          {segment.name && (
-            <h3 className="text-sm font-semibold text-foreground leading-snug mb-2 break-words">
-              {segment.name}
-            </h3>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="font-medium">{segment.type}</Badge>
-            <Badge className="bg-primary/10 text-primary border-primary/20 border">{segment.primaryConcept}</Badge>
-            {segment.secondaryConcept && <Badge variant="secondary">{segment.secondaryConcept}</Badge>}
-          </div>
-        </div>
-        <div className="flex gap-1 shrink-0 ml-2">
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => onEdit(segment)}>
-            <Pencil className="w-3.5 h-3.5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onDelete(segment.id)}>
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="px-4 pb-4">
-        {segment.fileUrl && (
-          <div className="mb-4 -mx-4 -mt-2 overflow-hidden border-b border-border/50">
-            <img
-              src={segment.fileUrl}
-              alt={segment.name || 'Segment drill'}
-              className="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-        )}
-        {segment.notes && <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{segment.notes}</p>}
-        {segment.link && (
-          <a href={segment.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline block mb-3 truncate">
-            {segment.link}
-          </a>
-        )}
-        <div className="grid grid-cols-3 gap-4 pt-1">
-          <RatingField label="Understanding" value={segment.understandingRating} onChange={v => updateRating('understandingRating', v)} />
-          <RatingField label="Execution" value={segment.executionRating} onChange={v => updateRating('executionRating', v)} />
-          <RatingField label="Game Transfer" value={segment.transferRating} onChange={v => updateRating('transferRating', v)} />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function PracticeDetailPage() {
   const { practiceId } = useParams({ from: '/practices/$practiceId' })
   const queryClient = useQueryClient()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PracticeSegment | null>(null)
+  const [attendance, setAttendance] = useState<Record<string, boolean>>({})
 
+  const { data: teamData } = useTeam()
+  const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
   const { data: practice, isLoading: practiceLoading } = usePractice(practiceId)
   const { data: segments = [], isLoading: segsLoading } = usePracticeSegments(practiceId)
+  const { data: players = [] } = usePlayers()
 
   const dateStr = practice?.date
     ? format(new Date(practice.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')
@@ -201,6 +122,10 @@ export default function PracticeDetailPage() {
   const openAdd = () => { setEditTarget(null); setDialogOpen(true) }
   const openEdit = (s: PracticeSegment) => { setEditTarget(s); setDialogOpen(true) }
 
+  const toggleAttendance = (playerId: string) => {
+    setAttendance(prev => ({ ...prev, [playerId]: !prev[playerId] }))
+  }
+
   if (practiceLoading) {
     return (
       <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
@@ -272,12 +197,33 @@ export default function PracticeDetailPage() {
 
       <Separator />
 
+      {/* Attendance Section */}
+      {teamPrefs.enableAttendance && (
+        <AttendanceTable
+          players={players}
+          attendance={attendance}
+          onToggle={toggleAttendance}
+          className="print:hidden"
+        />
+      )}
+
       {/* Segments */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
             Segments <span className="ml-1 text-foreground">{segments.length}</span>
           </h2>
+          {teamPrefs.enableAttendance && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10"
+              onClick={() => setPickerOpen(true)}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              Pick from Library
+            </Button>
+          )}
         </div>
 
         {segsLoading ? (
@@ -310,6 +256,22 @@ export default function PracticeDetailPage() {
         onSubmit={data => saveSegment.mutateAsync(data)}
         editTarget={editTarget}
         isPending={saveSegment.isPending}
+      />
+
+      <DrillPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(drill) => {
+          saveSegment.mutate({
+            type: drill.type,
+            name: drill.name,
+            primaryConcept: drill.primaryConcept,
+            secondaryConcept: drill.secondaryConcept,
+            notes: drill.notes,
+            link: drill.link
+          })
+          setPickerOpen(false)
+        }}
       />
     </div>
   )

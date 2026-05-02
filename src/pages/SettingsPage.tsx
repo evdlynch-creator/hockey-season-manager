@@ -231,6 +231,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
     prefs.ageGroup !== teamPrefs.ageGroup ||
     prefs.teamLevel !== teamPrefs.teamLevel ||
     prefs.primaryColor !== teamPrefs.primaryColor ||
+    prefs.enableAttendance !== teamPrefs.enableAttendance ||
     seasonStart !== (activeSeason?.startDate ?? '') ||
     seasonEnd !== (activeSeason?.endDate ?? '')
 
@@ -307,6 +308,20 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
               <option value="">—</option>
               {TEAM_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
+          </Field>
+          <Field className="md:col-span-2">
+            <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-border/50 bg-secondary/10">
+              <div className="space-y-0.5">
+                <FieldLabel className="text-base">Player Participation Tracking</FieldLabel>
+                <FieldDescription>
+                  Track player attendance during practices and view participation analytics.
+                </FieldDescription>
+              </div>
+              <Switch
+                checked={prefs.enableAttendance}
+                onCheckedChange={(checked) => setPrefs((p) => ({ ...p, enableAttendance: checked }))}
+              />
+            </div>
           </Field>
           <Field className="md:col-span-2">
             <FieldLabel>Primary Team Color</FieldLabel>

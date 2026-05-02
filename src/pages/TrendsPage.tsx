@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns'
 import { useFilteredAnalytics, buildInsights } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
 import { usePlayers } from '@/hooks/usePlayers'
+import { useTeamPreferences } from '@/hooks/usePreferences'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +38,7 @@ const WINDOW_OPTIONS: { value: WindowMode; label: string }[] = [
 
 export default function TrendsPage() {
   const { data: teamData } = useTeam()
+  const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
   const { data: rawAnalytics, isLoading } = useFilteredAnalytics()
   const { data: players = [] } = usePlayers()
   const [windowMode, setWindowMode] = useState<WindowMode>('all')
@@ -331,10 +333,10 @@ export default function TrendsPage() {
 
       {/* Row 2: Cumulative record + Attendance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className={cn(teamPrefs.enableAttendance ? "lg:col-span-2" : "lg:col-span-3")}>
           <CumulativeRecordChart data={recordData} />
         </div>
-        <PlayerAttendanceList players={players} />
+        {teamPrefs.enableAttendance && <PlayerAttendanceList players={players} />}
       </div>
 
       {/* Row 3: Heatmap */}
