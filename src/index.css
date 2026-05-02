@@ -187,6 +187,21 @@
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
 }
 
+.text-shimmer-white-blue {
+  background: linear-gradient(
+    to right,
+    #ffffff 35%,
+    #7dd3fc 50%,
+    #ffffff 65%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer-text 2.5s linear infinite;
+  text-shadow: 0 0 15px rgba(125, 211, 252, 0.3);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

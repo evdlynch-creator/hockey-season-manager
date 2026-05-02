@@ -90,7 +90,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic">
             <Trophy className="w-3 h-3" />
-            Built for High-Performance Coaching
+            Built for <span className="text-shimmer-white-blue">High-Performance</span> Coaching
           </div>
           
           <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
