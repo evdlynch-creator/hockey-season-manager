@@ -85,21 +85,22 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
               onClick={enterDemo}
             >
-              Watch Demo
+              Try Interactive Demo
             </Button>
           </div>
 
-          <div className="mt-20 relative animate-fade-in [animation-delay:800ms]">
-            <div className="absolute -inset-1 bg-gradient-to-t from-primary/30 to-transparent blur-3xl opacity-30" />
-            <div className="relative rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/50 overflow-hidden">
+          <div className="mt-20 relative group">
+            <div className="absolute -inset-1 bg-gradient-to-t from-primary/30 to-transparent blur-3xl opacity-30 animate-pulse" />
+            <div className="relative rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/50 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20">
               <img 
                 src={heroUrl} 
                 alt="Blue Line IQ Dashboard" 
-                className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                className="w-full h-auto object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
                 onError={(e) => {
                   e.currentTarget.src = 'https://images.unsplash.com/photo-1515703407324-5f753eed23cca?q=80&w=2000&auto=format&fit=crop'
                 }}
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-60" />
             </div>
           </div>
         </div>
