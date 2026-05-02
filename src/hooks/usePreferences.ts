@@ -131,9 +131,10 @@ export const VIEW_MODE_LABEL: Record<ViewMode, string> = {
 
 interface GameTypesMap {
   byId: Record<string, GameType>
+  nameById: Record<string, string>  // tournament name per game id
 }
 
-const DEFAULT_GAME_TYPES: GameTypesMap = { byId: {} }
+const DEFAULT_GAME_TYPES: GameTypesMap = { byId: {}, nameById: {} }
 
 interface ViewModeState {
   mode: ViewMode
@@ -150,13 +151,23 @@ export function useGameTypes(teamId?: string) {
     (gameId: string): GameType => state.byId[gameId] ?? 'league',
     [state.byId],
   )
+  const getTournamentName = useCallback(
+    (gameId: string): string => state.nameById?.[gameId] ?? '',
+    [state.nameById],
+  )
   const setType = useCallback(
-    (gameId: string, type: GameType) => {
-      setState((prev) => ({ byId: { ...prev.byId, [gameId]: type } }))
+    (gameId: string, type: GameType, tournamentName?: string) => {
+      setState((prev) => ({
+        byId: { ...prev.byId, [gameId]: type },
+        nameById: {
+          ...(prev.nameById ?? {}),
+          [gameId]: type === 'tournament' ? (tournamentName ?? prev.nameById?.[gameId] ?? '') : '',
+        },
+      }))
     },
     [setState],
   )
-  return { types: state.byId, getType, setType }
+  return { types: state.byId, nameById: state.nameById ?? {}, getType, getTournamentName, setType }
 }
 
 export function useViewMode(teamId?: string) {

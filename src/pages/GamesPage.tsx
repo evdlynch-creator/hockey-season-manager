@@ -16,7 +16,7 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent,
   EmptyState, toast, Separator,
 } from '@blinkdotnew/ui'
-import { Plus, Eye, Pencil, Trash2, Calendar, Swords, MapPin, Trophy, Award, Sparkles } from 'lucide-react'
+import { Plus, Eye, Pencil, Trash2, Calendar, Clock, Swords, MapPin, Trophy, Award, Sparkles } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -70,22 +70,33 @@ function ResultBadge({ game }: { game: Game }) {
 const gameSchema = z.object({
   opponent: z.string().min(1, 'Opponent is required'),
   date: z.string().min(1, 'Date is required'),
+  time: z.string().optional(),
   location: z.enum(['home', 'away']),
   status: z.enum(['scheduled', 'completed', 'reviewed']),
   gameType: z.enum(['league', 'tournament', 'exhibition']),
+  tournamentName: z.string().optional(),
 })
 type GameForm = z.infer<typeof gameSchema>
+
+function formatTime(t: string): string {
+  const [h, m] = t.split(':').map(Number)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${m.toString().padStart(2, '0')} ${period}`
+}
 
 // ── Game Card ───────────────────────────────────────────────────────────────────
 
 function GameCard({
   game,
   type,
+  tournamentName,
   onEdit,
   onDelete,
 }: {
   game: Game
   type: GameType
+  tournamentName: string
   onEdit: (g: Game) => void
   onDelete: (g: Game) => void
 }) {
@@ -102,11 +113,21 @@ function GameCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <GameTypeBadge type={type} />
+              {type === 'tournament' && tournamentName && (
+                <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border text-xs">
+                  {tournamentName}
+                </Badge>
+              )}
               <StatusBadge status={game.status} />
               <ResultBadge game={game} />
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />{dateStr}
               </span>
+              {game.gameTime && (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="w-3 h-3" />{formatTime(game.gameTime)}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-sm text-foreground truncate">
@@ -166,12 +187,12 @@ function CreateGameDialog({
   open: boolean
   onClose: () => void
   seasonId: string
-  onSetType: (id: string, type: GameType) => void
+  onSetType: (id: string, type: GameType, tournamentName?: string) => void
 }) {
   const queryClient = useQueryClient()
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GameForm>({
     resolver: zodResolver(gameSchema),
-    defaultValues: { opponent: '', date: '', location: 'home', status: 'scheduled', gameType: 'league' },
+    defaultValues: { opponent: '', date: '', time: '', location: 'home', status: 'scheduled', gameType: 'league', tournamentName: '' },
   })
 
   const locationVal = watch('location')
@@ -190,11 +211,12 @@ function CreateGameDialog({
         userId: user.id,
         opponent: data.opponent,
         date: data.date,
+        gameTime: data.time ?? '',
         location: data.location,
         status: data.status,
         createdAt: new Date().toISOString(),
       })
-      onSetType(id, data.gameType)
+      onSetType(id, data.gameType, data.tournamentName)
       return id
     },
     onSuccess: () => {
@@ -218,11 +240,17 @@ function CreateGameDialog({
             <Input {...register('opponent')} placeholder="e.g. Bulldogs" />
             {errors.opponent && <FieldError>{errors.opponent.message}</FieldError>}
           </Field>
-          <Field>
-            <FieldLabel>Date</FieldLabel>
-            <Input type="date" {...register('date')} />
-            {errors.date && <FieldError>{errors.date.message}</FieldError>}
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Date</FieldLabel>
+              <Input type="date" {...register('date')} />
+              {errors.date && <FieldError>{errors.date.message}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel>Time <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
+              <Input type="time" {...register('time')} />
+            </Field>
+          </div>
           <Field>
             <FieldLabel>Game Type</FieldLabel>
             <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
@@ -234,6 +262,12 @@ function CreateGameDialog({
               </SelectContent>
             </Select>
           </Field>
+          {gameTypeVal === 'tournament' && (
+            <Field>
+              <FieldLabel>Tournament Name <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
+              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" />
+            </Field>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Location</FieldLabel>
@@ -274,13 +308,15 @@ function CreateGameDialog({
 function EditGameDialog({
   game,
   currentType,
+  currentTournamentName,
   onClose,
   onSetType,
 }: {
   game: Game | null
   currentType: GameType
+  currentTournamentName: string
   onClose: () => void
-  onSetType: (id: string, type: GameType) => void
+  onSetType: (id: string, type: GameType, tournamentName?: string) => void
 }) {
   const queryClient = useQueryClient()
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GameForm>({
@@ -289,11 +325,13 @@ function EditGameDialog({
       ? {
           opponent: game.opponent,
           date: game.date,
+          time: game.gameTime ?? '',
           location: game.location as 'home' | 'away',
           status: game.status as GameForm['status'],
           gameType: currentType,
+          tournamentName: currentTournamentName,
         }
-      : { opponent: '', date: '', location: 'home', status: 'scheduled', gameType: 'league' },
+      : { opponent: '', date: '', time: '', location: 'home', status: 'scheduled', gameType: 'league', tournamentName: '' },
   })
 
   const locationVal = watch('location')
@@ -306,10 +344,11 @@ function EditGameDialog({
       await blink.db.games.update(game.id, {
         opponent: data.opponent,
         date: data.date,
+        gameTime: data.time ?? '',
         location: data.location,
         status: data.status,
       })
-      onSetType(game.id, data.gameType)
+      onSetType(game.id, data.gameType, data.tournamentName)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] })
@@ -333,11 +372,17 @@ function EditGameDialog({
             <Input {...register('opponent')} placeholder="e.g. Bulldogs" />
             {errors.opponent && <FieldError>{errors.opponent.message}</FieldError>}
           </Field>
-          <Field>
-            <FieldLabel>Date</FieldLabel>
-            <Input type="date" {...register('date')} />
-            {errors.date && <FieldError>{errors.date.message}</FieldError>}
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Date</FieldLabel>
+              <Input type="date" {...register('date')} />
+              {errors.date && <FieldError>{errors.date.message}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel>Time <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
+              <Input type="time" {...register('time')} />
+            </Field>
+          </div>
           <Field>
             <FieldLabel>Game Type</FieldLabel>
             <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
@@ -349,6 +394,12 @@ function EditGameDialog({
               </SelectContent>
             </Select>
           </Field>
+          {gameTypeVal === 'tournament' && (
+            <Field>
+              <FieldLabel>Tournament Name <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
+              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" />
+            </Field>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Location</FieldLabel>
@@ -399,7 +450,7 @@ export default function GamesPage() {
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
   const { data: rawGames = [], isLoading } = useGames()
-  const { types: gameTypes, getType, setType } = useGameTypes(teamId)
+  const { types: gameTypes, getType, getTournamentName, setType } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)
 
   const seasonId = teamData?.season?.id ?? ''
@@ -485,6 +536,7 @@ export default function GamesPage() {
                   key={g.id}
                   game={g}
                   type={getType(g.id)}
+                  tournamentName={getTournamentName(g.id)}
                   onEdit={setEditGame}
                   onDelete={setDeleteGame}
                 />
@@ -506,6 +558,7 @@ export default function GamesPage() {
       <EditGameDialog
         game={editGame}
         currentType={editGame ? getType(editGame.id) : 'league'}
+        currentTournamentName={editGame ? getTournamentName(editGame.id) : ''}
         onClose={() => setEditGame(null)}
         onSetType={setType}
       />

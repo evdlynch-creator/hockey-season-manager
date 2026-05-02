@@ -8,7 +8,7 @@ import {
   EmptyState, toast, Separator,
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag } from 'lucide-react'
+import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -57,8 +57,9 @@ export default function GameDetailPage() {
   const { data: game, isLoading: gameLoading } = useGame(gameId)
   const { data: review } = useGameReview(gameId)
   const { data: teamData } = useTeam()
-  const { getType, setType } = useGameTypes(teamData?.team?.id)
+  const { getType, getTournamentName, setType } = useGameTypes(teamData?.team?.id)
   const gameType: GameType = getType(gameId)
+  const tournamentName = getTournamentName(gameId)
 
   // Score form state
   const [goalsFor, setGoalsFor] = useState<string>('')
@@ -98,6 +99,13 @@ export default function GameDetailPage() {
   }, [review])
 
   const dateStr = game?.date ? format(new Date(game.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy') : '—'
+
+  function formatTime(t: string): string {
+    const [h, m] = t.split(':').map(Number)
+    const period = h >= 12 ? 'PM' : 'AM'
+    const hour = h % 12 || 12
+    return `${hour}:${m.toString().padStart(2, '0')} ${period}`
+  }
 
   const saveScore = useMutation({
     mutationFn: async () => {
@@ -188,6 +196,9 @@ export default function GameDetailPage() {
             {gameType === 'tournament' && (
               <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border">Tournament</Badge>
             )}
+            {gameType === 'tournament' && tournamentName && (
+              <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border">{tournamentName}</Badge>
+            )}
             {gameType === 'exhibition' && (
               <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border">Exhibition</Badge>
             )}
@@ -195,6 +206,11 @@ export default function GameDetailPage() {
               <Badge variant="outline" className="text-muted-foreground border-border">League</Badge>
             )}
             <span className="text-xs text-muted-foreground">{dateStr}</span>
+            {game.gameTime && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" />{formatTime(game.gameTime)}
+              </span>
+            )}
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3" />
               {game.location === 'home' ? 'Home' : 'Away'}

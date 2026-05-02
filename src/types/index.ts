@@ -83,6 +83,7 @@ export interface Game {
   id: string
   seasonId: string
   date: string
+  gameTime?: string
   opponent: string
   location: 'home' | 'away'
   goalsFor?: number
