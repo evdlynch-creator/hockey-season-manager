@@ -8,13 +8,15 @@ import { format } from 'date-fns'
 import {
   Button, Badge, Card, CardContent,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
   Input,
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
   Field, FieldLabel, FieldError,
   Tabs, TabsList, TabsTrigger, TabsContent,
   EmptyState, toast, Separator,
 } from '@blinkdotnew/ui'
-import { Plus, Eye, Calendar, Swords, MapPin, Trophy, Award, Sparkles } from 'lucide-react'
+import { Plus, Eye, Pencil, Trash2, Calendar, Swords, MapPin, Trophy, Award, Sparkles } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -23,6 +25,8 @@ import type { GameType } from '@/hooks/usePreferences'
 import { filterGamesByMode } from '@/hooks/useAnalytics'
 import { cn } from '@/lib/utils'
 import type { Game } from '@/types'
+
+// ── Badges ──────────────────────────────────────────────────────────────────────
 
 function GameTypeBadge({ type }: { type: GameType }) {
   if (type === 'tournament') {
@@ -46,15 +50,6 @@ function GameTypeBadge({ type }: { type: GameType }) {
   )
 }
 
-const createSchema = z.object({
-  opponent: z.string().min(1, 'Opponent is required'),
-  date: z.string().min(1, 'Date is required'),
-  location: z.enum(['home', 'away']),
-  status: z.enum(['scheduled', 'completed', 'reviewed']),
-  gameType: z.enum(['league', 'tournament', 'exhibition']),
-})
-type CreateForm = z.infer<typeof createSchema>
-
 function StatusBadge({ status }: { status: Game['status'] }) {
   if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30">Scheduled</Badge>
   if (status === 'completed') return <Badge className="bg-primary text-primary-foreground">Completed</Badge>
@@ -70,13 +65,38 @@ function ResultBadge({ game }: { game: Game }) {
   return <Badge variant="secondary">T {gf}-{ga}</Badge>
 }
 
-function GameCard({ game, type }: { game: Game; type: GameType }) {
+// ── Shared form schema ───────────────────────────────────────────────────────────
+
+const gameSchema = z.object({
+  opponent: z.string().min(1, 'Opponent is required'),
+  date: z.string().min(1, 'Date is required'),
+  location: z.enum(['home', 'away']),
+  status: z.enum(['scheduled', 'completed', 'reviewed']),
+  gameType: z.enum(['league', 'tournament', 'exhibition']),
+})
+type GameForm = z.infer<typeof gameSchema>
+
+// ── Game Card ───────────────────────────────────────────────────────────────────
+
+function GameCard({
+  game,
+  type,
+  onEdit,
+  onDelete,
+}: {
+  game: Game
+  type: GameType
+  onEdit: (g: Game) => void
+  onDelete: (g: Game) => void
+}) {
   const navigate = useNavigate()
   const dateStr = game.date ? format(new Date(game.date + 'T00:00:00'), 'MMM d, yyyy') : '—'
 
   return (
-    <Card className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"
-      onClick={() => navigate({ to: '/games/$gameId', params: { gameId: game.id } })}>
+    <Card
+      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"
+      onClick={() => navigate({ to: '/games/$gameId', params: { gameId: game.id } })}
+    >
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -98,28 +118,59 @@ function GameCard({ game, type }: { game: Game; type: GameType }) {
               </span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-xs gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0"
-          >
-            <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Open</span>
-          </Button>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs gap-1.5"
+              onClick={e => { e.stopPropagation(); navigate({ to: '/games/$gameId', params: { gameId: game.id } }) }}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs gap-1.5"
+              onClick={e => { e.stopPropagation(); onEdit(game) }}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Edit</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs gap-1.5 text-destructive hover:text-destructive"
+              onClick={e => { e.stopPropagation(); onDelete(game) }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
   )
 }
 
+// ── Create Dialog ────────────────────────────────────────────────────────────────
+
 function CreateGameDialog({
   open,
   onClose,
   seasonId,
   onSetType,
-}: { open: boolean; onClose: () => void; seasonId: string; onSetType: (id: string, type: import('@/hooks/usePreferences').GameType) => void }) {
+}: {
+  open: boolean
+  onClose: () => void
+  seasonId: string
+  onSetType: (id: string, type: GameType) => void
+}) {
   const queryClient = useQueryClient()
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CreateForm>({
-    resolver: zodResolver(createSchema),
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GameForm>({
+    resolver: zodResolver(gameSchema),
     defaultValues: { opponent: '', date: '', location: 'home', status: 'scheduled', gameType: 'league' },
   })
 
@@ -128,7 +179,7 @@ function CreateGameDialog({
   const gameTypeVal = watch('gameType')
 
   const mutation = useMutation({
-    mutationFn: async (data: CreateForm) => {
+    mutationFn: async (data: GameForm) => {
       const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
@@ -174,7 +225,7 @@ function CreateGameDialog({
           </Field>
           <Field>
             <FieldLabel>Game Type</FieldLabel>
-            <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as CreateForm['gameType'])}>
+            <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="league">League</SelectItem>
@@ -196,7 +247,7 @@ function CreateGameDialog({
             </Field>
             <Field>
               <FieldLabel>Status</FieldLabel>
-              <Select value={statusVal} onValueChange={v => setValue('status', v as CreateForm['status'])}>
+              <Select value={statusVal} onValueChange={v => setValue('status', v as GameForm['status'])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
@@ -218,12 +269,133 @@ function CreateGameDialog({
   )
 }
 
+// ── Edit Dialog ──────────────────────────────────────────────────────────────────
+
+function EditGameDialog({
+  game,
+  currentType,
+  onClose,
+  onSetType,
+}: {
+  game: Game | null
+  currentType: GameType
+  onClose: () => void
+  onSetType: (id: string, type: GameType) => void
+}) {
+  const queryClient = useQueryClient()
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GameForm>({
+    resolver: zodResolver(gameSchema),
+    values: game
+      ? {
+          opponent: game.opponent,
+          date: game.date,
+          location: game.location as 'home' | 'away',
+          status: game.status as GameForm['status'],
+          gameType: currentType,
+        }
+      : { opponent: '', date: '', location: 'home', status: 'scheduled', gameType: 'league' },
+  })
+
+  const locationVal = watch('location')
+  const statusVal = watch('status')
+  const gameTypeVal = watch('gameType')
+
+  const mutation = useMutation({
+    mutationFn: async (data: GameForm) => {
+      if (!game) return
+      await blink.db.games.update(game.id, {
+        opponent: data.opponent,
+        date: data.date,
+        location: data.location,
+        status: data.status,
+      })
+      onSetType(game.id, data.gameType)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      queryClient.invalidateQueries({ queryKey: ['game', game?.id] })
+      toast.success('Game updated')
+      reset()
+      onClose()
+    },
+    onError: (e: Error) => toast.error('Failed to update game', { description: e.message }),
+  })
+
+  return (
+    <Dialog open={!!game} onOpenChange={v => { if (!v) { reset(); onClose() } }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Game</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(d => mutation.mutate(d))} className="space-y-4 pt-2">
+          <Field>
+            <FieldLabel>Opponent</FieldLabel>
+            <Input {...register('opponent')} placeholder="e.g. Bulldogs" />
+            {errors.opponent && <FieldError>{errors.opponent.message}</FieldError>}
+          </Field>
+          <Field>
+            <FieldLabel>Date</FieldLabel>
+            <Input type="date" {...register('date')} />
+            {errors.date && <FieldError>{errors.date.message}</FieldError>}
+          </Field>
+          <Field>
+            <FieldLabel>Game Type</FieldLabel>
+            <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="league">League</SelectItem>
+                <SelectItem value="tournament">Tournament</SelectItem>
+                <SelectItem value="exhibition">Exhibition</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Location</FieldLabel>
+              <Select value={locationVal} onValueChange={v => setValue('location', v as 'home' | 'away')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="home">Home</SelectItem>
+                  <SelectItem value="away">Away</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel>Status</FieldLabel>
+              <Select value={statusVal} onValueChange={v => setValue('status', v as GameForm['status'])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="reviewed">Reviewed</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Main Page ────────────────────────────────────────────────────────────────────
+
 const TABS = ['all', 'scheduled', 'completed', 'reviewed'] as const
 type TabValue = typeof TABS[number]
 
 export default function GamesPage() {
   const [createOpen, setCreateOpen] = useState(false)
+  const [editGame, setEditGame] = useState<Game | null>(null)
+  const [deleteGame, setDeleteGame] = useState<Game | null>(null)
   const [tab, setTab] = useState<TabValue>('all')
+  const queryClient = useQueryClient()
+
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
   const { data: rawGames = [], isLoading } = useGames()
@@ -240,6 +412,21 @@ export default function GamesPage() {
   const wins = completed.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
   const losses = completed.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
   const ties = completed.filter(g => Number(g.goalsFor) === Number(g.goalsAgainst)).length
+
+  const deleteMutation = useMutation({
+    mutationFn: async (gameId: string) => {
+      // Cascade delete reviews first
+      const reviews = await blink.db.gameReviews.list({ where: { gameId } })
+      await Promise.all((reviews as { id: string }[]).map(r => blink.db.gameReviews.delete(r.id)))
+      await blink.db.games.delete(gameId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      toast.success('Game deleted')
+      setDeleteGame(null)
+    },
+    onError: (e: Error) => toast.error('Failed to delete game', { description: e.message }),
+  })
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
@@ -293,13 +480,57 @@ export default function GamesPage() {
                 action={t === 'all' ? { label: 'New Game', onClick: () => setCreateOpen(true) } : undefined}
               />
             ) : (
-              filtered.map(g => <GameCard key={g.id} game={g} type={getType(g.id)} />)
+              filtered.map(g => (
+                <GameCard
+                  key={g.id}
+                  game={g}
+                  type={getType(g.id)}
+                  onEdit={setEditGame}
+                  onDelete={setDeleteGame}
+                />
+              ))
             )}
           </TabsContent>
         ))}
       </Tabs>
 
-      <CreateGameDialog open={createOpen} onClose={() => setCreateOpen(false)} seasonId={seasonId} onSetType={setType} />
+      {/* Create */}
+      <CreateGameDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        seasonId={seasonId}
+        onSetType={setType}
+      />
+
+      {/* Edit */}
+      <EditGameDialog
+        game={editGame}
+        currentType={editGame ? getType(editGame.id) : 'league'}
+        onClose={() => setEditGame(null)}
+        onSetType={setType}
+      />
+
+      {/* Delete confirm */}
+      <AlertDialog open={!!deleteGame} onOpenChange={v => { if (!v) setDeleteGame(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Game?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the game vs. <strong>{deleteGame?.opponent}</strong> and any attached review. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteGame && deleteMutation.mutate(deleteGame.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete Game'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
