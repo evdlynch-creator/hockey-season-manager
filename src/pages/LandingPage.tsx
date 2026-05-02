@@ -90,9 +90,9 @@ export default function LandingPage() {
 
           <div className="mt-20 relative group">
             {/* Background Glow for Preview */}
-            <div className="absolute -inset-1 bg-gradient-to-t from-primary/20 to-transparent blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
+            <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700" />
             
-            {/* Dashboard Preview Container */}
+            {/* Dashboard Preview Container - Replaced image with mock UI cards */}
             <div 
               className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20 cursor-pointer"
               onClick={enterDemo}
@@ -108,41 +108,79 @@ export default function LandingPage() {
               </div>
 
               <div className="relative aspect-[16/10] bg-zinc-950 flex">
-                {/* Dashboard Sidebar Mock */}
-                <div className="hidden md:flex w-48 border-r border-white/5 bg-white/[0.01] p-4 flex-col gap-6 shrink-0">
-                  <div className="h-4 w-32 bg-white/10 rounded" />
-                  <div className="space-y-4">
-                    <div className="h-3 w-24 bg-white/5 rounded" />
-                    <div className="h-3 w-28 bg-white/5 rounded" />
-                    <div className="h-3 w-20 bg-white/5 rounded" />
-                    <div className="h-3 w-26 bg-white/5 rounded" />
+                {/* Mock Sidebar */}
+                <div className="hidden md:flex w-56 border-r border-white/5 bg-white/[0.01] p-6 flex-col gap-8 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/20" />
+                    <div className="h-4 w-24 bg-white/10 rounded" />
+                  </div>
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <div className="h-2 w-16 bg-white/5 rounded opacity-50" />
+                      <div className="h-4 w-full bg-primary/10 rounded" />
+                      <div className="h-4 w-full bg-white/5 rounded" />
+                      <div className="h-4 w-full bg-white/5 rounded" />
+                      <div className="h-4 w-full bg-white/5 rounded" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex-1 relative overflow-hidden bg-zinc-900">
-                  {/* The actual image preview */}
-                  <img 
-                    src={heroUrl} 
-                    alt="Blue Line IQ Dashboard Preview" 
-                    className="absolute inset-0 w-full h-full object-cover object-top opacity-90 transition-all duration-700 group-hover:opacity-100 group-hover:scale-105"
-                    onError={(e) => {
-                      // Professional dashboard-like fallback
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1551288049-bbda38a10ad5?q=80&w=2000&auto=format&fit=crop'
-                    }}
-                  />
-                  
-                  {/* Subtle dark gradient overlay to blend into bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-60" />
-                  
-                  {/* Centered CTA on hover */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#0a0a0c]/20 backdrop-blur-[1px]">
-                    <div className="px-6 py-3 rounded-full bg-primary text-white font-bold shadow-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                      <ArrowRight className="w-5 h-5" />
-                      Open Dashboard Demo
+                <div className="flex-1 p-6 md:p-10 space-y-10 overflow-hidden bg-zinc-900/50">
+                  {/* Mock Content: Stats */}
+                  <div className="grid grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-3">
+                        <div className="h-3 w-1/2 bg-white/5 rounded" />
+                        <div className="h-8 w-3/4 bg-white/10 rounded" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Mock Content: Large Chart Block */}
+                  <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex-1">
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="space-y-2">
+                        <div className="h-5 w-32 bg-white/10 rounded" />
+                        <div className="h-3 w-48 bg-white/5 rounded" />
+                      </div>
+                      <div className="h-8 w-24 bg-white/5 rounded" />
+                    </div>
+                    <div className="h-48 w-full flex items-end gap-3 px-4">
+                      {[40, 70, 45, 90, 65, 80, 55, 85, 45, 75, 60, 95].map((h, i) => (
+                        <div 
+                          key={i} 
+                          className="flex-1 bg-primary/20 rounded-t-sm transition-all duration-500 group-hover:bg-primary/40"
+                          style={{ height: `${h}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mock Content: Bottom Row */}
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-4">
+                      <div className="h-4 w-1/3 bg-white/10 rounded" />
+                      <div className="space-y-3">
+                        <div className="h-10 w-full bg-white/5 rounded" />
+                        <div className="h-10 w-full bg-white/5 rounded" />
+                      </div>
+                    </div>
+                    <div className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-4">
+                      <div className="h-4 w-1/3 bg-white/10 rounded" />
+                      <div className="flex gap-3">
+                        <div className="w-12 h-12 rounded-full bg-white/5" />
+                        <div className="flex-1 space-y-2 py-2">
+                          <div className="h-3 w-full bg-white/10 rounded" />
+                          <div className="h-2 w-1/2 bg-white/5 rounded" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Subtle Overlay to unify look */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-20 pointer-events-none" />
             </div>
           </div>
         </div>
