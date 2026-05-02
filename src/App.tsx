@@ -154,6 +154,9 @@ export default function App() {
 
   useEffect(() => {
     if (!user && !demoActive) return
+    
+    const hasSeenTour = localStorage.getItem('blue-line-iq-tour-seen') === 'true'
+    if (hasSeenTour) return
 
     const timer = setTimeout(() => {
       startTour((path) => router.navigate({ to: path as any }))

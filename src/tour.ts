@@ -180,11 +180,20 @@ export function startTour(navigate: (path: string) => void) {
       {
         text: 'Start free trial',
         action: () => {
+          localStorage.setItem('blue-line-iq-tour-seen', 'true')
           window.location.href = '/signup'
         },
         classes: 'shepherd-button-primary'
       }
     ]
+  })
+
+  tour.on('complete', () => {
+    localStorage.setItem('blue-line-iq-tour-seen', 'true')
+  })
+
+  tour.on('cancel', () => {
+    localStorage.setItem('blue-line-iq-tour-seen', 'true')
   })
 
   tour.start()
