@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Activity, TrendingUp, Target, Swords, ClipboardList } from 'lucide-react'
+import { Activity, TrendingUp, Target, Swords, ClipboardList, FileText, Sparkles } from 'lucide-react'
 
 export function TrendsView() {
   return (
@@ -78,20 +78,38 @@ export function TrendsView() {
         </div>
       </div>
 
-      <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow">
-        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/record:text-primary transition-colors">Cumulative Season Record</div>
-        <div className="h-32 w-full flex items-center px-4">
-          <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100">
-            <path 
-              d="M 0 80 L 40 70 L 80 50 L 120 60 L 160 40 L 200 30 L 240 45 L 280 20 L 320 10 L 360 15 L 400 5" 
-              fill="none" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth="4" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-            />
-            <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse" />
-          </svg>
+      <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 -z-10" />
+        <div className="flex items-start justify-between">
+          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/record:text-primary transition-colors">Cumulative Season Record</div>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase tracking-tighter">
+            <Sparkles className="w-2.5 h-2.5" /> Rematch Intelligence
+          </div>
+        </div>
+        <div className="flex gap-12 items-center">
+          <div className="h-32 flex-1 items-center px-4">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100">
+              <path 
+                d="M 0 80 L 40 70 L 80 50 L 120 60 L 160 40 L 200 30 L 240 45 L 280 20 L 320 10 L 360 15 L 400 5" 
+                fill="none" 
+                stroke="hsl(var(--primary))" 
+                strokeWidth="4" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+              />
+              <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse" />
+            </svg>
+          </div>
+          <div className="w-48 space-y-3 print:hidden">
+            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Aggregated Intel</p>
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText className="w-3 h-3 text-amber-400" />
+                <span className="text-[10px] font-bold text-white uppercase italic">Scouting Report</span>
+              </div>
+              <p className="text-[8px] text-zinc-400 leading-tight italic">"Generated 4 tactical cues vs. Toronto based on previous meetings."</p>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>

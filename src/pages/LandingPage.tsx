@@ -1,4 +1,4 @@
-import { Button } from '@blinkdotnew/ui'
+import { Button, Badge } from '@blinkdotnew/ui'
 import { blink } from '../blink/client'
 import { useDemoMode } from '../hooks/useDemoData'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
@@ -10,10 +10,16 @@ import {
   Swords,
   TrendingUp,
   Users,
-  Target
+  Target,
+  Mic,
+  Zap,
+  Sparkles,
+  FileText,
+  Brain
 } from 'lucide-react'
 import { DashboardPreview } from '../components/landing/DashboardPreview'
 import { FeatureCard } from '../components/landing/FeatureCard'
+import { cn } from '@/lib/utils'
 
 export default function LandingPage() {
   const { enterDemo } = useDemoMode()
@@ -90,13 +96,13 @@ export default function LandingPage() {
           <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
             Master Your Season with <br />
             <span className="heading-premium">
-              Intelligence and Precision
+              Automated Intelligence
             </span>
           </h1>
           
           <p className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10 animate-fade-in [animation-delay:400ms]">
-            Track practices, analyze game performance, and visualize team trends. 
-            The all-in-one dashboard designed for hockey coaches who demand more from their data.
+            Blue Line IQ turns live game action into actionable coaching plans. 
+            Track stats, dictate tactical notes, and generate practice plans in seconds.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]">
@@ -105,7 +111,7 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
               onClick={handleLogin}
             >
-              Start Your Free Trial
+              Create Free Account
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
@@ -114,12 +120,82 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full"
               onClick={enterDemo}
             >
-              Explore Interactive Demo
+              Explore the Pulse
             </Button>
           </div>
 
           <div className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500">
             <DashboardPreview onEnterDemo={enterDemo} />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Workflow Section ────────────────────────────── */}
+      <section className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 rounded-full uppercase tracking-widest text-[10px] font-black px-4 py-1 mb-4">
+              Automated Workflow
+            </Badge>
+            <h2 className="text-4xl lg:text-6xl font-black italic uppercase tracking-tighter text-white leading-none mb-6">
+              From Bench to <span className="text-primary">Practice Plan</span>
+            </h2>
+            <p className="text-zinc-500 max-w-2xl mx-auto font-medium italic">
+              Blue Line IQ eliminates manual data entry. Our "Tactical Pulse" system automates your post-game reviews so you can focus on winning.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            {/* Connecting lines for desktop */}
+            <div className="hidden md:block absolute top-[40px] left-1/4 right-1/4 h-px bg-gradient-to-r from-primary/50 via-primary/20 to-primary/50 -translate-y-1/2 z-0" />
+            
+            {[
+              { 
+                step: "01", 
+                title: "Live Bench Mode", 
+                desc: "Tap tactical +/- during the game. Dictate tactical notes via AI Mic between shifts.",
+                icon: Swords,
+                color: "text-blue-400",
+                bg: "bg-blue-400/5",
+                border: "border-blue-400/20"
+              },
+              { 
+                step: "02", 
+                title: "Auto-Scoring", 
+                desc: "Exit the bench and see your scores already calculated. One click to save the review.",
+                icon: Zap,
+                color: "text-emerald-400",
+                bg: "bg-emerald-400/5",
+                border: "border-emerald-400/20"
+              },
+              { 
+                step: "03", 
+                title: "Practice Architect", 
+                desc: "AI identifies your weakest concepts and generates a practice plan targeting those exact gaps.",
+                icon: Brain,
+                color: "text-primary",
+                bg: "bg-primary/5",
+                border: "border-primary/20"
+              }
+            ].map((item, i) => (
+              <div key={i} className="relative z-10 space-y-6 group">
+                <div className={cn(
+                  "w-20 h-20 rounded-[2rem] flex items-center justify-center border shadow-2xl transition-all duration-500 group-hover:scale-110",
+                  item.bg, item.border
+                )}>
+                  <item.icon className={cn("w-10 h-10", item.color)} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className={cn("text-xs font-black italic", item.color)}>{item.step}</span>
+                    <h3 className="text-xl font-bold italic uppercase tracking-tight text-white">{item.title}</h3>
+                  </div>
+                  <p className="text-sm text-zinc-500 leading-relaxed font-medium italic">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -137,34 +213,34 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard 
-              icon={<ClipboardList className="text-blue-400" />}
-              title="Practice Planning"
-              description="Build detailed practice segments, assign drill types, and track concept coverage."
+              icon={<Swords className="text-primary" />}
+              title="Live Bench Mode"
+              description="Record goals, shots, and tactical execution in real-time with a high-contrast bench interface."
             />
             <FeatureCard 
-              icon={<Swords className="text-red-400" />}
-              title="Game Analysis"
-              description="Log game scores, shots, and penalties. Rate team performance across core concepts."
+              icon={<Mic className="text-emerald-400" />}
+              title="AI Coach's Mic"
+              description="Dictate observations and scouting reports. AI refines and tags them to tactical concepts automatically."
             />
             <FeatureCard 
-              icon={<TrendingUp className="text-emerald-400" />}
-              title="Visual Trends"
-              description="Visualize your team's progression throughout the season with advanced analytics charts."
+              icon={<FileText className="text-amber-400" />}
+              title="Rematch Briefings"
+              description="Generate professional scouting reports for rematches, aggregating every note and pulse score."
             />
             <FeatureCard 
-              icon={<Users className="text-primary" />}
-              title="Staff Collaboration"
-              description="Invite assistant coaches and managers to collaborate on practice plans and reviews."
+              icon={<TrendingUp className="text-blue-400" />}
+              title="Tactical Pulse"
+              description="Visualize team performance across 6 core concepts. Watch trends evolve as you track more games."
             />
             <FeatureCard 
-              icon={<Target className="text-amber-400" />}
-              title="Concept Tracking"
-              description="Identify strengths and weaknesses by tracking performance across specific tactical concepts."
+              icon={<Users className="text-indigo-400" />}
+              title="Staff Intelligence"
+              description="Collaborate with your entire staff. Everyone sees the same live data and scouting intel."
             />
             <FeatureCard 
-              icon={<Shield className="text-indigo-400" />}
-              title="Secure & Private"
-              description="Your data is safe and accessible only to your authorized coaching staff."
+              icon={<Target className="text-red-400" />}
+              title="Practice Architect"
+              description="Close the gap between identifying a problem and training the solution with AI practice generation."
             />
           </div>
         </div>
@@ -183,14 +259,14 @@ export default function LandingPage() {
             
             <h2 className="text-3xl lg:text-5xl mb-6 heading-premium">Ready to Level Up Your Coaching?</h2>
             <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto group-hover:text-zinc-300 transition-colors">
-              Join hundreds of coaches using Blue Line IQ to streamline their season and maximize player potential.
+              Join the elite coaching staff using automated intelligence to drive player development.
             </p>
             <Button 
               size="lg"
               className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 btn-premium group rounded-full"
               onClick={handleLogin}
             >
-              Get Started Now
+              Start Free Season
               <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
