@@ -7,6 +7,8 @@ import { Shell } from '../Shell'
 import { AppSidebarShell } from '../components/AppSidebarShell'
 import { ThemeAccent } from '../components/ThemeAccent'
 
+import { TacticalAssistant } from '../components/dashboard/TacticalAssistant'
+
 export type SharedLayoutContextValue = {
   appName: string
 }
@@ -43,6 +45,7 @@ export function SharedAppLayout({
         <Shell appName={appName} sidebar={sidebar}>
           {children}
         </Shell>
+        <TacticalAssistant />
       </div>
     </SharedLayoutContext.Provider>
   )
