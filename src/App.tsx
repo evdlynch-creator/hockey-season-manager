@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-router'
 import DashboardPage from './pages/DashboardPage'
 import OnboardingPage from './pages/OnboardingPage'
+import LandingPage from './pages/LandingPage'
 import PracticesPage from './pages/PracticesPage'
 import PracticeDetailPage from './pages/PracticeDetailPage'
 import GamesPage from './pages/GamesPage'
@@ -129,9 +130,18 @@ declare module '@tanstack/react-router' {
 }
 
 export default function App() {
-  const { isLoading } = useAuth()
+  const { user, isLoading } = useAuth()
 
   if (isLoading) return <LoadingOverlay show />
+
+  if (!user) {
+    return (
+      <>
+        <LandingPage />
+        <Toaster />
+      </>
+    )
+  }
 
   return (
     <>

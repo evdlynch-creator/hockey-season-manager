@@ -50,13 +50,6 @@ export default function OnboardingPage() {
   const [verifyingInvite, setVerifyingInvite] = useState(!!inviteToken)
   const [verifyError, setVerifyError] = useState<string | null>(null)
 
-  // Redirect to login if invite token is present but user is not logged in
-  useEffect(() => {
-    if (inviteToken && !authLoading && !user) {
-      blink.auth.login(window.location.href)
-    }
-  }, [inviteToken, authLoading, user])
-
   const { register, handleSubmit, setValue, getValues, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
