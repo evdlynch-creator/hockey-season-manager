@@ -23,9 +23,9 @@ export function TrendsView() {
       </div>
 
       <div className="grid grid-cols-2 gap-8 h-[55%]">
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/goals">
+        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/goals hover-glow">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Shot Volume Trends</div>
+            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/goals:text-primary transition-colors">Shot Volume Trends</div>
             <Swords className="w-3 h-3 text-blue-400 opacity-50" />
           </div>
           <div className="flex-1 flex items-end gap-1.5 px-2">
@@ -37,14 +37,14 @@ export function TrendsView() {
             ))}
           </div>
           <div className="mt-6 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white italic">37.8</span>
+            <span className="text-3xl font-black text-white italic group-hover/goals:text-shimmer transition-all">37.8</span>
             <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Avg SF/G</span>
           </div>
         </div>
 
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concepts">
+        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concepts hover-glow">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">System Execution</div>
+            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/concepts:text-primary transition-colors">System Execution</div>
             <Target className="w-3 h-3 text-primary opacity-50" />
           </div>
           
@@ -64,7 +64,7 @@ export function TrendsView() {
                     initial={{ width: 0 }}
                     animate={{ width: `${c.val}%` }}
                     transition={{ duration: 1, delay: i * 0.1 }}
-                    className={`h-full ${c.color}`} 
+                    className={`h-full ${c.color} group-hover/concepts:animate-shimmer`} 
                   />
                 </div>
               </div>
@@ -78,8 +78,8 @@ export function TrendsView() {
         </div>
       </div>
 
-      <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex-1 relative group/record">
-        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Cumulative Season Record</div>
+      <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow">
+        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/record:text-primary transition-colors">Cumulative Season Record</div>
         <div className="h-32 w-full flex items-center px-4">
           <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100">
             <path 
@@ -90,7 +90,7 @@ export function TrendsView() {
               strokeLinecap="round" 
               strokeLinejoin="round" 
             />
-            <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse" />
+            <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse group-hover/record:animate-shimmer" />
           </svg>
         </div>
       </div>

@@ -25,18 +25,18 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
       {/* ── Background Floating Glows ────────────────────── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[5%] left-[10%] w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full animate-float-1" />
-        <div className="absolute top-[35%] right-[5%] w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-float-2" />
-        <div className="absolute bottom-[20%] left-[25%] w-[700px] h-[700px] bg-primary/10 blur-[140px] rounded-full animate-float-3" />
-        <div className="absolute top-[60%] left-[-5%] w-[400px] h-[400px] bg-blue-500/5 blur-[80px] rounded-full animate-float-1" style={{ animationDelay: '-5s' }} />
-        <div className="absolute top-[15%] right-[25%] w-[550px] h-[550px] bg-primary/10 blur-[110px] rounded-full animate-float-2" style={{ animationDelay: '-12s' }} />
-        <div className="absolute bottom-[5%] right-[15%] w-[650px] h-[650px] bg-primary/5 blur-[130px] rounded-full animate-float-3" style={{ animationDelay: '-8s' }} />
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[5%] left-[10%] w-[600px] h-[600px] bg-primary/20 blur-[140px] rounded-full animate-float-1 opacity-40" />
+        <div className="absolute top-[35%] right-[5%] w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full animate-float-2 opacity-30" />
+        <div className="absolute bottom-[20%] left-[25%] w-[700px] h-[700px] bg-primary/20 blur-[150px] rounded-full animate-float-3 opacity-40" />
+        <div className="absolute top-[60%] left-[-5%] w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full animate-float-1 opacity-20" style={{ animationDelay: '-5s' }} />
+        <div className="absolute top-[15%] right-[25%] w-[550px] h-[550px] bg-primary/20 blur-[130px] rounded-full animate-float-2 opacity-30" style={{ animationDelay: '-12s' }} />
+        <div className="absolute bottom-[5%] right-[15%] w-[650px] h-[650px] bg-blue-400/10 blur-[140px] rounded-full animate-float-3 opacity-20" style={{ animationDelay: '-8s' }} />
         
         {/* Additional Small Random Sparkles */}
-        <div className="absolute top-[20%] left-[40%] w-2 h-2 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-[60%] right-[30%] w-3 h-3 bg-blue-400 blur-md rounded-full animate-pulse" style={{ animationDelay: '2.5s' }} />
-        <div className="absolute bottom-[40%] left-[15%] w-2 h-2 bg-primary blur-sm rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-[20%] left-[40%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-[60%] right-[30%] w-6 h-6 bg-blue-400 blur-lg rounded-full animate-pulse opacity-40" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute bottom-[40%] left-[15%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* ── Navigation ──────────────────────────────────── */}
@@ -87,7 +87,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]">
             <Button 
               size="lg"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 transition-all active:scale-95 group"
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group"
               onClick={handleLogin}
             >
               Start Your Free Trial
@@ -96,14 +96,16 @@ export default function LandingPage() {
             <Button 
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium"
               onClick={enterDemo}
             >
               Explore Interactive Demo
             </Button>
           </div>
 
-          <DashboardPreview onEnterDemo={enterDemo} />
+          <div className="hover-glow rounded-2xl p-1 mt-20 transition-all duration-500">
+            <DashboardPreview onEnterDemo={enterDemo} />
+          </div>
         </div>
       </section>
 
@@ -160,21 +162,21 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-3 -z-10 opacity-40" />
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden">
+          <div className="rounded-3xl border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden group hover-glow">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[80px] rounded-full animate-float-2 -z-10" />
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
             
             <h2 className="text-3xl lg:text-5xl mb-6 heading-premium">Ready to Level Up Your Coaching?</h2>
-            <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto">
+            <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto group-hover:text-zinc-300 transition-colors">
               Join hundreds of coaches using Blue Line IQ to streamline their season and maximize player potential.
             </p>
             <Button 
               size="lg"
-              className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 transition-all active:scale-95 group"
+              className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 btn-premium group"
               onClick={handleLogin}
             >
               Get Started Now
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>

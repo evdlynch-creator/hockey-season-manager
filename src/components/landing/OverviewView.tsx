@@ -18,14 +18,14 @@ export function OverviewView() {
           { label: "Practice Rating", val: "4.8", icon: ClipboardList, color: "text-emerald-400" },
           { label: "Game Win %", val: "72%", icon: Swords, color: "text-blue-400" }
         ].map((stat, i) => (
-          <div key={i} className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-3 group/stat">
+          <div key={i} className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-3 group/stat hover-glow">
             <div className="flex items-center justify-between">
               <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{stat.label}</div>
-              <stat.icon className={`w-3 h-3 ${stat.color} opacity-50`} />
+              <stat.icon className={`w-3 h-3 ${stat.color} opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
             </div>
-            <div className="text-2xl font-black text-white">{stat.val}</div>
+            <div className="text-2xl font-black text-white group-hover:text-shimmer transition-all">{stat.val}</div>
             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-              <div className={`h-full bg-primary/40 transition-all duration-1000 group-hover:w-full`} style={{ width: i === 0 ? '84%' : i === 1 ? '96%' : '72%' }} />
+              <div className={`h-full bg-primary/40 transition-all duration-1000 group-hover:bg-primary group-hover:w-full`} style={{ width: i === 0 ? '84%' : i === 1 ? '96%' : '72%' }} />
             </div>
           </div>
         ))}
