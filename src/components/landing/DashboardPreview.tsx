@@ -128,8 +128,8 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
               <div className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-primary/5 to-transparent skew-x-12 animate-[scan-sweep_4s_ease-in-out_infinite]" />
             </div>
 
-            {/* Tactical Intelligence Log (Bottom Right) */}
-            <div className="absolute bottom-4 right-4 w-48 h-16 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 p-2 overflow-hidden pointer-events-none hidden lg:block">
+            {/* Tactical Intelligence Log (Bottom Left) */}
+            <div className="absolute bottom-4 left-4 w-48 h-16 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 p-2 overflow-hidden pointer-events-none hidden lg:block">
               <div className="text-[8px] font-mono text-primary/60 uppercase mb-1 flex justify-between">
                 <span>Intelligence Feed</span>
                 <span className="animate-pulse">● Live</span>
