@@ -45,6 +45,13 @@ export default function DashboardPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const demoActive = isDemoMode()
 
+  const radarData = useMemo(() => {
+    return CONCEPTS.map(c => ({
+      concept: c === 'Defensive Zone' ? 'Def Zone' : c,
+      rating: analytics?.byConcept[c]?.latestAvg ?? 0,
+    }))
+  }, [analytics])
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
@@ -96,13 +103,6 @@ export default function DashboardPage() {
 
   const { working, hurting, hurtNarrative } = getConceptInsights(recentCompleted, reviewsByGameId, snapshotGA)
   const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
-
-  const radarData = useMemo(() => {
-    return CONCEPTS.map(c => ({
-      concept: c === 'Defensive Zone' ? 'Def Zone' : c,
-      rating: analytics?.byConcept[c]?.latestAvg ?? 0,
-    }))
-  }, [analytics])
 
   return (
     <div className="relative min-h-full">
