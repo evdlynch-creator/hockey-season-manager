@@ -1,3 +1,4 @@
+@import '@blinkdotnew/ui/styles';
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @font-face {
@@ -8,11 +9,6 @@
   font-style: italic;
   font-display: swap;
 }
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Blink UI Theme CSS — MUST come before @tailwind directives
-   ───────────────────────────────────────────────────────────────────────────── */
-@import '@blinkdotnew/ui/styles';
 
 @tailwind base;
 @tailwind components;
@@ -45,10 +41,6 @@
   }
 }
 
-/* ── blink.new-inspired palette ───────────────────────────────────────────────
-   Deep near-black charcoal background, warm off-white text, amber primary.
-   These unlayered :root{} rules override @blinkdotnew/ui theme tokens.
-   ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Background surfaces */
   --background: 0 0% 5.5%;
@@ -136,7 +128,7 @@
   @apply font-avega italic text-shimmer font-black;
 }
 
-/* Dark-mode overrides — same palette since the app is always dark */
+/* Dark-mode overrides */
 :root.dark,
 .theme-linear.dark,
 .theme-glass.dark,
@@ -176,7 +168,7 @@
   --sidebar-ring: 204 84% 65%;
 }
 
-/* ── Animations ───────────────────────────────────────────────────────────── */
+/* Animations */
 
 .text-shimmer {
   background: linear-gradient(
@@ -196,23 +188,15 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes shimmer-text {
-  to {
-    background-position: 200% center;
-  }
+  to { background-position: 200% center; }
 }
 
-/* ── Floating Glows ───────────────────────────────────────────────────────── */
+/* Floating Glows */
 
 @keyframes float-random-1 {
   0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
@@ -255,7 +239,7 @@
   animation: blob-pulse 12s ease-in-out infinite;
 }
 
-/* ── Interactive Elements ─────────────────────────────────────────────────── */
+/* Interactive Elements */
 
 .hover-glow {
   @apply transition-all duration-500 ease-out;
@@ -287,11 +271,9 @@
   @apply translate-x-full;
 }
 
-/* ── Reduced motion ───────────────────────────────────────────────────────── */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

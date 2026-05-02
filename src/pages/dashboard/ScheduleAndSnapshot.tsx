@@ -1,10 +1,11 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@blinkdotnew/ui'
-import { Calendar as CalendarIcon, Activity, ClipboardList, Swords, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react'
+import { Calendar as CalendarIcon, Activity, ClipboardList, Swords, ChevronRight, TrendingUp, TrendingDown, Brain } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { format, parseISO } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { staggerItem, AnimatedCounter } from '../../components/Interactivity'
+import { ConceptRadarChart } from '../../components/analytics/ConceptRadarChart'
 
 interface ScheduleAndSnapshotProps {
   upcomingEvents: any[]
@@ -19,6 +20,7 @@ interface ScheduleAndSnapshotProps {
   working: any[]
   hurting: any[]
   hurtNarrative: string
+  radarData: any[]
   onNavigateToEvent: (kind: string, id: string) => void
   onNavigateToTrends: () => void
 }
@@ -36,11 +38,12 @@ export const ScheduleAndSnapshot = ({
   working,
   hurting,
   hurtNarrative,
+  radarData,
   onNavigateToEvent,
   onNavigateToTrends
 }: ScheduleAndSnapshotProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       <motion.div variants={staggerItem}>
         <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30 h-full">
           <CardHeader>
@@ -81,7 +84,7 @@ export const ScheduleAndSnapshot = ({
       </motion.div>
 
       <motion.div variants={staggerItem}>
-        <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30">
+        <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30 h-full">
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -213,6 +216,10 @@ export const ScheduleAndSnapshot = ({
             )}
           </CardContent>
         </Card>
+      </motion.div>
+
+      <motion.div variants={staggerItem}>
+        <ConceptRadarChart data={radarData} />
       </motion.div>
     </div>
   )

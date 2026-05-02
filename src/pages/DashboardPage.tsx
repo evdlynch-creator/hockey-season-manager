@@ -17,6 +17,9 @@ import { QuickStats } from './dashboard/QuickStats'
 import { ActivitySummary } from './dashboard/ActivitySummary'
 import { ScheduleAndSnapshot } from './dashboard/ScheduleAndSnapshot'
 import { ConceptTrends } from './dashboard/ConceptTrends'
+import { SeasonProgressRibbon } from '../components/dashboard/SeasonProgressRibbon'
+import { CoachsMic } from '../components/dashboard/CoachsMic'
+import { CONCEPTS } from '../types'
 
 const SNAPSHOT_FIELD: Record<string, string> = {
   'Breakouts': 'breakoutsRating',
@@ -94,6 +97,13 @@ export default function DashboardPage() {
   const { working, hurting, hurtNarrative } = getConceptInsights(recentCompleted, reviewsByGameId, snapshotGA)
   const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
 
+  const radarData = useMemo(() => {
+    return CONCEPTS.map(c => ({
+      concept: c === 'Defensive Zone' ? 'Def Zone' : c,
+      rating: analytics?.byConcept[c]?.latestAvg ?? 0,
+    }))
+  }, [analytics])
+
   return (
     <div className="relative min-h-full">
       <motion.div 
@@ -155,8 +165,15 @@ export default function DashboardPage() {
           working={working}
           hurting={hurting}
           hurtNarrative={hurtNarrative}
+          radarData={radarData}
           onNavigateToEvent={(kind, id) => navigate({ to: kind === 'practice' ? '/practices/$practiceId' : '/games/$gameId', params: { [kind === 'practice' ? 'practiceId' : 'gameId']: id } as any })}
           onNavigateToTrends={() => navigate({ to: '/trends' })}
+        />
+
+        <SeasonProgressRibbon
+          practices={practices}
+          games={games}
+          onNavigate={(kind, id) => navigate({ to: kind === 'practice' ? '/practices/$practiceId' : '/games/$gameId', params: { [kind === 'practice' ? 'practiceId' : 'gameId']: id } as any })}
         />
 
         <ConceptTrends
@@ -165,6 +182,8 @@ export default function DashboardPage() {
           onNavigateToConcepts={() => navigate({ to: '/concepts' })}
         />
       </motion.div>
+
+      <CoachsMic />
     </div>
   )
 }

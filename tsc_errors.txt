@@ -1,2 +1,96 @@
-tsconfig.json(31,5): error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to silence this error.
-  Visit https://aka.ms/ts6 for migration information.
+src/components/dashboard/SeasonProgressRibbon.tsx(58,20): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(58,21): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(58,42): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(59,12): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(59,22): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(59,70): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(60,14): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(60,24): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(60,52): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(61,16): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(61,26): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(61,61): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(62,21): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(62,31): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(62,58): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(63,11): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(64,25): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(64,26): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(64,108): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(65,9): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(66,24): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(66,25): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(66,114): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(67,16): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(67,26): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(67,124): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(68,16): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(68,26): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(68,122): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(69,16): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(69,26): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(69,125): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(70,9): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(71,7): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(73,22): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(73,23): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(73,35): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(75,24): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(75,25): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(75,95): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(79,21): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(79,105): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(94,33): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(95,21): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(98,25): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(104,24): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(104,25): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(105,67): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(105,80): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(105,109): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(105,122): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(105,123): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(106,25): error TS17002: Expected corresponding JSX closing tag for 'TooltipTrigger'.
+src/components/dashboard/SeasonProgressRibbon.tsx(109,38): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(109,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(111,27): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(113,26): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(113,27): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/dashboard/SeasonProgressRibbon.tsx(115,27): error TS17002: Expected corresponding JSX closing tag for 'Tooltip'.
+src/components/dashboard/SeasonProgressRibbon.tsx(116,23): error TS1005: ')' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(116,25): error TS17002: Expected corresponding JSX closing tag for 'TooltipProvider'.
+src/components/dashboard/SeasonProgressRibbon.tsx(120,40): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(120,41): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(120,127): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(121,23): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(122,21): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(123,19): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(124,45): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(124,46): error TS1003: Identifier expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(124,121): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(125,26): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(125,36): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(125,50): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(126,26): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(126,36): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(126,116): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(127,26): error TS1005: ';' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(127,36): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(127,85): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(130,27): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(130,64): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(131,27): error TS1005: ',' expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(131,49): error TS1127: Invalid character.
+src/components/dashboard/SeasonProgressRibbon.tsx(131,88): error TS1002: Unterminated string literal.
+src/components/dashboard/SeasonProgressRibbon.tsx(136,21): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(137,19): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(138,17): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(139,15): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(140,14): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(140,15): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(141,11): error TS1128: Declaration or statement expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(142,9): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(143,7): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(144,5): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(145,3): error TS1109: Expression expected.
+src/components/dashboard/SeasonProgressRibbon.tsx(146,1): error TS1128: Declaration or statement expected.
