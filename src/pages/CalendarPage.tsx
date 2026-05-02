@@ -188,11 +188,15 @@ function AgendaSection({
   onOpen: (ev: CalendarEvent) => void
   selectedId?: string
 }) {
+  const isSpecial = label === 'Today' || label === 'Tomorrow'
+
   return (
     <div className="space-y-2">
-      <div className="flex items-baseline gap-2 px-1">
+      <div className="flex items-baseline justify-between px-1">
         <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
-        <span className="text-xs text-primary tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
+        {isSpecial && (
+          <span className="text-xs text-primary tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
+        )}
       </div>
       <div className="space-y-1">
         {events.length === 0 ? (
@@ -306,7 +310,7 @@ export default function CalendarPage() {
         ? 'Today'
         : isSameDay(d, tomorrow)
         ? 'Tomorrow'
-        : format(d, 'MM/dd/yyyy')
+        : format(d, 'EEEE, MMM do')
       const day = { date: d, label: dayLabel, events }
 
       if (isSameDay(d, today)) zoneList[0].days.push(day)
