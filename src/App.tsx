@@ -153,11 +153,13 @@ export default function App() {
   const demoActive = isDemoMode()
 
   useEffect(() => {
+    if (!user && !demoActive) return
+
     const timer = setTimeout(() => {
-      startTour()
+      startTour((path) => router.navigate({ to: path as any }))
     }, 1000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [user, demoActive])
 
   if (isLoading && !demoActive) return <LoadingOverlay show />
 

@@ -1,7 +1,7 @@
 import Shepherd from 'shepherd.js'
 import 'shepherd.js/dist/css/shepherd.css'
 
-export function startTour() {
+export function startTour(navigate: (path: string) => void) {
   const tour = new Shepherd.Tour({
     useModalOverlay: true,
     defaultStepOptions: {
@@ -34,6 +34,12 @@ export function startTour() {
       element: '#tour-dashboard',
       on: 'right'
     },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/')
+        setTimeout(resolve, 300)
+      })
+    },
     buttons: commonButtons
   })
 
@@ -44,6 +50,12 @@ export function startTour() {
     attachTo: {
       element: '#tour-snapshot',
       on: 'left'
+    },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/')
+        setTimeout(resolve, 300)
+      })
     },
     buttons: commonButtons
   })
@@ -56,6 +68,12 @@ export function startTour() {
       element: '#tour-calendar',
       on: 'right'
     },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/calendar')
+        setTimeout(resolve, 300)
+      })
+    },
     buttons: commonButtons
   })
 
@@ -66,6 +84,12 @@ export function startTour() {
     attachTo: {
       element: '#tour-practice',
       on: 'right'
+    },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/practices')
+        setTimeout(resolve, 300)
+      })
     },
     buttons: commonButtons
   })
@@ -78,6 +102,12 @@ export function startTour() {
       element: '#tour-games',
       on: 'right'
     },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/games')
+        setTimeout(resolve, 300)
+      })
+    },
     buttons: commonButtons
   })
 
@@ -88,6 +118,12 @@ export function startTour() {
     attachTo: {
       element: '#tour-opponents',
       on: 'right'
+    },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/opponents')
+        setTimeout(resolve, 300)
+      })
     },
     buttons: commonButtons
   })
@@ -100,6 +136,12 @@ export function startTour() {
       element: '#tour-concepts',
       on: 'right'
     },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/concepts')
+        setTimeout(resolve, 300)
+      })
+    },
     buttons: commonButtons
   })
 
@@ -110,6 +152,12 @@ export function startTour() {
     attachTo: {
       element: '#tour-trends',
       on: 'right'
+    },
+    beforeShowPromise: () => {
+      return new Promise((resolve) => {
+        navigate('/trends')
+        setTimeout(resolve, 300)
+      })
     },
     buttons: [
       {
