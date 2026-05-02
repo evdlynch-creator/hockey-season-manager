@@ -71,21 +71,54 @@ export function useTeam() {
       }
       if (!user) return null
 
-      const teams = (await blink.db.teams.list({
+      // 1. Fetch teams owned by user
+      const ownedTeams = (await blink.db.teams.list({
         where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
       })) as Team[]
 
-      if (teams.length === 0) return { teams: [], team: null, season: null }
+      // 2. Fetch teams where user is a member of a season
+      const memberships = (await blink.db.seasonMembers.list({
+        where: { userId: user.id },
+      })) as any[]
+
+      let memberTeams: Team[] = []
+      if (memberships.length > 0) {
+        const seasonIds = [...new Set(memberships.map((m) => m.seasonId))]
+        
+        // Fetch seasons to get teamIds
+        const seasons = await Promise.all(
+          seasonIds.map((id) => blink.db.seasons.get(id))
+        )
+        
+        const teamIds = [...new Set(seasons.filter(Boolean).map((s: any) => s.teamId))]
+        
+        // Fetch teams for these teamIds if not already owned
+        const missingTeamIds = teamIds.filter(id => !ownedTeams.find(t => t.id === id))
+        
+        if (missingTeamIds.length > 0) {
+          const results = await Promise.all(
+            missingTeamIds.map(id => blink.db.teams.get(id))
+          )
+          memberTeams = results.filter(Boolean) as Team[]
+        }
+      }
+
+      const allTeams = [...ownedTeams, ...memberTeams].sort((a, b) => 
+        (b.createdAt || '').localeCompare(a.createdAt || '')
+      )
+
+      if (allTeams.length === 0) return { teams: [], team: null, season: null }
 
       let selectedId = getSelectedTeamId()
-      let team = teams.find((t) => t.id === selectedId) ?? teams[0]
+      let team = allTeams.find((t) => t.id === selectedId) ?? allTeams[0]
 
       // Update stored ID if it was missing or stale
       if (team.id !== selectedId) {
         setSelectedTeamId(team.id)
       }
 
+      // Fetch all seasons for this team that the user has access to
+      // (For now, we fetch all seasons of the team)
       const seasons = (await blink.db.seasons.list({
         where: { teamId: team.id },
         orderBy: { createdAt: 'desc' },
@@ -104,7 +137,7 @@ export function useTeam() {
         season = seasons.find((s) => !archivedSeasonIds.includes(s.id)) ?? null
       }
 
-      return { teams, team, season }
+      return { teams: allTeams, team, season }
     },
     enabled: !!user || isDemoMode(),
   })

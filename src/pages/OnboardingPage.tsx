@@ -48,6 +48,14 @@ export default function OnboardingPage() {
 
   const [inviteData, setInviteData] = useState<{ id: string, seasonId: string, email: string, role: string, teamName: string, seasonName: string } | null>(null)
   const [verifyingInvite, setVerifyingInvite] = useState(!!inviteToken)
+  const [verifyError, setVerifyError] = useState<string | null>(null)
+
+  // Redirect to login if invite token is present but user is not logged in
+  useEffect(() => {
+    if (inviteToken && !authLoading && !user) {
+      blink.auth.login(window.location.href)
+    }
+  }, [inviteToken, authLoading, user])
 
   const { register, handleSubmit, setValue, getValues, watch, formState: { errors, isSubmitting } } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
@@ -140,24 +148,38 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     async function verifyInvite() {
-      if (!inviteToken || !user) return
+      if (!inviteToken || !user) {
+        if (!inviteToken) setVerifyingInvite(false)
+        return
+      }
+      
       try {
-        // NOTE: If RLS is enabled, the invitee might not be able to list invitations.
-        // The invitations table should allow public reading by token for verification,
-        // or this logic should move to a secure edge function.
+        setVerifyingInvite(true)
+        setVerifyError(null)
+
         const invitations = await blink.db.invitations.list({
           where: { token: inviteToken, status: 'pending' }
         }) as Invitation[]
 
         if (invitations.length === 0) {
-          toast.error('Invalid or expired invitation')
-          setVerifyingInvite(false)
+          setVerifyError('This invitation link is invalid or has already been used.')
           return
         }
 
         const invite = invitations[0]
         const season = await blink.db.seasons.get(invite.seasonId) as Season
+        
+        if (!season) {
+          setVerifyError('The season associated with this invitation no longer exists.')
+          return
+        }
+
         const team = await blink.db.teams.get(season.teamId) as Team
+        
+        if (!team) {
+          setVerifyError('The team associated with this invitation no longer exists.')
+          return
+        }
 
         setInviteData({
           id: invite.id,
@@ -169,13 +191,13 @@ export default function OnboardingPage() {
         })
       } catch (err) {
         console.error('Invite verification failed', err)
-        toast.error('Failed to verify invitation')
+        setVerifyError('Something went wrong while verifying your invitation. Please try again.')
       } finally {
         setVerifyingInvite(false)
       }
     }
 
-    if (inviteToken && user) {
+    if (user && inviteToken) {
       verifyInvite()
     }
   }, [inviteToken, user])
@@ -209,6 +231,33 @@ export default function OnboardingPage() {
       navigate({ to: '/', replace: true })
     }
   })
+
+  if (verifyError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <Card className="w-full max-w-md border-destructive/20 shadow-2xl shadow-destructive/5">
+          <CardHeader className="text-center">
+            <div className="w-12 h-12 bg-destructive/10 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <Rocket className="w-6 h-6 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">Invite Error</CardTitle>
+            <CardDescription className="text-base text-destructive">
+              {verifyError}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate({ to: '/', replace: true })} 
+              className="w-full"
+            >
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (verifyingInvite) {
     return (
