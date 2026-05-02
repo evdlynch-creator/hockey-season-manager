@@ -48,8 +48,14 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             <div className="w-3 h-3 rounded-full bg-red-500/20" />
             <div className="w-3 h-3 rounded-full bg-amber-500/20" />
             <div className="w-3 h-3 rounded-full bg-emerald-500/20" />
-            <div className="ml-4 h-5 w-48 bg-white/5 rounded-full flex items-center px-2">
-              <div className="h-1.5 w-full bg-white/10 rounded-full" />
+            <div className="ml-4 flex items-center gap-2">
+              <div className="h-5 w-48 bg-white/5 rounded-full flex items-center px-2">
+                <div className="h-1.5 w-full bg-white/10 rounded-full" />
+              </div>
+              <div className="hidden sm:flex items-center gap-2 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-[8px] font-bold text-primary uppercase tracking-tighter">Sandbox Mode: Active</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -111,10 +117,38 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
 
           <div className="flex-1 relative overflow-hidden bg-zinc-900/50">
             <AnimatePresence mode="wait">
-              {activeView === 'overview' && <OverviewView />}
-              {activeView === 'trends' && <TrendsView />}
-              {activeView === 'concepts' && <ConceptsView />}
+              {activeView === 'overview' && <OverviewView key="overview" />}
+              {activeView === 'trends' && <TrendsView key="trends" />}
+              {activeView === 'concepts' && <ConceptsView key="concepts" />}
             </AnimatePresence>
+
+            {/* AI Intelligence Scan Sweep */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-primary/5 to-transparent skew-x-12 animate-[scan-sweep_4s_ease-in-out_infinite]" />
+            </div>
+
+            {/* Tactical Intelligence Log (Bottom Right) */}
+            <div className="absolute bottom-4 right-4 w-48 h-16 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 p-2 overflow-hidden pointer-events-none hidden lg:block">
+              <div className="text-[8px] font-mono text-primary/60 uppercase mb-1 flex justify-between">
+                <span>Intelligence Feed</span>
+                <span className="animate-pulse">● Live</span>
+              </div>
+              <div className="space-y-1 animate-[terminal-scroll_10s_linear_infinite]">
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Analyzing zone entry trends...</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Mapping breakout sequences...</div>
+                <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} Tactical gap detected: RD shift</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Syncing practice data...</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Optimizing powerplay concepts...</div>
+                <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} AI Insight: Concept retention up 12%</div>
+                {/* Repeat for smooth scroll */}
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Analyzing zone entry trends...</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Mapping breakout sequences...</div>
+                <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} Tactical gap detected: RD shift</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Syncing practice data...</div>
+                <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Optimizing powerplay concepts...</div>
+                <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} AI Insight: Concept retention up 12%</div>
+              </div>
+            </div>
           </div>
         </div>
 

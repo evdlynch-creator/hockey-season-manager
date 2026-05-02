@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, Target, Activity, Zap, Shield, Swords, Mic, Sparkles } from 'lucide-react'
 
+function PulseNode({ className, style }: { className?: string, style?: React.CSSProperties }) {
+  return (
+    <div className={`absolute w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(56,189,248,0.8)] animate-pulse ${className}`} style={style} />
+  )
+}
+
 export function ConceptsView() {
   return (
     <motion.div 
@@ -22,7 +28,8 @@ export function ConceptsView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[45%]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[45%] relative">
+        <PulseNode className="top-1/2 left-1/3 z-20" />
         {[
           { title: "Breakouts", data: [2, 3, 4, 3, 5, 4, 5], color: "text-blue-400", bg: "bg-blue-500", icon: Zap },
           { title: "Forecheck", data: [4, 4, 3, 5, 5, 5, 5], color: "text-emerald-400", bg: "bg-emerald-500", icon: Swords },
@@ -50,7 +57,9 @@ export function ConceptsView() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-8 flex-1">
+      <div className="grid grid-cols-2 gap-8 flex-1 relative">
+        <PulseNode className="bottom-8 right-8 z-20" style={{ animationDelay: '1.5s' }} />
+        
         <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex flex-col group/heatmap overflow-hidden relative hover-glow cursor-default">
           <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-float-2 opacity-30 -z-10" />
           <div className="flex items-center justify-between mb-6">

@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion'
 import { Activity, TrendingUp, Target, Swords, ClipboardList, FileText, Sparkles } from 'lucide-react'
 
+function PulseNode({ className, style }: { className?: string, style?: React.CSSProperties }) {
+  return (
+    <div className={`absolute w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(56,189,248,0.8)] animate-pulse ${className}`} style={style} />
+  )
+}
+
 export function TrendsView() {
   return (
     <motion.div 
@@ -28,7 +34,8 @@ export function TrendsView() {
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/goals:text-primary transition-colors">Shot Volume Trends</div>
             <Swords className="w-3 h-3 text-blue-400 opacity-50" />
           </div>
-          <div className="flex-1 flex items-end gap-1.5 px-2">
+          <div className="flex-1 flex items-end gap-1.5 px-2 relative">
+            <PulseNode className="top-4 right-4" />
             {[28, 34, 42, 31, 38, 45, 39, 32, 48, 41].map((s, i) => (
               <div key={i} className="flex-1 flex flex-col gap-0.5 items-center group/bar">
                 <div className="w-full bg-blue-500/20 rounded-t-sm group-hover/bar:bg-blue-500/40 transition-colors" style={{ height: `${(s/60) * 100}%` }} />
@@ -79,6 +86,9 @@ export function TrendsView() {
       </div>
 
       <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow overflow-hidden">
+        <PulseNode className="top-1/2 left-1/3" />
+        <PulseNode className="top-1/4 right-1/4" style={{ animationDelay: '2s' }} />
+        
         <div className="absolute inset-0 bg-primary/5 -z-10" />
         <div className="flex items-start justify-between">
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/record:text-primary transition-colors">Cumulative Season Record</div>
@@ -97,7 +107,8 @@ export function TrendsView() {
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
               />
-              <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse" />
+              <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+              <circle cx="200" cy="30" r="3" fill="hsl(var(--primary))" className="animate-ping" />
             </svg>
           </div>
           <div className="w-48 space-y-3 print:hidden">
