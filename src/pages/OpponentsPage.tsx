@@ -1,635 +1,22 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
-  Badge, Separator, EmptyState, Button, toast,
-} from '@blinkdotnew/ui'
-import {
-  Users, Swords, TrendingUp, TrendingDown, Minus,
-  ChevronRight, Calendar, Trophy,
-  ShieldAlert, ShieldCheck, ClipboardCopy, Sparkles, Lightbulb,
-} from 'lucide-react'
-import {
-  ResponsiveContainer, RadarChart, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip,
-} from 'recharts'
-import { format, parseISO, isAfter } from 'date-fns'
+import { EmptyState, Button } from '@blinkdotnew/ui'
+import { Users, Swords, Trophy, FileText } from 'lucide-react'
 import { useFilteredAnalytics, filterGamesByMode, buildOpponentInsights } from '@/hooks/useAnalytics'
-import { InsightsStrip } from '@/components/InsightsStrip'
+import { ScoutingReport } from './opponents/ScoutingReport'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes, useViewMode } from '@/hooks/usePreferences'
-import type { Game, GameReview } from '@/types'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
-
-const CONCEPT_FIELD_MAP: Record<string, keyof GameReview> = {
-  'Breakouts': 'breakoutsRating',
-  'Forecheck': 'forecheckRating',
-  'Defensive Zone': 'defensiveZoneRating',
-  'Transition': 'transitionRating',
-  'Passing': 'passingRating',
-  'Skating': 'skatingRating',
-}
-
-const AMBER = '#F59E0B'
-const MUTED = '#8A8A8E'
-
-// ── Types ────────────────────────────────────────────────────────────────────
-
-interface OpponentStats {
-  name: string
-  games: Game[]
-  reviews: GameReview[]
-  wins: number
-  losses: number
-  ties: number
-  totalGoalsFor: number
-  totalGoalsAgainst: number
-  avgConceptRatings: Record<string, number | null>
-  notes: string[]
-  lastPlayed: string | null
-  nextGame: Game | null
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function resultBadge(result: 'W' | 'L' | 'T') {
-  if (result === 'W') return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border text-[10px] px-1.5 py-0 h-5 rounded-full">W</Badge>
-  if (result === 'L') return <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border text-[10px] px-1.5 py-0 h-5 rounded-full">L</Badge>
-  return <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 rounded-full">T</Badge>
-}
-
-function recordColor(wins: number, losses: number) {
-  if (wins > losses) return 'text-emerald-400'
-  if (wins < losses) return 'text-red-400'
-  return 'text-muted-foreground'
-}
-
-function DarkTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-popover border border-border rounded-full px-4 py-2 shadow-lg text-xs">
-      <p className="font-semibold text-foreground mb-1">{label}</p>
-      {payload.map((p: any, i: number) => (
-        <p key={i} className="flex items-center gap-2" style={{ color: p.color }}>
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="font-semibold tabular-nums">{typeof p.value === 'number' ? p.value.toFixed(1) : '—'}</span>
-        </p>
-      ))}
-    </div>
-  )
-}
-
-// ── Coaching plan ────────────────────────────────────────────────────────────
-
-type ConceptTier = { concept: string; avg: number; samples: number }
-
-interface CoachingPlanData {
-  reinforce: ConceptTier[]
-  address: ConceptTier[]
-  mixed: ConceptTier[]
-  trend: 'up' | 'down' | 'steady' | 'unknown'
-  trendDelta: number
-  reviewedCount: number
-  goalsForAvg: number | null
-  goalsAgainstAvg: number | null
-  observations: { date: string; gameId: string; note: string }[]
-}
-
-function buildCoachingPlan(stats: OpponentStats): CoachingPlanData {
-  const reviewedGames = stats.games
-    .filter((g) => stats.reviews.find((r) => r.gameId === g.id))
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  const tiers: ConceptTier[] = CONCEPTS.map((c) => {
-    const field = CONCEPT_FIELD_MAP[c]
-    const vals = stats.reviews.map((r) => r[field]).filter((v) => v != null).map(Number)
-    return {
-      concept: c,
-      avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0,
-      samples: vals.length,
-    }
-  }).filter((t) => t.samples > 0)
-
-  const reinforce = tiers.filter((t) => t.avg >= 3.5).sort((a, b) => b.avg - a.avg)
-  const address = tiers.filter((t) => t.avg <= 2.5).sort((a, b) => a.avg - b.avg)
-  const mixed = tiers.filter((t) => t.avg > 2.5 && t.avg < 3.5).sort((a, b) => b.avg - a.avg)
-
-  // Trend: compare avg of last review vs. avg of all earlier reviews
-  let trend: CoachingPlanData['trend'] = 'unknown'
-  let trendDelta = 0
-  if (reviewedGames.length >= 2) {
-    const reviewAvg = (gameId: string) => {
-      const r = stats.reviews.find((rr) => rr.gameId === gameId)
-      if (!r) return null
-      const vals = CONCEPTS.map((c) => r[CONCEPT_FIELD_MAP[c]])
-        .filter((v) => v != null)
-        .map(Number)
-      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null
-    }
-    const lastAvg = reviewAvg(reviewedGames[reviewedGames.length - 1].id)
-    const earlier = reviewedGames
-      .slice(0, -1)
-      .map((g) => reviewAvg(g.id))
-      .filter((v): v is number => v != null)
-    const earlierAvg = earlier.length ? earlier.reduce((a, b) => a + b, 0) / earlier.length : null
-    if (lastAvg != null && earlierAvg != null) {
-      trendDelta = lastAvg - earlierAvg
-      if (trendDelta > 0.3) trend = 'up'
-      else if (trendDelta < -0.3) trend = 'down'
-      else trend = 'steady'
-    }
-  }
-
-  const completed = stats.games.filter((g) => g.goalsFor != null && g.goalsAgainst != null)
-  const goalsForAvg = completed.length ? stats.totalGoalsFor / completed.length : null
-  const goalsAgainstAvg = completed.length ? stats.totalGoalsAgainst / completed.length : null
-
-  const observations = stats.reviews
-    .filter((r) => (r.opponentNotes ?? '').trim())
-    .map((r) => {
-      const game = stats.games.find((g) => g.id === r.gameId)
-      return {
-        gameId: r.gameId,
-        date: game?.date ?? '',
-        note: r.opponentNotes!.trim(),
-      }
-    })
-    .filter((o) => o.date)
-    .sort((a, b) => b.date.localeCompare(a.date))
-
-  return {
-    reinforce,
-    address,
-    mixed,
-    trend,
-    trendDelta,
-    reviewedCount: reviewedGames.length,
-    goalsForAvg,
-    goalsAgainstAvg,
-    observations,
-  }
-}
-
-function planToText(stats: OpponentStats, plan: CoachingPlanData): string {
-  const lines: string[] = []
-  lines.push(`Coaching Plan vs. ${stats.name}`)
-  lines.push(`Record: ${stats.wins}W ${stats.losses}L ${stats.ties}T · Based on ${plan.reviewedCount} reviewed game${plan.reviewedCount !== 1 ? 's' : ''}`)
-  if (plan.goalsForAvg != null && plan.goalsAgainstAvg != null) {
-    lines.push(`Avg goals: ${plan.goalsForAvg.toFixed(1)} for / ${plan.goalsAgainstAvg.toFixed(1)} against`)
-  }
-  if (plan.trend !== 'unknown') {
-    const dir = plan.trend === 'up' ? 'improving' : plan.trend === 'down' ? 'declining' : 'steady'
-    lines.push(`Trend: ${dir} (${plan.trendDelta >= 0 ? '+' : ''}${plan.trendDelta.toFixed(2)} avg)`)
-  }
-  lines.push('')
-  if (plan.reinforce.length) {
-    lines.push('REINFORCE (strengths to keep doing):')
-    plan.reinforce.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5 (${t.samples} game${t.samples !== 1 ? 's' : ''})`))
-    lines.push('')
-  }
-  if (plan.address.length) {
-    lines.push('ADDRESS (focus areas for next practice):')
-    plan.address.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5 (${t.samples} game${t.samples !== 1 ? 's' : ''})`))
-    lines.push('')
-  }
-  if (plan.mixed.length) {
-    lines.push('WATCH (mixed results):')
-    plan.mixed.forEach((t) => lines.push(`  • ${t.concept} — avg ${t.avg.toFixed(1)}/5`))
-    lines.push('')
-  }
-  if (plan.observations.length) {
-    lines.push('STYLE OF PLAY (running notes):')
-    plan.observations.forEach((o) => {
-      const d = format(parseISO(o.date), 'MMM d, yyyy')
-      lines.push(`  ${d} — ${o.note}`)
-    })
-  }
-  return lines.join('\n')
-}
-
-function CoachingPlan({ stats }: { stats: OpponentStats }) {
-  const plan = useMemo(() => buildCoachingPlan(stats), [stats])
-  const hasAnyData =
-    plan.reinforce.length || plan.address.length || plan.mixed.length || plan.observations.length
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(planToText(stats, plan))
-      toast.success('Coaching plan copied to clipboard')
-    } catch {
-      toast.error('Could not copy to clipboard')
-    }
-  }
-
-  const trendIcon =
-    plan.trend === 'up' ? <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-    : plan.trend === 'down' ? <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-    : plan.trend === 'steady' ? <Minus className="w-3.5 h-3.5 text-muted-foreground" />
-    : null
-
-  const trendLabel =
-    plan.trend === 'up' ? `Improving (+${plan.trendDelta.toFixed(2)})`
-    : plan.trend === 'down' ? `Declining (${plan.trendDelta.toFixed(2)})`
-    : plan.trend === 'steady' ? 'Steady'
-    : null
-
-  return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent rounded-[2rem]">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              Coaching Plan vs. {stats.name}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Built from {plan.reviewedCount} reviewed game{plan.reviewedCount !== 1 ? 's' : ''}.
-              Use it to shape the next practice and pre-game talk.
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {trendLabel && (
-              <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-5 rounded-full">
-                {trendIcon}
-                {trendLabel}
-              </Badge>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-7 text-xs rounded-full"
-              onClick={handleCopy}
-              disabled={!hasAnyData}
-            >
-              <ClipboardCopy className="w-3.5 h-3.5" />
-              Copy
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {!hasAnyData ? (
-          <p className="text-sm text-muted-foreground italic text-center py-4">
-            Review at least one game against this opponent to generate a plan.
-          </p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Reinforce */}
-              <div className="rounded-[2rem] border border-emerald-600/30 bg-emerald-600/5 p-3">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-300">Reinforce</p>
-                </div>
-                {plan.reinforce.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No clear strengths yet.</p>
-                ) : (
-                  <ul className="space-y-1.5">
-                    {plan.reinforce.map((t) => (
-                      <li key={t.concept} className="flex items-start justify-between gap-2 text-xs">
-                        <span className="text-foreground">{t.concept}</span>
-                        <span className="font-semibold text-emerald-400 tabular-nums shrink-0">
-                          {t.avg.toFixed(1)}/5
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* Address */}
-              <div className="rounded-[2rem] border border-red-600/30 bg-red-600/5 p-3">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-                  <p className="text-[10px] uppercase font-bold tracking-widest text-red-300">Address</p>
-                </div>
-                {plan.address.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No major weak spots yet.</p>
-                ) : (
-                  <ul className="space-y-1.5">
-                    {plan.address.map((t) => (
-                      <li key={t.concept} className="flex items-start justify-between gap-2 text-xs">
-                        <span className="text-foreground">{t.concept}</span>
-                        <span className="font-semibold text-red-400 tabular-nums shrink-0">
-                          {t.avg.toFixed(1)}/5
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            {plan.mixed.length > 0 && (
-              <div className="rounded-[2rem] border border-border/50 bg-secondary/20 p-3">
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
-                  Watch — mixed results
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {plan.mixed.map((t) => (
-                    <Badge key={t.concept} variant="secondary" className="text-[10px] gap-1 rounded-full">
-                      {t.concept} <span className="tabular-nums opacity-70">{t.avg.toFixed(1)}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Style of play running tab */}
-            <div className="rounded-[2rem] border border-border/50 bg-secondary/10 p-3">
-              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
-                Style of play — running notes
-              </p>
-              {plan.observations.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">
-                  Add opponent notes in your game reviews to start tracking their tendencies.
-                </p>
-              ) : (
-                <ul className="space-y-2">
-                  {plan.observations.map((o) => (
-                    <li key={o.gameId} className="text-xs">
-                      <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">
-                        {format(parseISO(o.date), 'MMM d, yyyy')}
-                      </p>
-                      <p className="text-foreground leading-relaxed">{o.note}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-// ── Opponent detail panel ────────────────────────────────────────────────────
-
-function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics: import('@/hooks/useAnalytics').SeasonAnalytics | null | undefined }) {
-  const insights = useMemo(
-    () => (analytics ? buildOpponentInsights(analytics, stats.name) : []),
-    [analytics, stats.name],
-  )
-
-  const navigate = useNavigate()
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const radarData = CONCEPTS.map(c => ({
-    concept: c === 'Defensive Zone' ? 'Def Zone' : c,
-    rating: stats.avgConceptRatings[c] ?? 0,
-  }))
-
-  const hasConceptData = Object.values(stats.avgConceptRatings).some(v => v != null)
-  const gamesWithScore = stats.games.filter(g => g.goalsFor != null && g.goalsAgainst != null)
-  const avgGF = gamesWithScore.length ? stats.totalGoalsFor / gamesWithScore.length : null
-  const avgGA = gamesWithScore.length ? stats.totalGoalsAgainst / gamesWithScore.length : null
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Rematch alert */}
-      {stats.nextGame && (
-        <div className="rounded-[2rem] border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-            <Swords className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-primary mb-0.5">Rematch upcoming</p>
-            <p className="text-xs text-muted-foreground">
-              {format(parseISO(stats.nextGame.date), 'EEEE, MMM d')} ·{' '}
-              {stats.nextGame.location === 'home' ? 'Home' : 'Away'}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate({ to: '/games/$gameId', params: { gameId: stats.nextGame!.id } })}
-            className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
-          >
-            Open <ChevronRight className="w-3 h-3" />
-          </button>
-        </div>
-      )}
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4 text-center">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Record vs.</p>
-            <p className={cn('text-xl font-bold tabular-nums', recordColor(stats.wins, stats.losses))}>
-              {stats.wins}–{stats.losses}–{stats.ties}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4 text-center">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Avg Goals</p>
-            <p className="text-xl font-bold tabular-nums text-foreground">
-              {avgGF != null ? avgGF.toFixed(1) : '—'}
-              <span className="text-muted-foreground text-sm"> – </span>
-              {avgGA != null ? avgGA.toFixed(1) : '—'}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4 text-center">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Meetings</p>
-            <p className="text-xl font-bold tabular-nums text-foreground">{stats.games.length}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top insights vs this opponent */}
-      {insights.length > 0 ? (
-        <InsightsStrip insights={insights} limit={3} title={`Top Insights vs. ${stats.name}`} />
-      ) : (
-        <Card className="border-border/50 bg-card rounded-[2rem]">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Lightbulb className="w-4 h-4" />
-              <p className="text-sm italic">
-                Review at least one game vs. {stats.name} to see tailored insights.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Coaching plan */}
-      <CoachingPlan stats={stats} />
-
-      {/* Charts & notes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Concept radar */}
-        <Card className="border-border bg-card rounded-[2rem]">
-          <CardHeader>
-            <CardTitle className="text-sm">Concept Performance vs. {stats.name}</CardTitle>
-            <CardDescription className="text-xs">Average ratings from all reviewed games.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!hasConceptData ? (
-              <div className="h-48 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground italic">No reviewed games yet.</p>
-              </div>
-            ) : (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData} outerRadius={75}>
-                    <PolarGrid stroke="hsl(0 0% 18%)" />
-                    <PolarAngleAxis dataKey="concept" tick={{ fontSize: 9, fill: MUTED }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fontSize: 8, fill: MUTED }} stroke="hsl(0 0% 18%)" />
-                    <Radar name="Avg Rating" dataKey="rating" stroke={AMBER} fill={AMBER} fillOpacity={0.3} />
-                    <Tooltip content={<DarkTooltip />} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Concept breakdown */}
-        <Card className="border-border bg-card rounded-[2rem]">
-          <CardHeader>
-            <CardTitle className="text-sm">Concept Breakdown</CardTitle>
-            <CardDescription className="text-xs">How each concept fared in your games against {stats.name}.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-0">
-            {CONCEPTS.map(c => {
-              const val = stats.avgConceptRatings[c]
-              const pct = val != null ? (val / 5) * 100 : 0
-              return (
-                <div key={c} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{c}</span>
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {val != null ? val.toFixed(1) : '—'}/5
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${pct}%`,
-                        backgroundColor: pct >= 80 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444',
-                      }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Game history */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            Game History vs. {stats.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {stats.games.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic text-center py-4">No completed games.</p>
-          ) : (
-            [...stats.games]
-              .sort((a, b) => b.date.localeCompare(a.date))
-              .map(g => {
-                const gf = g.goalsFor != null ? Number(g.goalsFor) : null
-                const ga = g.goalsAgainst != null ? Number(g.goalsAgainst) : null
-                const result = gf != null && ga != null
-                  ? (gf > ga ? 'W' : gf < ga ? 'L' : 'T') as 'W' | 'L' | 'T'
-                  : null
-                const review = stats.reviews.find(r => r.gameId === g.id)
-                const d = isAfter(parseISO(g.date), new Date()) ? parseISO(g.date) : null
-                return (
-                  <button
-                    key={g.id}
-                    onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors text-left"
-                  >
-                    <div className="shrink-0">{result ? resultBadge(result) : <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 rounded-full">TBD</Badge>}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground">
-                        {format(parseISO(g.date), 'EEE, MMM d, yyyy')} · {g.location === 'home' ? 'Home' : 'Away'}
-                      </p>
-                      {gf != null && ga != null && (
-                        <p className="text-[11px] text-muted-foreground">{gf} – {ga}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {review && <Badge variant="secondary" className="text-[9px] h-4 px-1 rounded-full">Reviewed</Badge>}
-                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  </button>
-                )
-              })
-          )}
-        </CardContent>
-      </Card>
-
-    </div>
-  )
-}
-
-// ── Opponent list item ────────────────────────────────────────────────────────
-
-function OpponentListItem({
-  stats,
-  selected,
-  onClick,
-}: {
-  stats: OpponentStats
-  selected: boolean
-  onClick: () => void
-}) {
-  const total = stats.wins + stats.losses + stats.ties
-  const winPct = total > 0 ? stats.wins / total : null
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full text-left rounded-[2rem] border p-4 transition-all duration-200',
-        selected
-          ? 'border-primary/40 bg-primary/5 shadow-lg shadow-primary/10'
-          : 'border-border bg-card hover:border-border/80 hover:bg-card/80'
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="font-semibold text-sm text-foreground truncate">{stats.name}</p>
-            {stats.nextGame && (
-              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 shrink-0 rounded-full">
-                Rematch
-              </Badge>
-            )}
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            {stats.games.length} game{stats.games.length !== 1 ? 's' : ''}
-            {stats.lastPlayed && ` · Last: ${format(parseISO(stats.lastPlayed), 'MMM d')}`}
-          </p>
-        </div>
-        <div className="text-right shrink-0">
-          <p className={cn('text-base font-bold tabular-nums', recordColor(stats.wins, stats.losses))}>
-            {stats.wins}–{stats.losses}–{stats.ties}
-          </p>
-          {winPct != null && (
-            <p className="text-[10px] text-muted-foreground">{Math.round(winPct * 100)}% win</p>
-          )}
-        </div>
-      </div>
-    </button>
-  )
-}
-
-// ── Main page ────────────────────────────────────────────────────────────────
+import type { OpponentStats } from './opponents/types'
+import { CONCEPT_FIELD_MAP, recordColor } from './opponents/utils'
+import { OpponentListItem } from './opponents/OpponentListItem'
+import { OpponentDetail } from './opponents/OpponentDetail'
 
 export default function OpponentsPage() {
   const navigate = useNavigate()
+  const [reportOpen, setReportOpen] = useState(false)
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
   const { data: analytics, isLoading } = useFilteredAnalytics()
@@ -669,7 +56,6 @@ export default function OpponentsPage() {
       s.games.push(g)
     })
 
-    // Fill details
     const today = new Date().toISOString().split('T')[0]
     map.forEach(s => {
       s.games.sort((a, b) => a.date.localeCompare(b.date))
@@ -706,6 +92,10 @@ export default function OpponentsPage() {
   }, [statsByOpponent])
 
   const currentStats = selectedOpponent ? statsByOpponent.get(selectedOpponent) : null
+  const currentInsights = useMemo(
+    () => (analytics && currentStats ? buildOpponentInsights(analytics, currentStats.name) : []),
+    [analytics, currentStats],
+  )
 
   if (isLoading) {
     return (
@@ -734,7 +124,6 @@ export default function OpponentsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto animate-fade-in">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Opponents</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -743,7 +132,6 @@ export default function OpponentsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left side: Opponent list */}
         <div className="lg:col-span-4 space-y-3">
           <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-1 mb-3">
             {opponentList.length} Opponent{opponentList.length !== 1 ? 's' : ''}
@@ -758,25 +146,41 @@ export default function OpponentsPage() {
           ))}
         </div>
 
-        {/* Right side: Detail */}
         <div className="lg:col-span-8">
           {currentStats ? (
             <>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                  <Trophy className="w-5 h-5 text-primary" />
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <Trophy className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold tracking-tight">{currentStats.name}</h2>
+                    <p className="text-xs text-muted-foreground">
+                      {currentStats.games.length} game{currentStats.games.length !== 1 ? 's' : ''} ·{' '}
+                      Record: <span className={cn('font-semibold', recordColor(currentStats.wins, currentStats.losses))}>
+                        {currentStats.wins}W {currentStats.losses}L {currentStats.ties}T
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold tracking-tight">{currentStats.name}</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {currentStats.games.length} game{currentStats.games.length !== 1 ? 's' : ''} ·{' '}
-                    Record: <span className={cn('font-semibold', recordColor(currentStats.wins, currentStats.losses))}>
-                      {currentStats.wins}W {currentStats.losses}L {currentStats.ties}T
-                    </span>
-                  </p>
-                </div>
+                <Button 
+                  onClick={() => setReportOpen(true)}
+                  className="rounded-full gap-2 shadow-lg shadow-primary/20"
+                >
+                  <FileText className="w-4 h-4" />
+                  Rematch Briefing
+                </Button>
               </div>
               <OpponentDetail stats={currentStats} analytics={analytics} />
+
+              <ScoutingReport 
+                open={reportOpen}
+                onOpenChange={setReportOpen}
+                opponentName={currentStats.name}
+                stats={currentStats}
+                insights={currentInsights}
+              />
             </>
           ) : (
             <EmptyState 
