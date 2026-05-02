@@ -1,50 +1,86 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
+import { useParams, useNavigate } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { 
   Button, 
-  Card, 
-  CardContent, 
-  Badge, 
   toast, 
-  Separator,
   LoadingOverlay
 } from '@blinkdotnew/ui'
 import { 
-  ArrowLeft, 
-  Swords, 
-  Trophy, 
-  Target, 
-  AlertCircle, 
-  History,
-  Undo2,
-  CheckCircle2,
-  Mic
+  CheckCircle2
 } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame } from '@/hooks/useGames'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
-import { CONCEPTS } from '@/types'
+import { CONCEPTS, Lineup } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
+import { usePlayers } from '@/hooks/usePlayers'
+import { useQuery } from '@tanstack/react-query'
 
-interface GameEvent {
-  id: string
-  type: 'goal_for' | 'goal_against' | 'shot_for' | 'shot_against' | 'tactical_plus' | 'tactical_minus'
-  timestamp: number
-  label: string
-  concept?: string
-}
+import { GameEvent, PlayerSessionStats } from './bench/types'
+import { BenchModeHeader } from './bench/BenchModeHeader'
+import { StatsView } from './bench/StatsView'
+import { TacticsView } from './bench/TacticsView'
+import { RosterView } from './bench/RosterView'
+import { HistoryLog } from './bench/HistoryLog'
+import { GoalCaptureDialog } from './bench/GoalCaptureDialog'
 
 export default function BenchModePage() {
   const { gameId } = useParams({ from: '/games/$gameId/bench' })
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: game, isLoading } = useGame(gameId)
+  const { data: game, isLoading: gameLoading } = useGame(gameId)
+  const { data: players = [] } = usePlayers()
+
+  const { data: lineups = [], isLoading: lineupsLoading } = useQuery({
+    queryKey: ['lineups', gameId],
+    queryFn: async () => {
+      return (await blink.db.lineups.list({ where: { gameId } })) as Lineup[]
+    },
+    enabled: !!gameId
+  })
+
+  const isLoading = gameLoading || lineupsLoading
 
   const [history, setHistory] = useState<GameEvent[]>([])
-  const [view, setView] = useState<'stats' | 'tactics'>('stats')
+  const [view, setView] = useState<'stats' | 'tactics' | 'roster'>('stats')
+  
+  const [onIcePlayers, setOnIcePlayers] = useState<Set<string>>(new Set())
+  const [playerStats, setPlayerStats] = useState<Record<string, PlayerSessionStats>>({})
+  
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
+  const [goalData, setGoalData] = useState<{
+    scorerId?: string
+    assist1Id?: string
+    assist2Id?: string
+  }>({})
+
+  const updatePlayerStat = (playerId: string, field: keyof PlayerSessionStats, delta: number) => {
+    setPlayerStats(prev => {
+      const stats = prev[playerId] || { goals: 0, assists: 0, plusMinus: 0 }
+      return {
+        ...prev,
+        [playerId]: {
+          ...stats,
+          [field]: stats[field] + delta
+        }
+      }
+    })
+  }
+
+  const toggleOnIce = (playerId: string) => {
+    setOnIcePlayers(prev => {
+      const next = new Set(prev)
+      if (next.has(playerId)) {
+        next.delete(playerId)
+      } else {
+        next.add(playerId)
+      }
+      return next
+    })
+  }
   
   // Tactical Pulse state
   const [tacticalPulse, setTacticalPulse] = useState<Record<string, { plus: number, minus: number }>>(() => {
@@ -95,7 +131,23 @@ export default function BenchModePage() {
     }
   })
 
-  const trackAction = (type: GameEvent['type'], concept?: string) => {
+  const handleTrackAction = (
+    type: GameEvent['type'], 
+    concept?: string, 
+    data?: { scorerId?: string, assist1Id?: string, assist2Id?: string }
+  ) => {
+    if (type === 'goal_for' && !data) {
+      setIsGoalDialogOpen(true)
+      return
+    }
+    trackAction(type, concept, data)
+  }
+
+  const trackAction = (
+    type: GameEvent['type'], 
+    concept?: string, 
+    data?: { scorerId?: string, assist1Id?: string, assist2Id?: string }
+  ) => {
     let updates: any = {}
     let label = ''
 
@@ -117,11 +169,32 @@ export default function BenchModePage() {
           updates.goalsFor = goalsFor + 1
           label = 'Goal Scored'
           setGoalsFor(v => v + 1)
+          
+          // Update player stats for goal
+          if (data?.scorerId) {
+            updatePlayerStat(data.scorerId, 'goals', 1)
+          }
+          if (data?.assist1Id) {
+            updatePlayerStat(data.assist1Id, 'assists', 1)
+          }
+          if (data?.assist2Id) {
+            updatePlayerStat(data.assist2Id, 'assists', 1)
+          }
+          
+          // Update +/- for everyone on ice
+          onIcePlayers.forEach(id => {
+            updatePlayerStat(id, 'plusMinus', 1)
+          })
           break
         case 'goal_against':
           updates.goalsAgainst = goalsAgainst + 1
           label = 'Goal Against'
           setGoalsAgainst(v => v + 1)
+          
+          // Update +/- for everyone on ice
+          onIcePlayers.forEach(id => {
+            updatePlayerStat(id, 'plusMinus', -1)
+          })
           break
         case 'shot_for':
           updates.shotsFor = shotsFor + 1
@@ -141,7 +214,9 @@ export default function BenchModePage() {
       type,
       timestamp: Date.now(),
       label,
-      concept
+      concept,
+      ...data,
+      onIcePlayerIds: Array.from(onIcePlayers)
     }
 
     setHistory(prev => [event, ...prev].slice(0, 15))
@@ -173,10 +248,23 @@ export default function BenchModePage() {
         case 'goal_for':
           updates.goalsFor = Math.max(0, goalsFor - 1)
           setGoalsFor(v => Math.max(0, v - 1))
+          
+          // Revert player stats
+          if (last.scorerId) updatePlayerStat(last.scorerId, 'goals', -1)
+          if (last.assist1Id) updatePlayerStat(last.assist1Id, 'assists', -1)
+          if (last.assist2Id) updatePlayerStat(last.assist2Id, 'assists', -1)
+          if (last.onIcePlayerIds) {
+            last.onIcePlayerIds.forEach(id => updatePlayerStat(id, 'plusMinus', -1))
+          }
           break
         case 'goal_against':
           updates.goalsAgainst = Math.max(0, goalsAgainst - 1)
           setGoalsAgainst(v => Math.max(0, v - 1))
+          
+          // Revert +/-
+          if (last.onIcePlayerIds) {
+            last.onIcePlayerIds.forEach(id => updatePlayerStat(id, 'plusMinus', 1))
+          }
           break
         case 'shot_for':
           updates.shotsFor = Math.max(0, shotsFor - 1)
@@ -228,185 +316,77 @@ export default function BenchModePage() {
   return (
     <div className="fixed inset-0 bg-zinc-950 flex flex-col z-[100] text-white overflow-hidden safe-area-inset">
       {/* Header / Scoreboard */}
-      <div className="bg-zinc-900 border-b border-white/10 p-4 shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <Link to="/games/$gameId" params={{ gameId }}>
-            <Button variant="ghost" size="icon" className="rounded-full text-white/50 hover:text-white">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div className="flex flex-col items-center">
-            <Badge className="bg-primary/20 text-primary border-primary/30 mb-1 rounded-full uppercase tracking-tighter text-[10px] font-black">
-              Live Bench Mode
-            </Badge>
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">vs {game.opponent}</p>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full text-white/50"
-            onClick={undoLast}
-            disabled={history.length === 0}
-          >
-            <Undo2 className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-around gap-8 py-2">
-          <div className="text-center">
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Our Team</p>
-            <div className="text-6xl font-black italic tracking-tighter tabular-nums">{goalsFor}</div>
-            <div className="flex items-center justify-center gap-1 mt-1 text-zinc-400">
-              <Target className="w-3 h-3" />
-              <span className="text-sm font-bold tabular-nums">{shotsFor} Shots</span>
-            </div>
-          </div>
-          
-          <div className="text-4xl font-black text-zinc-800 italic">VS</div>
-
-          <div className="text-center">
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">{game.opponent}</p>
-            <div className="text-6xl font-black italic tracking-tighter tabular-nums">{goalsAgainst}</div>
-            <div className="flex items-center justify-center gap-1 mt-1 text-zinc-400">
-              <Target className="w-3 h-3" />
-              <span className="text-sm font-bold tabular-nums">{shotsAgainst} Shots</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BenchModeHeader 
+        gameId={gameId}
+        opponent={game.opponent || 'Opponent'}
+        goalsFor={goalsFor}
+        goalsAgainst={goalsAgainst}
+        shotsFor={shotsFor}
+        shotsAgainst={shotsAgainst}
+        history={history}
+        onUndo={undoLast}
+      />
 
       {/* Control Grid */}
       <div className="flex-1 flex flex-col min-h-0 bg-zinc-950">
-        <div className="flex p-4 pb-0 gap-2 shrink-0">
+        <div className="flex p-4 pb-0 gap-2 shrink-0 overflow-x-auto no-scrollbar">
           <Button 
             variant={view === 'stats' ? 'primary' : 'ghost'} 
-            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic", view !== 'stats' && "text-zinc-500")}
+            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic min-w-[80px]", view !== 'stats' && "text-zinc-500")}
             onClick={() => setView('stats')}
           >
             Stats
           </Button>
           <Button 
             variant={view === 'tactics' ? 'primary' : 'ghost'} 
-            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic", view !== 'tactics' && "text-zinc-500")}
+            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic min-w-[80px]", view !== 'tactics' && "text-zinc-500")}
             onClick={() => setView('tactics')}
           >
             Tactics
           </Button>
+          <Button 
+            variant={view === 'roster' ? 'primary' : 'ghost'} 
+            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic min-w-[80px]", view !== 'roster' && "text-zinc-500")}
+            onClick={() => setView('roster')}
+          >
+            Roster
+          </Button>
         </div>
 
         <div className="flex-1 p-4 overflow-y-auto">
-          {view === 'stats' ? (
-            <div className="grid grid-cols-2 gap-4 h-full">
-              {/* Our Team Controls */}
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => trackAction('goal_for')}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-                >
-                  <Trophy className="w-8 h-8" />
-                  <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
-                </button>
-                <button
-                  onClick={() => trackAction('shot_for')}
-                  className="h-28 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
-                >
-                  <Target className="w-6 h-6 text-emerald-400" />
-                  <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
-                </button>
-              </div>
+          {view === 'stats' && (
+            <StatsView onTrackAction={handleTrackAction} />
+          )}
+          
+          {view === 'tactics' && (
+            <TacticsView 
+              tacticalPulse={tacticalPulse} 
+              calculateAutoScore={calculateAutoScore} 
+              onTrackAction={handleTrackAction} 
+            />
+          )}
 
-              {/* Opponent Controls */}
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => trackAction('goal_against')}
-                  className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-red-500/20"
-                >
-                  <AlertCircle className="w-8 h-8" />
-                  <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
-                </button>
-                <button
-                  onClick={() => trackAction('shot_against')}
-                  className="h-28 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
-                >
-                  <Target className="w-6 h-6 text-red-400" />
-                  <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3 pb-4">
-              {CONCEPTS.map(concept => {
-                const score = calculateAutoScore(concept)
-                const { plus, minus } = tacticalPulse[concept]
-                return (
-                  <div key={concept} className="bg-zinc-900 border border-white/5 rounded-[2rem] p-3 pl-5 flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">{concept}</p>
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "text-xl font-black italic tracking-tighter",
-                          score >= 4 ? "text-emerald-400" : score <= 2 ? "text-red-400" : "text-white"
-                        )}>
-                          {score.toFixed(1)}
-                        </span>
-                        <div className="flex gap-1">
-                          <Badge variant="ghost" className="text-[9px] px-1.5 h-4 bg-emerald-500/10 text-emerald-400 border-none rounded-full">{plus}</Badge>
-                          <Badge variant="ghost" className="text-[9px] px-1.5 h-4 bg-red-500/10 text-red-400 border-none rounded-full">{minus}</Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => trackAction('tactical_minus', concept)}
-                        className="w-14 h-14 rounded-full bg-zinc-800 hover:bg-red-500/20 border border-white/5 flex items-center justify-center active:scale-90 transition-all"
-                      >
-                        <AlertCircle className="w-6 h-6 text-red-400" />
-                      </button>
-                      <button
-                        onClick={() => trackAction('tactical_plus', concept)}
-                        className="w-14 h-14 rounded-full bg-zinc-800 hover:bg-emerald-500/20 border border-white/5 flex items-center justify-center active:scale-90 transition-all"
-                      >
-                        <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+          {view === 'roster' && (
+            <RosterView 
+              players={players}
+              lineups={lineups}
+              onIcePlayers={onIcePlayers}
+              playerStats={playerStats}
+              onToggleOnIce={toggleOnIce}
+            />
           )}
         </div>
       </div>
 
-      {/* History Log */}
-      <div className="h-40 bg-zinc-900 border-t border-white/10 p-4 overflow-y-auto shrink-0">
-        <div className="flex items-center gap-2 mb-3 text-zinc-500">
-          <History className="w-3.5 h-3.5" />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Live Action Log</span>
-        </div>
-        <div className="space-y-2">
-          {history.length === 0 ? (
-            <p className="text-xs text-zinc-600 italic text-center py-4">Game in progress... tap above to record actions.</p>
-          ) : (
-            history.map((event) => (
-              <div key={event.id} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  {event.type.includes('goal') ? (
-                    <div className={cn("w-1.5 h-1.5 rounded-full", event.type === 'goal_for' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]')} />
-                  ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
-                  )}
-                  <span className={cn("font-bold", event.type.includes('for') ? 'text-white' : 'text-zinc-400')}>
-                    {event.type.includes('for') ? 'Team' : 'Opponent'} {event.label}
-                  </span>
-                </div>
-                <span className="text-zinc-600 tabular-nums">
-                  {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      <HistoryLog history={history} />
+
+      <GoalCaptureDialog 
+        open={isGoalDialogOpen}
+        onClose={() => setIsGoalDialogOpen(false)}
+        onConfirm={(data) => handleTrackAction('goal_for', undefined, data)}
+        players={players}
+        onIcePlayers={onIcePlayers}
+      />
 
       {/* Footer / Done */}
       <div className="p-4 bg-zinc-950 flex gap-4 shrink-0 pb-8">

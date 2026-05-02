@@ -109,6 +109,27 @@ export interface GameReview {
   createdAt: string
 }
 
+export interface Player {
+  id: string
+  seasonId: string
+  name: string
+  number?: string
+  position?: string
+  notes?: string
+  createdAt: string
+  userId: string
+}
+
+export interface Lineup {
+  id: string
+  gameId: string
+  playerId: string
+  unit: string
+  position?: string
+  userId: string
+  createdAt: string
+}
+
 export const CONCEPTS = [
   'Breakouts',
   'Forecheck',
