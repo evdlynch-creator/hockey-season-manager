@@ -25,12 +25,14 @@ import { blink } from '@/blink/client'
 import { useGame } from '@/hooks/useGames'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
+import { CONCEPTS } from '@/types'
 
 interface GameEvent {
   id: string
-  type: 'goal_for' | 'goal_against' | 'shot_for' | 'shot_against'
+  type: 'goal_for' | 'goal_against' | 'shot_for' | 'shot_against' | 'tactical_plus' | 'tactical_minus'
   timestamp: number
   label: string
+  concept?: string
 }
 
 export default function BenchModePage() {
@@ -40,7 +42,17 @@ export default function BenchModePage() {
   const { data: game, isLoading } = useGame(gameId)
 
   const [history, setHistory] = useState<GameEvent[]>([])
+  const [view, setView] = useState<'stats' | 'tactics'>('stats')
   
+  // Tactical Pulse state
+  const [tacticalPulse, setTacticalPulse] = useState<Record<string, { plus: number, minus: number }>>(() => {
+    const initial: any = {}
+    CONCEPTS.forEach(c => {
+      initial[c] = { plus: 0, minus: 0 }
+    })
+    return initial
+  })
+
   // Local state for immediate feedback, synced with DB
   const [goalsFor, setGoalsFor] = useState(0)
   const [goalsAgainst, setGoalsAgainst] = useState(0)
@@ -67,42 +79,59 @@ export default function BenchModePage() {
     onError: (e: any) => toast.error('Failed to sync', { description: e.message })
   })
 
-  const trackAction = (type: GameEvent['type']) => {
+  const trackAction = (type: GameEvent['type'], concept?: string) => {
     let updates: any = {}
     let label = ''
 
-    switch (type) {
-      case 'goal_for':
-        updates.goalsFor = goalsFor + 1
-        label = 'Goal Scored'
-        setGoalsFor(v => v + 1)
-        break
-      case 'goal_against':
-        updates.goalsAgainst = goalsAgainst + 1
-        label = 'Goal Against'
-        setGoalsAgainst(v => v + 1)
-        break
-      case 'shot_for':
-        updates.shotsFor = shotsFor + 1
-        label = 'Shot on Goal'
-        setShotsFor(v => v + 1)
-        break
-      case 'shot_against':
-        updates.shotsAgainst = shotsAgainst + 1
-        label = 'Shot Against'
-        setShotsAgainst(v => v + 1)
-        break
+    if (type === 'tactical_plus' && concept) {
+      setTacticalPulse(prev => ({
+        ...prev,
+        [concept]: { ...prev[concept], plus: prev[concept].plus + 1 }
+      }))
+      label = `${concept} +`
+    } else if (type === 'tactical_minus' && concept) {
+      setTacticalPulse(prev => ({
+        ...prev,
+        [concept]: { ...prev[concept], minus: prev[concept].minus + 1 }
+      }))
+      label = `${concept} -`
+    } else {
+      switch (type) {
+        case 'goal_for':
+          updates.goalsFor = goalsFor + 1
+          label = 'Goal Scored'
+          setGoalsFor(v => v + 1)
+          break
+        case 'goal_against':
+          updates.goalsAgainst = goalsAgainst + 1
+          label = 'Goal Against'
+          setGoalsAgainst(v => v + 1)
+          break
+        case 'shot_for':
+          updates.shotsFor = shotsFor + 1
+          label = 'Shot on Goal'
+          setShotsFor(v => v + 1)
+          break
+        case 'shot_against':
+          updates.shotsAgainst = shotsAgainst + 1
+          label = 'Shot Against'
+          setShotsAgainst(v => v + 1)
+          break
+      }
     }
 
     const event: GameEvent = {
       id: crypto.randomUUID(),
       type,
       timestamp: Date.now(),
-      label
+      label,
+      concept
     }
 
-    setHistory(prev => [event, ...prev].slice(0, 10))
-    updateMutation.mutate(updates)
+    setHistory(prev => [event, ...prev].slice(0, 15))
+    if (Object.keys(updates).length > 0) {
+      updateMutation.mutate(updates)
+    }
     
     // Haptic feedback if supported
     if ('vibrate' in navigator) navigator.vibrate(50)
@@ -113,28 +142,68 @@ export default function BenchModePage() {
     const last = history[0]
     let updates: any = {}
 
-    switch (last.type) {
-      case 'goal_for':
-        updates.goalsFor = Math.max(0, goalsFor - 1)
-        setGoalsFor(v => Math.max(0, v - 1))
-        break
-      case 'goal_against':
-        updates.goalsAgainst = Math.max(0, goalsAgainst - 1)
-        setGoalsAgainst(v => Math.max(0, v - 1))
-        break
-      case 'shot_for':
-        updates.shotsFor = Math.max(0, shotsFor - 1)
-        setShotsFor(v => Math.max(0, v - 1))
-        break
-      case 'shot_against':
-        updates.shotsAgainst = Math.max(0, shotsAgainst - 1)
-        setShotsAgainst(v => Math.max(0, v - 1))
-        break
+    if (last.type === 'tactical_plus' && last.concept) {
+      setTacticalPulse(prev => ({
+        ...prev,
+        [last.concept!]: { ...prev[last.concept!], plus: Math.max(0, prev[last.concept!].plus - 1) }
+      }))
+    } else if (last.type === 'tactical_minus' && last.concept) {
+      setTacticalPulse(prev => ({
+        ...prev,
+        [last.concept!]: { ...prev[last.concept!], minus: Math.max(0, prev[last.concept!].minus - 1) }
+      }))
+    } else {
+      switch (last.type) {
+        case 'goal_for':
+          updates.goalsFor = Math.max(0, goalsFor - 1)
+          setGoalsFor(v => Math.max(0, v - 1))
+          break
+        case 'goal_against':
+          updates.goalsAgainst = Math.max(0, goalsAgainst - 1)
+          setGoalsAgainst(v => Math.max(0, v - 1))
+          break
+        case 'shot_for':
+          updates.shotsFor = Math.max(0, shotsFor - 1)
+          setShotsFor(v => Math.max(0, v - 1))
+          break
+        case 'shot_against':
+          updates.shotsAgainst = Math.max(0, shotsAgainst - 1)
+          setShotsAgainst(v => Math.max(0, v - 1))
+          break
+      }
     }
 
     setHistory(prev => prev.slice(1))
-    updateMutation.mutate(updates)
+    if (Object.keys(updates).length > 0) {
+      updateMutation.mutate(updates)
+    }
     toast.success('Action undone')
+  }
+
+  const calculateAutoScore = (concept: string) => {
+    const { plus, minus } = tacticalPulse[concept]
+    const total = plus + minus
+    if (total === 0) return 3 // Neutral baseline
+    
+    // Success ratio scaled to 1-5
+    const ratio = plus / total
+    const rawScore = 1 + (ratio * 4)
+    return Math.round(rawScore * 10) / 10
+  }
+
+  const handleExit = () => {
+    const scores: any = {}
+    CONCEPTS.forEach(c => {
+      scores[c] = calculateAutoScore(c)
+    })
+    
+    navigate({ 
+      to: '/games/$gameId', 
+      params: { gameId },
+      search: {
+        autoScores: JSON.stringify(scores)
+      }
+    })
   }
 
   if (isLoading) return <LoadingOverlay show />
@@ -191,41 +260,104 @@ export default function BenchModePage() {
       </div>
 
       {/* Control Grid */}
-      <div className="flex-1 grid grid-cols-2 gap-4 p-4">
-        {/* Our Team Controls */}
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={() => trackAction('goal_for')}
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+      <div className="flex-1 flex flex-col min-h-0 bg-zinc-950">
+        <div className="flex p-4 pb-0 gap-2 shrink-0">
+          <Button 
+            variant={view === 'stats' ? 'primary' : 'ghost'} 
+            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic", view !== 'stats' && "text-zinc-500")}
+            onClick={() => setView('stats')}
           >
-            <Trophy className="w-8 h-8" />
-            <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
-          </button>
-          <button
-            onClick={() => trackAction('shot_for')}
-            className="h-32 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
+            Stats
+          </Button>
+          <Button 
+            variant={view === 'tactics' ? 'primary' : 'ghost'} 
+            className={cn("flex-1 rounded-full font-black uppercase tracking-tighter italic", view !== 'tactics' && "text-zinc-500")}
+            onClick={() => setView('tactics')}
           >
-            <Target className="w-6 h-6 text-emerald-400" />
-            <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
-          </button>
+            Tactics
+          </Button>
         </div>
 
-        {/* Opponent Controls */}
-        <div className="flex flex-col gap-4">
-          <button
-            onClick={() => trackAction('goal_against')}
-            className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-red-500/20"
-          >
-            <AlertCircle className="w-8 h-8" />
-            <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
-          </button>
-          <button
-            onClick={() => trackAction('shot_against')}
-            className="h-32 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
-          >
-            <Target className="w-6 h-6 text-red-400" />
-            <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
-          </button>
+        <div className="flex-1 p-4 overflow-y-auto">
+          {view === 'stats' ? (
+            <div className="grid grid-cols-2 gap-4 h-full">
+              {/* Our Team Controls */}
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => trackAction('goal_for')}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  <Trophy className="w-8 h-8" />
+                  <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
+                </button>
+                <button
+                  onClick={() => trackAction('shot_for')}
+                  className="h-28 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
+                >
+                  <Target className="w-6 h-6 text-emerald-400" />
+                  <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
+                </button>
+              </div>
+
+              {/* Opponent Controls */}
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => trackAction('goal_against')}
+                  className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 transition-all rounded-[2.5rem] flex flex-col items-center justify-center gap-2 shadow-lg shadow-red-500/20"
+                >
+                  <AlertCircle className="w-8 h-8" />
+                  <span className="font-black uppercase tracking-tighter italic text-xl">Goal</span>
+                </button>
+                <button
+                  onClick={() => trackAction('shot_against')}
+                  className="h-28 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-1 border border-white/5"
+                >
+                  <Target className="w-6 h-6 text-red-400" />
+                  <span className="font-bold uppercase tracking-widest text-xs">Shot</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pb-4">
+              {CONCEPTS.map(concept => {
+                const score = calculateAutoScore(concept)
+                const { plus, minus } = tacticalPulse[concept]
+                return (
+                  <div key={concept} className="bg-zinc-900 border border-white/5 rounded-[2rem] p-3 pl-5 flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">{concept}</p>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "text-xl font-black italic tracking-tighter",
+                          score >= 4 ? "text-emerald-400" : score <= 2 ? "text-red-400" : "text-white"
+                        )}>
+                          {score.toFixed(1)}
+                        </span>
+                        <div className="flex gap-1">
+                          <Badge variant="ghost" className="text-[9px] px-1.5 h-4 bg-emerald-500/10 text-emerald-400 border-none rounded-full">{plus}</Badge>
+                          <Badge variant="ghost" className="text-[9px] px-1.5 h-4 bg-red-500/10 text-red-400 border-none rounded-full">{minus}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => trackAction('tactical_minus', concept)}
+                        className="w-14 h-14 rounded-full bg-zinc-800 hover:bg-red-500/20 border border-white/5 flex items-center justify-center active:scale-90 transition-all"
+                      >
+                        <AlertCircle className="w-6 h-6 text-red-400" />
+                      </button>
+                      <button
+                        onClick={() => trackAction('tactical_plus', concept)}
+                        className="w-14 h-14 rounded-full bg-zinc-800 hover:bg-emerald-500/20 border border-white/5 flex items-center justify-center active:scale-90 transition-all"
+                      >
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -264,10 +396,10 @@ export default function BenchModePage() {
       <div className="p-4 bg-zinc-950 flex gap-4 shrink-0 pb-8">
         <CoachsMic gameId={gameId} />
         <Button 
-          className="flex-1 bg-white text-black hover:bg-zinc-200 font-black uppercase tracking-tighter italic text-lg rounded-full h-14"
-          onClick={() => navigate({ to: '/games/$gameId', params: { gameId } })}
+          className="flex-1 bg-white text-black hover:bg-zinc-200 font-black uppercase tracking-tighter italic text-lg rounded-full h-14 shadow-xl"
+          onClick={handleExit}
         >
-          <CheckCircle2 className="w-5 h-5 mr-2" /> Exit Bench Mode
+          <CheckCircle2 className="w-5 h-5 mr-2" /> Exit & Auto-Review
         </Button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
+import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import {
@@ -53,6 +53,7 @@ function RatingRow({ label, value, onChange }: { label: string; value?: number; 
 
 export default function GameDetailPage() {
   const { gameId } = useParams({ from: '/games/$gameId' })
+  const search: any = useSearch({ from: '/games/$gameId' })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -105,8 +106,22 @@ export default function GameDetailPage() {
       })
       setNotes(review.notes ?? '')
       setOpponentNotes(review.opponentNotes ?? '')
+    } else if (search.autoScores) {
+      try {
+        const scores = JSON.parse(search.autoScores)
+        const newRatings: any = {}
+        CONCEPT_FIELDS.forEach(({ key, label }) => {
+          if (scores[label]) {
+            newRatings[key] = Math.round(scores[label])
+          }
+        })
+        setRatings(newRatings)
+        toast.info('Ratings pre-populated from Bench Mode')
+      } catch (e) {
+        console.error('Failed to parse auto-scores', e)
+      }
     }
-  }, [review])
+  }, [review, search.autoScores])
 
   const dateStr = game?.date ? format(new Date(game.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy') : '—'
 
