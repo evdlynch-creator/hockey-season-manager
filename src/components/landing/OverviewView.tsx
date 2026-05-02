@@ -23,7 +23,7 @@ export function OverviewView() {
               <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{stat.label}</div>
               <stat.icon className={`w-3 h-3 ${stat.color} opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
             </div>
-            <div className="text-2xl font-black text-white group-hover:text-shimmer transition-all">{stat.val}</div>
+            <div className="text-2xl font-black text-white transition-all">{stat.val}</div>
             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
               <div className={`h-full bg-primary/40 transition-all duration-1000 group-hover:bg-primary group-hover:w-full`} style={{ width: i === 0 ? '84%' : i === 1 ? '96%' : '72%' }} />
             </div>
@@ -39,7 +39,7 @@ export function OverviewView() {
         </div>
         <div className="flex items-center justify-between mb-10">
           <div className="space-y-2">
-            <div className="text-lg heading-premium">Seasonal Concept Progression</div>
+            <div className="text-lg font-bold text-white italic">Seasonal Concept Progression</div>
             <div className="text-xs text-zinc-500 tracking-tight">Tracking team understanding across all core segments</div>
           </div>
         </div>

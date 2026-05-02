@@ -13,7 +13,7 @@ export function ConceptsView() {
     >
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-2xl tracking-tighter heading-premium">Tactical Intelligence</h3>
+          <h3 className="text-2xl font-black italic uppercase text-white tracking-tighter">Tactical Intelligence</h3>
           <p className="text-xs text-zinc-500 tracking-tight">Concept progression & ice segment efficiency</p>
         </div>
         <div className="h-10 w-48 bg-white/5 rounded-full border border-white/10 flex items-center px-4 gap-2">
@@ -43,7 +43,7 @@ export function ConceptsView() {
               ))}
             </div>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-black text-white italic group-hover/concept:text-shimmer transition-all">{(c.data[c.data.length-1]).toFixed(1)}</span>
+              <span className="text-2xl font-black text-white italic transition-all">{(c.data[c.data.length-1]).toFixed(1)}</span>
               <TrendingUp className="w-3 h-3 text-emerald-400" />
             </div>
           </div>
@@ -53,7 +53,7 @@ export function ConceptsView() {
       <div className="grid grid-cols-2 gap-8 flex-1">
         <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col group/heatmap overflow-hidden relative hover-glow cursor-default">
           <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-float-2 opacity-30 -z-10" />
-          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/heatmap:text-primary group-hover/heatmap:text-shimmer transition-all">Offensive Zone Efficiency</div>
+          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/heatmap:text-primary transition-colors">Offensive Zone Efficiency</div>
           <div className="flex-1 grid grid-cols-5 grid-rows-3 gap-1.5">
             {Array.from({ length: 15 }).map((_, i) => {
               const intensity = 0.3 + Math.random() * 0.7;
@@ -78,7 +78,7 @@ export function ConceptsView() {
         </div>
 
         <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col hover-glow cursor-default group/mastery">
-          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-8 group-hover/mastery:text-primary group-hover/mastery:text-shimmer transition-all">Concept Mastery Delta</div>
+          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-8 group-hover/mastery:text-primary transition-all">Concept Mastery Delta</div>
           <div className="space-y-6">
             {[
               { label: "D-Zone Coverage", val: 92, trend: 12 },
@@ -87,7 +87,7 @@ export function ConceptsView() {
             ].map((c, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-white font-bold italic uppercase tracking-tighter group-hover:text-shimmer transition-all">{c.label}</span>
+                  <span className="text-white font-bold italic uppercase tracking-tighter transition-all">{c.label}</span>
                   <span className={c.trend > 0 ? "text-emerald-400" : "text-red-400"}>{c.trend > 0 ? "+" : ""}{c.trend}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">

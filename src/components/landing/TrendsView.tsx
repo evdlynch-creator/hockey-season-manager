@@ -13,7 +13,7 @@ export function TrendsView() {
     >
       <div className="flex items-center justify-between mb-2">
         <div className="space-y-1">
-          <h3 className="text-2xl tracking-tighter heading-premium">Goal Trends</h3>
+          <h3 className="text-2xl font-black italic uppercase text-white tracking-tighter">Goal Trends</h3>
           <p className="text-xs text-zinc-500">Offensive vs Defensive performance delta</p>
         </div>
         <div className="flex gap-2">
@@ -37,7 +37,7 @@ export function TrendsView() {
             ))}
           </div>
           <div className="mt-6 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white italic group-hover/goals:text-shimmer transition-all">37.8</span>
+            <span className="text-3xl font-black text-white italic transition-all">37.8</span>
             <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Avg SF/G</span>
           </div>
         </div>
@@ -64,7 +64,7 @@ export function TrendsView() {
                     initial={{ width: 0 }}
                     animate={{ width: `${c.val}%` }}
                     transition={{ duration: 1, delay: i * 0.1 }}
-                    className={`h-full ${c.color} group-hover/concepts:animate-shimmer`} 
+                    className={`h-full ${c.color}`} 
                   />
                 </div>
               </div>
@@ -90,7 +90,7 @@ export function TrendsView() {
               strokeLinecap="round" 
               strokeLinejoin="round" 
             />
-            <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse group-hover/record:animate-shimmer" />
+            <circle cx="400" cy="5" r="4" fill="white" className="animate-pulse" />
           </svg>
         </div>
       </div>

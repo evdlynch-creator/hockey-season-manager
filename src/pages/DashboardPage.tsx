@@ -156,7 +156,7 @@ export default function DashboardPage() {
     <div className="p-4 md:p-8 max-w-7xl mx-auto animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl md:text-4xl heading-premium">{teamData.team?.name}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{teamData.team?.name}</h1>
           <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {teamData.season?.name}

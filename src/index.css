@@ -208,39 +208,45 @@
 /* ── Floating Glows ───────────────────────────────────────────────────────── */
 
 @keyframes float-random-1 {
-  0% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(15vw, 10vh) scale(1.1); }
-  50% { transform: translate(-10vw, 25vh) scale(0.9); }
-  75% { transform: translate(20vw, -15vh) scale(1.2); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+  33% { transform: translate(15vw, -10vh) scale(1.3); filter: hue-rotate(45deg); }
+  66% { transform: translate(-10vw, 15vh) scale(0.8); filter: hue-rotate(-45deg); }
+  100% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
 }
 
 @keyframes float-random-2 {
-  0% { transform: translate(0, 0) scale(1.1); }
-  20% { transform: translate(-20vw, 15vh) scale(1.3); }
-  40% { transform: translate(10vw, -20vh) scale(0.9); }
-  60% { transform: translate(15vw, 10vh) scale(1.1); }
-  80% { transform: translate(-10vw, -5vh) scale(1.2); }
-  100% { transform: translate(0, 0) scale(1.1); }
+  0% { transform: translate(0, 0) scale(1.2); filter: brightness(1); }
+  25% { transform: translate(-20vw, 15vh) scale(1.5); filter: brightness(1.5); }
+  50% { transform: translate(10vw, -20vh) scale(1); filter: brightness(0.8); }
+  75% { transform: translate(15vw, 10vh) scale(1.3); filter: brightness(1.2); }
+  100% { transform: translate(0, 0) scale(1.2); filter: brightness(1); }
 }
 
 @keyframes float-random-3 {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(25vw, 25vh) scale(1.4); }
-  66% { transform: translate(-20vw, 10vh) scale(0.8); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(25vw, 25vh) scale(1.8); opacity: 0.7; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
 }
 
 @keyframes float-random-4 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-15vw, -30vh) scale(1.5); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% { transform: translate(0, 0) scale(1); filter: saturate(1); }
+  50% { transform: translate(-15vw, -30vh) scale(2); filter: saturate(2); }
+  100% { transform: translate(0, 0) scale(1); filter: saturate(1); }
 }
 
-.animate-float-1 { animation: float-random-1 30s ease-in-out infinite; }
-.animate-float-2 { animation: float-random-2 40s ease-in-out infinite; }
-.animate-float-3 { animation: float-random-3 35s ease-in-out infinite; }
-.animate-float-4 { animation: float-random-4 45s ease-in-out infinite; }
+.animate-float-1 { animation: float-random-1 40s ease-in-out infinite; }
+.animate-float-2 { animation: float-random-2 50s ease-in-out infinite; }
+.animate-float-3 { animation: float-random-3 45s ease-in-out infinite; }
+.animate-float-4 { animation: float-random-4 60s ease-in-out infinite; }
+
+@keyframes blob-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+
+.animate-blob-pulse {
+  animation: blob-pulse 10s ease-in-out infinite;
+}
 
 /* ── Interactive Elements ─────────────────────────────────────────────────── */
 

@@ -24,18 +24,26 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
-      {/* ── Background Floating Glows ────────────────────── */}
+      {/* ── Background Floating Blobs ────────────────────── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-25%] left-[-15%] w-[100vw] h-[100vw] bg-primary/25 blur-[180px] rounded-full animate-float-1 opacity-80" />
-        <div className="absolute top-[15%] right-[-25%] w-[80vw] h-[80vw] bg-blue-500/25 blur-[160px] rounded-full animate-float-2 opacity-70" />
-        <div className="absolute bottom-[-20%] left-[10%] w-[90vw] h-[90vw] bg-primary/20 blur-[170px] rounded-full animate-float-3 opacity-80" />
-        <div className="absolute top-[35%] left-[-20%] w-[65vw] h-[65vw] bg-blue-400/20 blur-[140px] rounded-full animate-float-4 opacity-60" style={{ animationDelay: '-10s' }} />
-        <div className="absolute bottom-[25%] right-[5%] w-[75vw] h-[75vw] bg-primary/20 blur-[160px] rounded-full animate-float-2 opacity-60" style={{ animationDelay: '-5s' }} />
+        {/* Deep Primary Blobs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[80vw] h-[80vw] bg-primary/40 blur-[180px] rounded-full animate-float-1 animate-blob-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70vw] h-[70vw] bg-blue-600/30 blur-[160px] rounded-full animate-float-2 animate-blob-pulse" style={{ animationDelay: '-7s' }} />
         
-        {/* Central Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-primary/10 blur-[220px] rounded-full opacity-50" />
+        {/* Dynamic Accent Blobs */}
+        <div className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] bg-cyan-500/25 blur-[140px] rounded-full animate-float-3 animate-blob-pulse" style={{ animationDelay: '-12s' }} />
+        <div className="absolute top-[50%] left-[-5%] w-[45vw] h-[45vw] bg-blue-400/20 blur-[120px] rounded-full animate-float-4 animate-blob-pulse" style={{ animationDelay: '-4s' }} />
+        
+        {/* Moving Indigo Accent */}
+        <div className="absolute bottom-[30%] left-[10%] w-[55vw] h-[55vw] bg-indigo-500/15 blur-[130px] rounded-full animate-float-1 animate-blob-pulse" style={{ animationDelay: '-15s' }} />
+        
+        {/* Sky Blue Highlight */}
+        <div className="absolute top-[10%] left-[40%] w-[40vw] h-[40vw] bg-sky-400/15 blur-[110px] rounded-full animate-float-3 animate-blob-pulse" style={{ animationDelay: '-25s' }} />
 
-        {/* Additional Small Random Sparkles */}
+        {/* Central Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-[250px] rounded-full opacity-60" />
+
+        {/* Small Random Sparkles */}
         <div className="absolute top-[15%] left-[30%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse opacity-40" style={{ animationDelay: '1s' }} />
         <div className="absolute top-[65%] right-[20%] w-6 h-6 bg-blue-400 blur-lg rounded-full animate-pulse opacity-30" style={{ animationDelay: '2.5s' }} />
         <div className="absolute bottom-[35%] left-[45%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse opacity-40" style={{ animationDelay: '4s' }} />

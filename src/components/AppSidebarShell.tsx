@@ -270,7 +270,7 @@ export function AppSidebarShell() {
             <ViewModeSwitcher collapsed={collapsed} />
           </div>
           {!collapsed && (
-            <p className="px-3 pt-2 pb-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50 font-avega italic text-shimmer">
+            <p className="px-3 pt-2 pb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
               Navigation
             </p>
           )}
