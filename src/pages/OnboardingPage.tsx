@@ -213,22 +213,31 @@ export default function OnboardingPage() {
         userId: user.id,
         role: inviteData.role,
         email: user.email,
-        displayName: user.displayName,
+        displayName: user.displayName || user.email?.split('@')[0],
       })
 
       // 2. Mark invite as accepted and set user_id
       await blink.db.invitations.update(inviteData.id, {
         status: 'accepted',
-        userId: user.id // Set user_id as requested
+        userId: user.id
       })
+
+      const season = await blink.db.seasons.get(inviteData.seasonId) as Season
+      if (season) {
+        localStorage.setItem('selected_team_id', season.teamId)
+      }
+      
+      // Wait a tiny bit for DB consistency before navigating
+      await new Promise(resolve => setTimeout(resolve, 500))
     },
     onSuccess: async () => {
-      const season = await blink.db.seasons.get(inviteData!.seasonId) as Season
-      localStorage.setItem('selected_team_id', season.teamId)
-      
       await queryClient.invalidateQueries({ queryKey: ['team'] })
       toast.success('Invitation accepted!', { description: `You have joined the coaching staff for ${inviteData?.teamName}.` })
       navigate({ to: '/', replace: true })
+    },
+    onError: (err) => {
+      console.error('Accept invite failed', err)
+      toast.error('Failed to accept invitation', { description: (err as any)?.message })
     }
   })
 
@@ -259,12 +268,14 @@ export default function OnboardingPage() {
     )
   }
 
-  if (verifyingInvite) {
+  if (verifyingInvite || acceptInviteMutation.isPending) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground animate-pulse">Verifying invitation...</p>
+          <p className="text-muted-foreground animate-pulse">
+            {verifyingInvite ? 'Verifying invitation...' : 'Joining coaching staff...'}
+          </p>
         </div>
       </div>
     )
@@ -299,11 +310,14 @@ export default function OnboardingPage() {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => navigate({ to: '/', replace: true })} 
+                onClick={() => {
+                  setInviteData(null)
+                  navigate({ to: '/onboarding', search: {}, replace: true })
+                }} 
                 className="w-full"
                 disabled={acceptInviteMutation.isPending}
               >
-                Not now
+                Setup my own team
               </Button>
             </div>
           </CardContent>
