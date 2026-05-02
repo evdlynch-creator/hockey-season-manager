@@ -26,6 +26,7 @@ import TrendsPage from './pages/TrendsPage'
 import OpponentsPage from './pages/OpponentsPage'
 import TeamMembersPage from './pages/TeamMembersPage'
 import SettingsPage from './pages/SettingsPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 
 // --- Routes ---
 
@@ -103,6 +104,12 @@ const trendsRoute = createRoute({
   component: TrendsPage,
 })
 
+const analyticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/analytics',
+  component: AnalyticsPage,
+})
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -127,6 +134,7 @@ const routeTree = rootRoute.addChildren([
   opponentsRoute,
   conceptsRoute,
   trendsRoute,
+  analyticsRoute,
   teamMembersRoute,
   settingsRoute
 ])

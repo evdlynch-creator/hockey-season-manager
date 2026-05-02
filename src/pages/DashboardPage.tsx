@@ -174,7 +174,7 @@ export default function DashboardPage() {
 
         {topInsights.length > 0 && (
           <div className="mb-6">
-            <InsightsStrip insights={topInsights} limit={3} onViewAll={() => navigate({ to: '/trends' })} />
+            <InsightsStrip insights={topInsights} limit={3} onViewAll={() => navigate({ to: '/analytics' })} />
           </div>
         )}
 
@@ -204,7 +204,7 @@ export default function DashboardPage() {
           hurtNarrative={hurtNarrative}
           radarData={radarData}
           onNavigateToEvent={(kind, id) => navigate({ to: kind === 'practice' ? '/practices/$practiceId' : '/games/$gameId', params: { [kind === 'practice' ? 'practiceId' : 'gameId']: id } as any })}
-          onNavigateToTrends={() => navigate({ to: '/trends' })}
+          onNavigateToTrends={() => navigate({ to: '/analytics' })}
         />
 
         <SeasonProgressRibbon
