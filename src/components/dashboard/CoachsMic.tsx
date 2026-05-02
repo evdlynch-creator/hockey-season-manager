@@ -18,6 +18,7 @@ import { blink } from '@/blink/client'
 import { CONCEPTS } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 interface CoachsMicProps {
   onApplyNote?: (text: string, type: 'team' | 'opponent') => void
@@ -25,6 +26,7 @@ interface CoachsMicProps {
 }
 
 export function CoachsMic({ onApplyNote, gameId }: CoachsMicProps) {
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [showResult, setShowResult] = useState(false)
@@ -45,6 +47,14 @@ export function CoachsMic({ onApplyNote, gameId }: CoachsMicProps) {
   }, [])
 
   const startRecording = async () => {
+    if (!isAuthenticated) {
+      toast.error('Authentication required', { 
+        description: 'Please sign in to use the AI Coach\'s Mic features.' 
+      })
+      blink.auth.login(window.location.href)
+      return
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
@@ -129,9 +139,19 @@ export function CoachsMic({ onApplyNote, gameId }: CoachsMicProps) {
       setRefinedText(result.refinedText)
       setShowResult(true)
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Processing failed:', error)
-      toast.error('Failed to process voice note')
+      const isAuthError = 
+        error?.details?.originalError?.name === 'BlinkAuthError' || 
+        error?.message?.includes('401') || 
+        error?.message?.includes('Unauthorized')
+
+      if (isAuthError) {
+        toast.error('Session expired', { description: 'Please sign in again to use AI features.' })
+        blink.auth.login(window.location.href)
+      } else {
+        toast.error('Failed to process voice note')
+      }
     } finally {
       setIsProcessing(false)
       chunksRef.current = []

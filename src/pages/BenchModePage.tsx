@@ -26,6 +26,7 @@ import { useGame } from '@/hooks/useGames'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
 import { CONCEPTS } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
 
 interface GameEvent {
   id: string
@@ -37,6 +38,7 @@ interface GameEvent {
 
 export default function BenchModePage() {
   const { gameId } = useParams({ from: '/games/$gameId/bench' })
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: game, isLoading } = useGame(gameId)
@@ -70,13 +72,27 @@ export default function BenchModePage() {
 
   const updateMutation = useMutation({
     mutationFn: async (updates: Partial<typeof game>) => {
+      if (!isAuthenticated) return // Skip DB sync if not authenticated (demo mode)
       await blink.db.games.update(gameId, updates)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
+      if (isAuthenticated) {
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+        queryClient.invalidateQueries({ queryKey: ['games'] })
+      }
     },
-    onError: (e: any) => toast.error('Failed to sync', { description: e.message })
+    onError: (e: any) => {
+      const isAuthError = 
+        e?.details?.originalError?.name === 'BlinkAuthError' || 
+        e?.message?.includes('401') || 
+        e?.message?.includes('Unauthorized')
+      
+      if (isAuthError) {
+        toast.error('Session expired', { description: 'Please sign in to sync stats.' })
+      } else {
+        toast.error('Failed to sync', { description: e.message })
+      }
+    }
   })
 
   const trackAction = (type: GameEvent['type'], concept?: string) => {
