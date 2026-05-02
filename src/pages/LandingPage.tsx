@@ -147,7 +147,9 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
             {/* Connecting lines for desktop */}
-            <div className="hidden md:block absolute top-[40px] left-1/4 right-1/4 h-px bg-gradient-to-r from-primary/50 via-primary/20 to-primary/50 -translate-y-1/2 z-0" />
+            <div className="hidden md:block absolute top-[40px] left-[16.6%] right-[16.6%] h-[2px] bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 -translate-y-1/2 z-0">
+              <div className="absolute inset-0 bg-primary/20 blur-[2px]" />
+            </div>
             
             {[
               { 
@@ -178,7 +180,7 @@ export default function LandingPage() {
                 border: "border-primary/20"
               }
             ].map((item, i) => (
-              <div key={i} className="relative z-10 space-y-6 group">
+              <div key={i} className="relative z-10 space-y-6 group flex flex-col items-center text-center">
                 <div className={cn(
                   "w-20 h-20 rounded-[2rem] flex items-center justify-center border shadow-2xl transition-all duration-500 group-hover:scale-110",
                   item.bg, item.border
@@ -186,11 +188,11 @@ export default function LandingPage() {
                   <item.icon className={cn("w-10 h-10", item.color)} />
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className={cn("text-xs font-black italic", item.color)}>{item.step}</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className={cn("text-[10px] font-black italic", item.color)}>{item.step}</span>
                     <h3 className="text-xl font-bold italic uppercase tracking-tight text-white">{item.title}</h3>
                   </div>
-                  <p className="text-sm text-zinc-500 leading-relaxed font-medium italic">
+                  <p className="text-sm text-zinc-500 leading-relaxed font-medium italic max-w-[240px]">
                     {item.desc}
                   </p>
                 </div>
