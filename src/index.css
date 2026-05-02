@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
+@font-face {
+  font-family: 'Avega';
+  src: url('/fonts/avega.ttf') format('truetype'),
+       url('/fonts/avega.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    Blink UI Theme CSS — MUST come before @tailwind directives
    ───────────────────────────────────────────────────────────────────────────── */
@@ -110,6 +119,10 @@
   --radius: 0.5rem;
   --tracking-normal: -0.011em;
   --spacing: 0.25rem;
+}
+
+.font-avega {
+  font-family: 'Avega', sans-serif;
 }
 
 /* Dark-mode overrides — same palette since the app is always dark */

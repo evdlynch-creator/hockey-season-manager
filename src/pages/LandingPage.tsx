@@ -61,7 +61,7 @@ export default function LandingPage() {
           
           <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
             Master Your Season with <br />
-            <span className="text-shimmer">
+            <span className="text-shimmer font-avega">
               Intelligence and Precision
             </span>
           </h1>
