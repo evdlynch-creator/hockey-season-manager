@@ -3,54 +3,24 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
   Separator, EmptyState, Badge,
 } from '@blinkdotnew/ui'
-import { TrendingUp, TrendingDown, Trophy, Target, Activity, Lightbulb } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Activity, Lightbulb } from 'lucide-react'
 import { InsightsList } from '@/components/InsightsStrip'
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-} from 'recharts'
 import { format, parseISO } from 'date-fns'
 import { useFilteredAnalytics, buildInsights } from '@/hooks/useAnalytics'
 import { useTeam } from '@/hooks/useTeam'
+import { usePlayers } from '@/hooks/usePlayers'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
 
+// Analytics Components
+import { GoalsTrendChart } from '@/components/analytics/GoalsTrendChart'
+import { ConceptRadarChart } from '@/components/analytics/ConceptRadarChart'
+import { CumulativeRecordChart } from '@/components/analytics/CumulativeRecordChart'
+import { ConceptHeatmap } from '@/components/analytics/ConceptHeatmap'
+import { PlayerAttendanceList } from '@/components/analytics/PlayerAttendanceList'
+
 const AMBER = '#F59E0B'
-const BLUE = '#3B82F6'
-const EMERALD = '#10B981'
-const RED = '#EF4444'
 const MUTED = '#8A8A8E'
-
-// ── Tooltip ──────────────────────────────────────────────────────────────────
-
-function DarkTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-lg text-xs">
-      <p className="font-semibold text-foreground mb-1">{label}</p>
-      {payload.map((p: any, i: number) => (
-        <p key={i} className="flex items-center gap-2" style={{ color: p.color }}>
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-muted-foreground">{p.name}:</span>
-          <span className="font-semibold tabular-nums">
-            {typeof p.value === 'number' ? p.value.toFixed?.(1) ?? p.value : p.value ?? '—'}
-          </span>
-        </p>
-      ))}
-    </div>
-  )
-}
-
-// ── Heatmap cell ─────────────────────────────────────────────────────────────
-
-function heatmapColor(value: number | null): string {
-  if (value == null) return 'hsl(0 0% 12%)'
-  // 0 = red-ish, 5 = emerald
-  if (value < 2) return 'rgba(239, 68, 68, 0.6)'
-  if (value < 3) return 'rgba(245, 158, 11, 0.5)'
-  if (value < 4) return 'rgba(245, 158, 11, 0.85)'
-  return 'rgba(16, 185, 129, 0.85)'
-}
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
@@ -68,6 +38,7 @@ const WINDOW_OPTIONS: { value: WindowMode; label: string }[] = [
 export default function TrendsPage() {
   const { data: teamData } = useTeam()
   const { data: rawAnalytics, isLoading } = useFilteredAnalytics()
+  const { data: players = [] } = usePlayers()
   const [windowMode, setWindowMode] = useState<WindowMode>('all')
   const [selectedMonth, setSelectedMonth] = useState<string>('')
 
@@ -354,161 +325,20 @@ export default function TrendsPage() {
 
       {/* Row 1: Goals area chart + Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-base">Goals Per Game</CardTitle>
-            <CardDescription className="text-xs">Scoring trend across completed games.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {goalsData.length === 0 ? (
-              <div className="h-64 flex items-center justify-center">
-                <p className="text-sm text-muted-foreground italic">No completed games yet.</p>
-              </div>
-            ) : (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={goalsData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                    <defs>
-                      <linearGradient id="gf" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={EMERALD} stopOpacity={0.4} />
-                        <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="ga" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={RED} stopOpacity={0.35} />
-                        <stop offset="100%" stopColor={RED} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid stroke="hsl(0 0% 15%)" strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="label" stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} />
-                    <YAxis stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} width={28} allowDecimals={false} />
-                    <Tooltip content={<DarkTooltip />} cursor={{ stroke: MUTED, strokeDasharray: 3 }} />
-                    <Area name="Goals For" type="monotone" dataKey="Goals For" stroke={EMERALD} strokeWidth={2} fill="url(#gf)" />
-                    <Area name="Goals Against" type="monotone" dataKey="Goals Against" stroke={RED} strokeWidth={2} fill="url(#ga)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-base">Concept Health</CardTitle>
-            <CardDescription className="text-xs">Latest rating across all 6 core concepts.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData} outerRadius={80}>
-                  <PolarGrid stroke="hsl(0 0% 18%)" />
-                  <PolarAngleAxis dataKey="concept" tick={{ fontSize: 10, fill: MUTED }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{ fontSize: 9, fill: MUTED }} stroke="hsl(0 0% 18%)" />
-                  <Radar name="Rating" dataKey="rating" stroke={AMBER} fill={AMBER} fillOpacity={0.35} />
-                  <Tooltip content={<DarkTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <GoalsTrendChart data={goalsData} />
+        <ConceptRadarChart data={radarData} />
       </div>
 
-      {/* Row 2: Cumulative record */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-base">Cumulative Record</CardTitle>
-          <CardDescription className="text-xs">How your W-L-T stacks up over the season.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recordData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground italic">No completed games yet.</p>
-            </div>
-          ) : (
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={recordData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                  <CartesianGrid stroke="hsl(0 0% 15%)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="label" stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} />
-                  <YAxis stroke={MUTED} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={{ stroke: 'hsl(0 0% 15%)' }} width={28} allowDecimals={false} />
-                  <Tooltip content={<DarkTooltip />} cursor={{ fill: 'hsl(0 0% 10%)' }} />
-                  <Bar dataKey="Wins" stackId="a" fill={EMERALD} radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="Ties" stackId="a" fill={MUTED} radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="Losses" stackId="a" fill={RED} radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Row 2: Cumulative record + Attendance */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <CumulativeRecordChart data={recordData} />
+        </div>
+        <PlayerAttendanceList players={players} />
+      </div>
 
       {/* Row 3: Heatmap */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-base">Concept × Session Heatmap</CardTitle>
-          <CardDescription className="text-xs">
-            Last 12 sessions with ratings. Greener = stronger execution.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {heatmapRows[0]?.cells.length === 0 ? (
-            <div className="h-32 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground italic">No ratings yet.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <div className="inline-block min-w-full">
-                <div className="flex items-center gap-1 pl-[140px] mb-2">
-                  {heatmapRows[0]?.dates.map(d => (
-                    <div key={d} className="w-10 text-center text-[9px] text-muted-foreground font-medium tabular-nums">
-                      {format(parseISO(d), 'M/d')}
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-1">
-                  {heatmapRows.map(row => (
-                    <div key={row.concept} className="flex items-center gap-1">
-                      <div className="w-[132px] shrink-0 pr-2 text-right">
-                        <span className="text-xs font-medium text-foreground">{row.concept}</span>
-                      </div>
-                      {row.cells.map(c => (
-                        <div
-                          key={c.date}
-                          className={cn(
-                            'w-10 h-10 rounded flex items-center justify-center text-[10px] font-semibold transition-transform hover:scale-110',
-                            c.value == null ? 'text-muted-foreground/40' : 'text-white'
-                          )}
-                          style={{ backgroundColor: heatmapColor(c.value) }}
-                          title={`${row.concept} · ${format(parseISO(c.date), 'MMM d')}: ${c.value?.toFixed(1) ?? 'No rating'}`}
-                        >
-                          {c.value != null ? c.value.toFixed(1) : '—'}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-4 mt-4 pl-[140px] text-[10px] text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(239, 68, 68, 0.6)' }} />
-                    &lt; 2.0
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(245, 158, 11, 0.5)' }} />
-                    2.0 – 3.0
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(245, 158, 11, 0.85)' }} />
-                    3.0 – 4.0
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(16, 185, 129, 0.85)' }} />
-                    ≥ 4.0
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <ConceptHeatmap rows={heatmapRows} />
 
       {/* Tracked Insights */}
       <Card className="border-border bg-card">
