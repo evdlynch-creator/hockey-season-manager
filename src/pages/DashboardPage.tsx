@@ -20,6 +20,9 @@ import { ConceptTrends } from './dashboard/ConceptTrends'
 import { SeasonProgressRibbon } from '../components/dashboard/SeasonProgressRibbon'
 import { CoachsMic } from '../components/dashboard/CoachsMic'
 import { CONCEPTS } from '../types'
+import { toast } from '@blinkdotnew/ui'
+import { blink } from '@/blink/client'
+import { useQueryClient } from '@tanstack/react-query'
 
 const SNAPSHOT_FIELD: Record<string, string> = {
   'Breakouts': 'breakoutsRating',
@@ -41,6 +44,7 @@ export default function DashboardPage() {
   const games = filterGamesByMode(rawGames, gameTypes, viewMode)
   const { data: analytics } = useFilteredAnalytics()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const demoActive = isDemoMode()
@@ -103,6 +107,39 @@ export default function DashboardPage() {
 
   const { working, hurting, hurtNarrative } = getConceptInsights(recentCompleted, reviewsByGameId, snapshotGA)
   const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
+
+  const handleApplyDashboardNote = async (text: string, type: 'team' | 'opponent') => {
+    const latestGame = recentCompleted[0]
+    if (!latestGame) {
+      toast.error('No recent games found to apply note to')
+      return
+    }
+
+    try {
+      const existingReview = reviewsByGameId.get(latestGame.id)
+      const payload = type === 'team' 
+        ? { notes: existingReview?.notes ? `${existingReview.notes}\n\n${text}` : text }
+        : { opponentNotes: existingReview?.opponentNotes ? `${existingReview.opponentNotes}\n\n${text}` : text }
+
+      if (existingReview) {
+        await blink.db.gameReviews.update(existingReview.id, payload)
+      } else {
+        await blink.db.gameReviews.create({
+          id: crypto.randomUUID(),
+          gameId: latestGame.id,
+          userId: user?.id,
+          ...payload,
+          createdAt: new Date().toISOString()
+        })
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['game-review', latestGame.id] })
+      toast.success(`Note saved to game vs ${latestGame.opponent}`)
+    } catch (error) {
+      console.error('Failed to apply note:', error)
+      toast.error('Failed to save note')
+    }
+  }
 
   return (
     <div className="relative min-h-full">
@@ -183,7 +220,7 @@ export default function DashboardPage() {
         />
       </motion.div>
 
-      <CoachsMic />
+      <CoachsMic onApplyNote={handleApplyDashboardNote} />
     </div>
   )
 }

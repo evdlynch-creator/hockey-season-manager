@@ -8,13 +8,14 @@ import {
   EmptyState, toast, Separator,
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock } from 'lucide-react'
+import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes } from '@/hooks/usePreferences'
 import type { GameType } from '@/hooks/usePreferences'
 import { cn } from '@/lib/utils'
+import { CoachsMic } from '@/components/dashboard/CoachsMic'
 
 const CONCEPT_FIELDS: { key: string; label: string }[] = [
   { key: 'breakoutsRating', label: 'Breakouts' },
@@ -72,6 +73,14 @@ export default function GameDetailPage() {
   const [ratings, setRatings] = useState<Record<string, number | undefined>>({})
   const [notes, setNotes] = useState('')
   const [opponentNotes, setOpponentNotes] = useState('')
+
+  const handleApplyMicNote = (text: string, type: 'team' | 'opponent') => {
+    if (type === 'team') {
+      setNotes(prev => prev ? `${prev}\n\n${text}` : text)
+    } else {
+      setOpponentNotes(prev => prev ? `${prev}\n\n${text}` : text)
+    }
+  }
 
   useEffect(() => {
     if (game) {
@@ -187,6 +196,8 @@ export default function GameDetailPage() {
       <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Games
       </Link>
+
+      <CoachsMic onApplyNote={handleApplyMicNote} gameId={gameId} />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">

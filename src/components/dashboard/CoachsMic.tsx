@@ -13,18 +13,26 @@ import {
   toast,
   Badge,
 } from '@blinkdotnew/ui'
-import { Mic, Square, Loader2, Sparkles, X, Brain } from 'lucide-react'
+import { Mic, Square, Loader2, Sparkles, X, Brain, User, ShieldAlert, Copy, Check, Save } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { CONCEPTS } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-export function CoachsMic() {
+interface CoachsMicProps {
+  onApplyNote?: (text: string, type: 'team' | 'opponent') => void
+  gameId?: string
+}
+
+export function CoachsMic({ onApplyNote, gameId }: CoachsMicProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [transcription, setTranscription] = useState('')
+  const [refinedText, setRefinedText] = useState('')
+  const [classification, setClassification] = useState<'our_team' | 'opponent' | 'general'>('general')
   const [extractedConcepts, setExtractedConcepts] = useState<string[]>([])
+  const [hasCopied, setChecked] = useState(false)
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -88,22 +96,37 @@ export function CoachsMic() {
       
       setTranscription(text)
       
-      // Extract concepts using AI
+      // Extract concepts and classify using AI
       const { object } = await blink.ai.generateObject({
-        prompt: `Analyze this coach's note and identify which of the following tactical concepts it mentions: ${CONCEPTS.join(', ')}. Return them as an array. Note: "${text}"`,
+        prompt: `Analyze this coach's tactical note. 
+        1. Identify which tactical concepts it mentions: ${CONCEPTS.join(', ')}.
+        2. Classify if this is primarily about "our_team" (how our team played), "opponent" (scouting tendencies/players), or "general".
+        3. Provide a refined, professional version of the note (clean up filler words, um, uh, and improve clarity).
+        
+        Note: "${text}"`,
         schema: {
           type: 'object',
           properties: {
             concepts: {
               type: 'array',
               items: { type: 'string', enum: CONCEPTS as any }
+            },
+            classification: {
+              type: 'string',
+              enum: ['our_team', 'opponent', 'general']
+            },
+            refinedText: {
+              type: 'string'
             }
           },
-          required: ['concepts']
+          required: ['concepts', 'classification', 'refinedText']
         }
       })
       
-      setExtractedConcepts((object as any).concepts)
+      const result = object as any
+      setExtractedConcepts(result.concepts)
+      setClassification(result.classification)
+      setRefinedText(result.refinedText)
       setShowResult(true)
       
     } catch (error) {
@@ -112,6 +135,21 @@ export function CoachsMic() {
     } finally {
       setIsProcessing(false)
       chunksRef.current = []
+    }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(refinedText || transcription)
+    setChecked(true)
+    toast.success('Note copied to clipboard')
+    setTimeout(() => setChecked(false), 2000)
+  }
+
+  const handleApply = (type: 'team' | 'opponent') => {
+    if (onApplyNote) {
+      onApplyNote(refinedText || transcription, type)
+      setShowResult(false)
+      toast.success(`Applied to ${type === 'team' ? 'Team' : 'Opponent'} Notes`)
     }
   }
 
@@ -158,16 +196,39 @@ export function CoachsMic() {
               <Brain className="w-5 h-5 text-primary" />
               Tactical Signal
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
-              Voice transcription processed by Blue Line IQ
-            </DialogDescription>
+            <div className="flex items-center gap-2 mt-1">
+              {classification === 'our_team' ? (
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 rounded-full flex items-center gap-1.5">
+                  <User className="w-3 h-3" /> Team Performance
+                </Badge>
+              ) : classification === 'opponent' ? (
+                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 rounded-full flex items-center gap-1.5">
+                  <ShieldAlert className="w-3 h-3" /> Opponent Scouting
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-zinc-500 border-zinc-500/20 rounded-full">
+                  General Note
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="p-4 rounded-[1.5rem] bg-white/5 border border-white/5">
-              <p className="text-sm italic leading-relaxed text-foreground">
-                "{transcription}"
-              </p>
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Refined Insight</p>
+              <div className="p-4 rounded-[1.5rem] bg-white/5 border border-white/5 relative group/text">
+                <p className="text-sm italic leading-relaxed text-foreground">
+                  "{refinedText || transcription}"
+                </p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="absolute top-2 right-2 opacity-0 group-hover/text:opacity-100 transition-opacity rounded-full h-8 w-8"
+                  onClick={copyToClipboard}
+                >
+                  {hasCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
 
             {extractedConcepts.length > 0 && (
@@ -184,17 +245,46 @@ export function CoachsMic() {
             )}
           </div>
 
-          <div className="flex justify-end">
-            <Button 
-              className="rounded-full bg-primary font-bold px-6"
-              onClick={() => setShowResult(false)}
-            >
-              Done
-            </Button>
+          <div className="flex flex-col gap-2">
+            {onApplyNote && (
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline"
+                  className="rounded-full border-emerald-500/20 bg-emerald-500/5 text-emerald-400 font-bold gap-2 hover:bg-emerald-500/10"
+                  onClick={() => handleApply('team')}
+                >
+                  <User className="w-4 h-4" /> Apply to Team
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="rounded-full border-amber-500/20 bg-amber-500/5 text-amber-400 font-bold gap-2 hover:bg-amber-500/10"
+                  onClick={() => handleApply('opponent')}
+                >
+                  <ShieldAlert className="w-4 h-4" /> Apply to Opponent
+                </Button>
+              </div>
+            )}
+            
+            <div className="flex justify-end gap-2">
+              {!onApplyNote && (
+                <Button 
+                  variant="ghost"
+                  className="rounded-full font-bold gap-2"
+                  onClick={copyToClipboard}
+                >
+                  <Copy className="w-4 h-4" /> Copy Note
+                </Button>
+              )}
+              <Button 
+                className="rounded-full bg-primary font-bold px-8 shadow-lg shadow-primary/20"
+                onClick={() => setShowResult(false)}
+              >
+                {onApplyNote ? 'Cancel' : 'Done'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
     </div>
   )
 }
-
