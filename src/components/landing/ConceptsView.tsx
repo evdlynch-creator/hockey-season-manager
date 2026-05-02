@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { TrendingUp, Target, Activity } from 'lucide-react'
+import { TrendingUp, Target, Activity, Zap, Shield, Swords } from 'lucide-react'
 
 export function ConceptsView() {
   return (
@@ -24,14 +24,14 @@ export function ConceptsView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[45%]">
         {[
-          { title: "Breakouts", data: [2, 3, 4, 3, 5, 4, 5], color: "text-blue-400", bg: "bg-blue-500" },
-          { title: "Forecheck", data: [4, 4, 3, 5, 5, 5, 5], color: "text-emerald-400", bg: "bg-emerald-500" },
-          { title: "Skating", data: [3, 2, 3, 4, 4, 3, 4], color: "text-amber-400", bg: "bg-amber-500" }
+          { title: "Breakouts", data: [2, 3, 4, 3, 5, 4, 5], color: "text-blue-400", bg: "bg-blue-500", icon: Zap },
+          { title: "Forecheck", data: [4, 4, 3, 5, 5, 5, 5], color: "text-emerald-400", bg: "bg-emerald-500", icon: Swords },
+          { title: "D-Zone", data: [3, 2, 3, 4, 4, 3, 4], color: "text-amber-400", bg: "bg-amber-500", icon: Shield }
         ].map((c, i) => (
           <div key={i} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concept">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{c.title}</div>
-              <Target className={`w-3 h-3 ${c.color} opacity-50`} />
+              <c.icon className={`w-3 h-3 ${c.color} opacity-50`} />
             </div>
             <div className="flex-1 flex items-end gap-1 px-1">
               {c.data.map((v, j) => (

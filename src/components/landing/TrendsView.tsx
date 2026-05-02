@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Activity, TrendingUp, Target, Swords, ClipboardList } from 'lucide-react'
 
 export function TrendsView() {
   return (
@@ -24,59 +25,55 @@ export function TrendsView() {
       <div className="grid grid-cols-2 gap-8 h-[55%]">
         <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/goals">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Goal Differential</div>
-            <Activity className="w-3 h-3 text-emerald-400 opacity-50" />
+            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Shot Volume Trends</div>
+            <Swords className="w-3 h-3 text-blue-400 opacity-50" />
           </div>
           <div className="flex-1 flex items-end gap-1.5 px-2">
-            {[2, 3, 2, 4, 3, 5, 4, 3, 6, 4].map((g, i) => (
+            {[28, 34, 42, 31, 38, 45, 39, 32, 48, 41].map((s, i) => (
               <div key={i} className="flex-1 flex flex-col gap-0.5 items-center group/bar">
-                <div className="w-full bg-emerald-500/20 rounded-t-sm group-hover/bar:bg-emerald-500/40 transition-colors" style={{ height: `${g * 12}%` }} />
-                <div className="w-full bg-red-500/20 rounded-b-sm group-hover/bar:bg-red-500/40 transition-colors" style={{ height: `${(Math.random() * 2 + 1) * 12}%` }} />
+                <div className="w-full bg-blue-500/20 rounded-t-sm group-hover/bar:bg-blue-500/40 transition-colors" style={{ height: `${(s/60) * 100}%` }} />
+                <div className="w-full bg-zinc-800 rounded-b-sm" style={{ height: `${(25/60) * 100}%` }} />
               </div>
             ))}
           </div>
           <div className="mt-6 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white italic">+2.4</span>
-            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Avg Delta</span>
+            <span className="text-3xl font-black text-white italic">37.8</span>
+            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Avg SF/G</span>
           </div>
         </div>
 
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col items-center justify-center relative overflow-hidden group/radar">
-          <div className="absolute top-4 left-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Concept Balance</div>
+        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concepts">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">System Execution</div>
+            <Target className="w-3 h-3 text-primary opacity-50" />
+          </div>
           
-          <svg className="w-40 h-40 transform scale-125 md:scale-150" viewBox="0 0 100 100">
-            {/* Radar Background Grids */}
-            {[20, 40, 60, 80, 100].map((r) => (
-              <circle key={r} cx="50" cy="50" r={r/2.2} fill="none" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
-            ))}
-            {/* Axis Lines */}
-            {Array.from({ length: 6 }).map((_, i) => {
-              const angle = (i * 60) * (Math.PI / 180);
-              return <line key={i} x1="50" y1="50" x2={50 + Math.cos(angle) * 45} y2={50 + Math.sin(angle) * 45} stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />;
-            })}
-            {/* Data Shape */}
-            <path 
-              d="M 50 15 L 85 30 L 80 75 L 50 85 L 20 75 L 15 30 Z" 
-              fill="hsl(var(--primary))" 
-              fillOpacity="0.2" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth="1.5"
-              className="transition-all duration-1000 group-hover/radar:fill-opacity-40"
-            />
-            {/* Points */}
+          <div className="flex-1 space-y-4 py-2">
             {[
-              {x: 50, y: 15}, {x: 85, y: 30}, {x: 80, y: 75}, 
-              {x: 50, y: 85}, {x: 20, y: 75}, {x: 15, y: 30}
-            ].map((p, i) => (
-              <circle key={i} cx={p.x} cy={p.y} r="1.5" fill="white" />
+              { label: "Zone Entries", val: 78, color: "bg-primary" },
+              { label: "Turnover Recovery", val: 62, color: "bg-emerald-500" },
+              { label: "Net Front Presence", val: 84, color: "bg-blue-500" }
+            ].map((c, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="flex justify-between text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">
+                  <span>{c.label}</span>
+                  <span className="text-white">{c.val}%</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${c.val}%` }}
+                    transition={{ duration: 1, delay: i * 0.1 }}
+                    className={`h-full ${c.color}`} 
+                  />
+                </div>
+              </div>
             ))}
-          </svg>
+          </div>
 
-          <div className="absolute bottom-4 flex gap-4 text-[8px] font-bold text-zinc-600 uppercase tracking-tighter">
-            <span>D-Zone</span>
-            <span>Pass</span>
-            <span>Skate</span>
-            <span>Break</span>
+          <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-emerald-400">
+            <TrendingUp className="w-3 h-3" />
+            <span>+6.2% IMPROVEMENT</span>
           </div>
         </div>
       </div>
