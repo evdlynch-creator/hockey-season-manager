@@ -26,17 +26,20 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
       {/* ── Background Floating Glows ────────────────────── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[5%] left-[10%] w-[600px] h-[600px] bg-primary/20 blur-[140px] rounded-full animate-float-1 opacity-40" />
-        <div className="absolute top-[35%] right-[5%] w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full animate-float-2 opacity-30" />
-        <div className="absolute bottom-[20%] left-[25%] w-[700px] h-[700px] bg-primary/20 blur-[150px] rounded-full animate-float-3 opacity-40" />
-        <div className="absolute top-[60%] left-[-5%] w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full animate-float-1 opacity-20" style={{ animationDelay: '-5s' }} />
-        <div className="absolute top-[15%] right-[25%] w-[550px] h-[550px] bg-primary/20 blur-[130px] rounded-full animate-float-2 opacity-30" style={{ animationDelay: '-12s' }} />
-        <div className="absolute bottom-[5%] right-[15%] w-[650px] h-[650px] bg-blue-400/10 blur-[140px] rounded-full animate-float-3 opacity-20" style={{ animationDelay: '-8s' }} />
+        <div className="absolute top-[-25%] left-[-15%] w-[100vw] h-[100vw] bg-primary/25 blur-[180px] rounded-full animate-float-1 opacity-80" />
+        <div className="absolute top-[15%] right-[-25%] w-[80vw] h-[80vw] bg-blue-500/25 blur-[160px] rounded-full animate-float-2 opacity-70" />
+        <div className="absolute bottom-[-20%] left-[10%] w-[90vw] h-[90vw] bg-primary/20 blur-[170px] rounded-full animate-float-3 opacity-80" />
+        <div className="absolute top-[35%] left-[-20%] w-[65vw] h-[65vw] bg-blue-400/20 blur-[140px] rounded-full animate-float-4 opacity-60" style={{ animationDelay: '-10s' }} />
+        <div className="absolute bottom-[25%] right-[5%] w-[75vw] h-[75vw] bg-primary/20 blur-[160px] rounded-full animate-float-2 opacity-60" style={{ animationDelay: '-5s' }} />
         
+        {/* Central Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-primary/10 blur-[220px] rounded-full opacity-50" />
+
         {/* Additional Small Random Sparkles */}
-        <div className="absolute top-[20%] left-[40%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-[60%] right-[30%] w-6 h-6 bg-blue-400 blur-lg rounded-full animate-pulse opacity-40" style={{ animationDelay: '2.5s' }} />
-        <div className="absolute bottom-[40%] left-[15%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-[15%] left-[30%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse opacity-40" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-[65%] right-[20%] w-6 h-6 bg-blue-400 blur-lg rounded-full animate-pulse opacity-30" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute bottom-[35%] left-[45%] w-4 h-4 bg-primary blur-md rounded-full animate-pulse opacity-40" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-[50%] left-[60%] w-5 h-5 bg-blue-300 blur-lg rounded-full animate-pulse opacity-25" style={{ animationDelay: '3.2s' }} />
       </div>
 
       {/* ── Navigation ──────────────────────────────────── */}
@@ -48,13 +51,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
-              className="text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="text-zinc-400 hover:text-white hover:bg-white/5 transition-colors btn-premium"
               onClick={handleLogin}
             >
               Sign In
             </Button>
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-lg shadow-primary/20 transition-all active:scale-95"
+              className="bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-lg shadow-primary/20 btn-premium"
               onClick={handleLogin}
             >
               Get Started

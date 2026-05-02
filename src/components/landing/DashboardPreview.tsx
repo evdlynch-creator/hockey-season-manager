@@ -82,15 +82,15 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             <div className="space-y-6">
               <div className="space-y-3">
                 <div className="text-[10px] px-2 heading-premium">Main Menu</div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-colors ${activeView === 'overview' ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'overview' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <TrendingUp className={`w-3.5 h-3.5 ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`}>Overview</span>
                 </div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-colors ${activeView === 'trends' ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'trends' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <BarChart3 className={`w-3.5 h-3.5 ${activeView === 'trends' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'trends' ? 'text-primary' : 'text-zinc-500'}`}>Trends</span>
                 </div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-colors ${activeView === 'concepts' ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'concepts' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <Layers className={`w-3.5 h-3.5 ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`}>Concepts</span>
                 </div>
