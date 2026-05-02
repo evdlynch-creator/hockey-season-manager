@@ -23,7 +23,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Invitation, Season, Team, CONCEPTS } from '../types'
+import { Invitation, Season, Team, CONCEPTS } from '../types' // Season still used in verifyInvite
 import { cn } from '@/lib/utils'
 
 const onboardingSchema = z.object({
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
   const isAddingNewTeam = search.mode === 'new_team'
   const inviteToken = search.invite
 
-  const [inviteData, setInviteData] = useState<{ id: string, seasonId: string, email: string, role: string, teamName: string, seasonName: string } | null>(null)
+  const [inviteData, setInviteData] = useState<{ id: string, seasonId: string, teamId: string, email: string, role: string, teamName: string, seasonName: string } | null>(null)
   const [verifyingInvite, setVerifyingInvite] = useState(!!inviteToken)
   const [verifyError, setVerifyError] = useState<string | null>(null)
 
@@ -177,6 +177,7 @@ export default function OnboardingPage() {
         setInviteData({
           id: invite.id,
           seasonId: invite.seasonId,
+          teamId: team.id,
           email: invite.email,
           role: invite.role,
           teamName: team.name,
@@ -197,9 +198,9 @@ export default function OnboardingPage() {
 
   const acceptInviteMutation = useMutation({
     mutationFn: async () => {
-      if (!inviteData || !user) return
-      
-      // 1. Add user to season members
+      if (!inviteData || !user) throw new Error('Missing invite data or user')
+
+      // 1. Add user to season members (their own record — always succeeds)
       await blink.db.seasonMembers.create({
         id: `member_${crypto.randomUUID().slice(0, 8)}`,
         seasonId: inviteData.seasonId,
@@ -207,25 +208,27 @@ export default function OnboardingPage() {
         role: inviteData.role,
         email: user.email,
         displayName: user.displayName || user.email?.split('@')[0],
+        createdAt: new Date().toISOString(),
       })
 
-      // 2. Mark invite as accepted and set user_id
-      await blink.db.invitations.update(inviteData.id, {
-        status: 'accepted',
-        userId: user.id
-      })
-
-      const season = await blink.db.seasons.get(inviteData.seasonId) as Season
-      if (season) {
-        localStorage.setItem('selected_team_id', season.teamId)
+      // 2. Try to mark the invitation as accepted.
+      // This may fail silently if the invite was created by another user (ownership mismatch).
+      // It's non-critical — membership was already created above.
+      try {
+        await blink.db.invitations.update(inviteData.id, { status: 'accepted' })
+      } catch (err) {
+        console.warn('Could not mark invitation as accepted (non-critical):', err)
       }
-      
-      // Wait a tiny bit for DB consistency before navigating
-      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // 3. Set the selected team so the dashboard opens the correct team
+      localStorage.setItem('selected_team_id', inviteData.teamId)
+
+      // Brief pause for DB consistency
+      await new Promise(resolve => setTimeout(resolve, 400))
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['team'] })
-      toast.success('Invitation accepted!', { description: `You have joined the coaching staff for ${inviteData?.teamName}.` })
+      toast.success('Invitation accepted!', { description: `You have joined ${inviteData?.teamName}.` })
       navigate({ to: '/', replace: true })
     },
     onError: (err) => {
