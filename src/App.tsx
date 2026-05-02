@@ -4,6 +4,7 @@ import {
   Toaster
 } from '@blinkdotnew/ui'
 import { SharedAppLayout } from './layouts/shared-app-layout'
+import { isDemoMode } from './hooks/useDemoData'
 import {
   createRouter,
   createRoute,
@@ -131,10 +132,11 @@ declare module '@tanstack/react-router' {
 
 export default function App() {
   const { user, isLoading } = useAuth()
+  const demoActive = isDemoMode()
 
-  if (isLoading) return <LoadingOverlay show />
+  if (isLoading && !demoActive) return <LoadingOverlay show />
 
-  if (!user) {
+  if (!user && !demoActive) {
     return (
       <>
         <LandingPage />

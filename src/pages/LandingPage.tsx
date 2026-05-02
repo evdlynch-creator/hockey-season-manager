@@ -1,5 +1,6 @@
 import { Button } from '@blinkdotnew/ui'
 import { blink } from '../blink/client'
+import { useDemoMode } from '../hooks/useDemoData'
 import logoUrl from '@/assets/blue-line-iq-logo.svg'
 import heroUrl from '@/assets/hero.png'
 import { 
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react'
 
 export default function LandingPage() {
+  const { enterDemo } = useDemoMode()
   const handleLogin = () => {
     blink.auth.login(window.location.href)
   }
@@ -81,7 +83,7 @@ export default function LandingPage() {
               size="lg"
               variant="outline"
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
-              onClick={handleLogin}
+              onClick={enterDemo}
             >
               Watch Demo
             </Button>

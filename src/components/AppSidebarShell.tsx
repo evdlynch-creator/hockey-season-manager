@@ -112,7 +112,7 @@ export function AppSidebarShell() {
     })
   }, [])
 
-  const userInitial = user?.email?.charAt(0).toUpperCase() || 'U'
+  const userInitial = isDemo ? 'D' : (user?.email?.charAt(0).toUpperCase() || 'U')
   const teams = teamData?.teams ?? []
   const currentTeam = teamData?.team
 
@@ -150,7 +150,7 @@ export function AppSidebarShell() {
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div onClick={isDemo ? exitDemo : undefined} className={cn("cursor-pointer", isDemo && "text-amber-500")}>
+                <div onClick={exitDemo} className={cn("cursor-pointer flex items-center justify-center", isDemo && "text-amber-500")}>
                   <img
                     src={iqPlusLogoUrl}
                     alt="Blue Line IQ"
@@ -290,9 +290,15 @@ export function AppSidebarShell() {
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="h-8 w-8 rounded-full ring-2 ring-primary/20 overflow-hidden cursor-pointer hover:ring-primary/40 transition-all duration-200">
+                <div className={cn(
+                  "h-8 w-8 rounded-full ring-2 overflow-hidden cursor-pointer transition-all duration-200",
+                  isDemo ? "ring-amber-500/40 hover:ring-amber-500/60" : "ring-primary/20 hover:ring-primary/40"
+                )}>
                   <Avatar className="h-full w-full">
-                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                    <AvatarFallback className={cn(
+                      "text-[10px] font-bold",
+                      isDemo ? "bg-amber-500/10 text-amber-500" : "bg-primary/10 text-primary"
+                    )}>
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
@@ -300,22 +306,33 @@ export function AppSidebarShell() {
               </TooltipTrigger>
               <TooltipContent side="right">
                 <div className="text-xs">
-                  <p className="font-bold">{user?.email}</p>
-                  <p className="text-muted-foreground">Team Coach</p>
+                  <p className="font-bold">{isDemo ? 'Demo User' : (user?.email || 'Guest')}</p>
+                  <p className="text-muted-foreground">{isDemo ? 'Viewing Chicago Blackhawks' : 'Team Coach'}</p>
                 </div>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-sidebar-accent/50 border border-sidebar-border">
-              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
+            <div className={cn(
+              "flex items-center gap-3 p-2 rounded-xl border transition-all duration-200",
+              isDemo ? "bg-amber-500/5 border-amber-500/10" : "bg-sidebar-accent/50 border-sidebar-border"
+            )}>
+              <Avatar className={cn(
+                "h-8 w-8 ring-2",
+                isDemo ? "ring-amber-500/20" : "ring-primary/20"
+              )}>
+                <AvatarFallback className={cn(
+                  "text-xs font-bold",
+                  isDemo ? "bg-amber-500/10 text-amber-500" : "bg-primary/10 text-primary"
+                )}>
                   {userInitial}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-bold truncate text-foreground leading-none mb-1">Coach</p>
+                <p className="text-xs font-bold truncate text-foreground leading-none mb-1">
+                  {isDemo ? 'Demo Coach' : 'Coach'}
+                </p>
                 <p className="text-[10px] text-muted-foreground truncate leading-none">
-                  {user?.email}
+                  {isDemo ? 'demo@bluelineiq.com' : (user?.email || 'Not signed in')}
                 </p>
               </div>
             </div>
@@ -330,12 +347,12 @@ export function AppSidebarShell() {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => blink.auth.logout()}
+                  onClick={isDemo ? exitDemo : () => blink.auth.logout()}
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">Sign out</TooltipContent>
+              <TooltipContent side="right">{isDemo ? 'Exit Demo' : 'Sign out'}</TooltipContent>
             </Tooltip>
           ) : (
             <Button
@@ -343,10 +360,12 @@ export function AppSidebarShell() {
               variant="ghost"
               size="sm"
               className="w-full justify-start px-2 gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 group transition-all duration-200"
-              onClick={() => blink.auth.logout()}
+              onClick={isDemo ? exitDemo : () => blink.auth.logout()}
             >
               <LogOut className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Sign out</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                {isDemo ? 'Exit Demo' : 'Sign out'}
+              </span>
             </Button>
           )}
         </div>

@@ -7,7 +7,7 @@ const DEMO_SEASON_ID = 'demo-season'
 
 export const DEMO_TEAM: Team = {
   id: DEMO_TEAM_ID,
-  name: 'Chicago Blackhawks (Demo)',
+  name: 'Chicago Blackhawks',
   userId: 'demo-user',
   createdAt: new Date().toISOString(),
 }
