@@ -117,10 +117,11 @@ export default function LandingPage() {
             <Button 
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full"
+              className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center leading-tight"
               onClick={enterDemo}
             >
-              Explore the Pulse
+              <span className="text-lg font-bold">Explore the Pulse</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">Interactive Demo</span>
             </Button>
           </div>
 
