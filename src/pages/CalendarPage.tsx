@@ -98,7 +98,7 @@ function MiniMonth({
         </h2>
         <div className="flex items-center gap-2 shrink-0">
           {/* View toggle */}
-          <div className="flex items-center rounded-md bg-white/5 p-0.5">
+          <div className="flex items-center rounded-full bg-white/5 p-0.5">
             <button
               onClick={() => setView('week')}
               className={cn(
@@ -111,7 +111,7 @@ function MiniMonth({
             <button
               onClick={() => setView('month')}
               className={cn(
-                'px-2 py-0.5 text-[11px] font-medium rounded transition-colors',
+                'px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors',
                 view === 'month' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
               )}
             >
@@ -121,14 +121,14 @@ function MiniMonth({
           <div className="flex items-center gap-0.5">
             <button
               onClick={goPrev}
-              className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+              className="w-6 h-6 rounded-full hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
               aria-label={view === 'week' ? 'Previous week' : 'Previous month'}
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={goNext}
-              className="w-6 h-6 rounded-md hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+              className="w-6 h-6 rounded-full hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
               aria-label={view === 'week' ? 'Next week' : 'Next month'}
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -193,7 +193,7 @@ function EventRow({ ev, onOpen }: { ev: CalendarEvent; onOpen: (ev: CalendarEven
   return (
     <button
       onClick={() => onOpen(ev)}
-      className="w-full text-left rounded-lg p-3 transition-colors flex items-start gap-3 hover:bg-white/5"
+      className="w-full text-left rounded-full p-3 transition-colors flex items-start gap-3 hover:bg-white/5"
     >
       <Circle className={cn('w-2.5 h-2.5 shrink-0 mt-1.5 fill-current', eventDotClass(ev))} />
       <div className="flex-1 min-w-0">
@@ -236,7 +236,7 @@ function DayView({
           Upcoming
         </button>
       </div>
-      <div className="rounded-xl bg-sidebar border border-sidebar-border overflow-hidden">
+      <div className="rounded-[2rem] bg-sidebar border border-sidebar-border overflow-hidden">
         <div className="flex items-baseline justify-between px-4 py-3 border-b border-sidebar-border">
           <h2 className="text-base font-semibold text-white">{label}</h2>
           <span className="text-xs text-primary tabular-nums">{format(date, 'MMM d, yyyy')}</span>
@@ -286,13 +286,13 @@ function ZoneBlock({
         </span>
       </div>
       {compact ? (
-        <div className="rounded-xl bg-sidebar border border-sidebar-border p-2 space-y-1">
+        <div className="rounded-[2rem] bg-sidebar border border-sidebar-border p-2 space-y-1">
           {days.flatMap(day => day.events).map(ev => (
             <EventRow key={ev.data.id} ev={ev} onOpen={onOpen} />
           ))}
         </div>
       ) : (
-        <div className="rounded-xl bg-sidebar border border-sidebar-border overflow-hidden">
+        <div className="rounded-[2rem] bg-sidebar border border-sidebar-border overflow-hidden">
           {days.map((day, i) => (
             <div key={day.date.toISOString()}>
               {i > 0 && <div className="border-t border-sidebar-border" />}
@@ -421,7 +421,7 @@ export default function CalendarPage() {
           </div>
           <button
             onClick={() => navigate({ to: '/practices' })}
-            className="w-9 h-9 rounded-md bg-white/10 hover:bg-white/15 text-white flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 text-white flex items-center justify-center transition-colors"
             aria-label="New event"
           >
             <Plus className="w-4 h-4" />
@@ -430,7 +430,7 @@ export default function CalendarPage() {
 
         <div className="space-y-6">
           {/* Mini calendar */}
-          <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:p-5">
+          <div className="rounded-[2rem] bg-sidebar border border-sidebar-border p-4 sm:p-5">
             <MiniMonth
               cursor={cursor}
               onSelectDate={handleSelectDate}
@@ -455,7 +455,7 @@ export default function CalendarPage() {
               />
             ) : totalUpcoming === 0 ? (
               // ── Empty state ──
-              <div className="text-center py-12 rounded-xl bg-sidebar border border-sidebar-border">
+              <div className="text-center py-12 rounded-[2rem] bg-sidebar border border-sidebar-border">
                 <CalendarDays className="w-10 h-10 text-white/20 mx-auto mb-3" />
                 <p className="text-sm text-white/40">No upcoming events</p>
               </div>

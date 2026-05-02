@@ -158,17 +158,17 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{teamData.team?.name}</h1>
           <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full">
               {teamData.season?.name}
             </Badge>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 flex-1 md:flex-none" onClick={() => navigate({ to: '/practices' })}>
+          <Button variant="outline" className="gap-2 flex-1 md:flex-none rounded-full" onClick={() => navigate({ to: '/practices' })}>
             <Plus className="w-4 h-4" />
             Practice
           </Button>
-          <Button className="gap-2 shadow-lg shadow-primary/20 flex-1 md:flex-none" onClick={() => navigate({ to: '/games' })}>
+          <Button className="gap-2 shadow-lg shadow-primary/20 flex-1 md:flex-none rounded-full" onClick={() => navigate({ to: '/games' })}>
             <Plus className="w-4 h-4" />
             Game
           </Button>
@@ -176,28 +176,28 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Record</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{wins}-{losses}-{ties}</p>
+        <Card className="border-border/50 rounded-[2rem] shadow-lg shadow-black/20">
+          <CardContent className="p-6">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground opacity-70">Record</p>
+            <p className="text-3xl font-black text-foreground mt-1 tabular-nums italic">{wins}-{losses}-{ties}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Practices Logged</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{completedPractices}</p>
+        <Card className="border-border/50 rounded-[2rem] shadow-lg shadow-black/20">
+          <CardContent className="p-6">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground opacity-70">Practices Logged</p>
+            <p className="text-3xl font-black text-foreground mt-1 tabular-nums italic">{completedPractices}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Games Played</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{completedGames.length}</p>
+        <Card className="border-border/50 rounded-[2rem] shadow-lg shadow-black/20">
+          <CardContent className="p-6">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground opacity-70">Games Played</p>
+            <p className="text-3xl font-black text-foreground mt-1 tabular-nums italic">{completedGames.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Upcoming</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{upcomingPractices.length + upcomingGames.length}</p>
+        <Card className="border-border/50 rounded-[2rem] shadow-lg shadow-black/20">
+          <CardContent className="p-6">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground opacity-70">Upcoming</p>
+            <p className="text-3xl font-black text-foreground mt-1 tabular-nums italic">{upcomingPractices.length + upcomingGames.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -220,7 +220,7 @@ export default function DashboardPage() {
           allReviews={analytics?.reviews ?? []}
         />
 
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Target className="w-4 h-4 text-primary" />
@@ -237,7 +237,7 @@ export default function DashboardPage() {
             ) : nextEvent.kind === 'practice' ? (
               <button
                 onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: nextEvent.data.id } })}
-                className="w-full text-left space-y-2 hover:bg-secondary/40 p-3 -m-3 rounded-lg transition-colors"
+                className="w-full text-left space-y-2 hover:bg-secondary/40 p-3 -m-3 rounded-full transition-colors"
               >
                 <div className="flex items-center gap-1.5">
                   <ClipboardList className="w-3.5 h-3.5 text-primary" />
@@ -251,7 +251,7 @@ export default function DashboardPage() {
             ) : (
               <button
                 onClick={() => navigate({ to: '/games/$gameId', params: { gameId: nextEvent.data.id } })}
-                className="w-full text-left space-y-2 hover:bg-secondary/40 p-3 -m-3 rounded-lg transition-colors"
+                className="w-full text-left space-y-2 hover:bg-secondary/40 p-3 -m-3 rounded-full transition-colors"
               >
                 <div className="flex items-center gap-1.5">
                   <Swords className="w-3.5 h-3.5 text-primary" />
@@ -268,7 +268,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarIcon className="w-4 h-4 text-primary" />
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                     <button
                       key={`p-${ev.data.id}`}
                       onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: ev.data.id } })}
-                      className="w-full flex items-center gap-3 p-2 rounded-md bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-2 rounded-full bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
                     >
                       <ClipboardList className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                     <button
                       key={`g-${ev.data.id}`}
                       onClick={() => navigate({ to: '/games/$gameId', params: { gameId: ev.data.id } })}
-                      className="w-full flex items-center gap-3 p-2 rounded-md bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-2 rounded-full bg-secondary/40 hover:bg-secondary/60 transition-colors text-left"
                     >
                       <Swords className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -314,7 +314,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30">
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -342,7 +342,7 @@ export default function DashboardPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
+                  <div className="rounded-full bg-secondary/40 border border-border/40 p-3">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Record</p>
                     <div className="mt-1 flex items-baseline gap-1.5">
                       <span className="text-xl font-bold tabular-nums text-emerald-400">{snapshotW}</span>
@@ -366,7 +366,7 @@ export default function DashboardPage() {
                             key={g.id}
                             title={`${g.opponent}: ${gf}–${ga}`}
                             className={cn(
-                              'flex-1 h-1.5 rounded-sm',
+                              'flex-1 h-1.5 rounded-full',
                               r === 'W' && 'bg-emerald-500',
                               r === 'L' && 'bg-red-500',
                               r === 'T' && 'bg-muted-foreground/40',
@@ -376,7 +376,7 @@ export default function DashboardPage() {
                       })}
                     </div>
                   </div>
-                  <div className="rounded-md bg-secondary/40 border border-border/40 p-3">
+                  <div className="rounded-full bg-secondary/40 border border-border/40 p-3">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Goals (avg)</p>
                     <div className="mt-1 flex items-baseline gap-2">
                       <span className="text-xl font-bold tabular-nums text-foreground">{avgGF.toFixed(1)}</span>
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+                <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 p-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                     <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">What's working</p>
@@ -413,7 +413,7 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                <div className="rounded-md border border-red-500/20 bg-red-500/5 p-3">
+                <div className="rounded-[2rem] border border-red-500/20 bg-red-500/5 p-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <TrendingDown className="w-3.5 h-3.5 text-red-400" />
                     <p className="text-[11px] font-bold uppercase tracking-wider text-red-400">What's hurting you</p>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="mt-6 border-border/50">
+      <Card className="mt-6 border-border/50 rounded-[2rem] shadow-xl shadow-black/30">
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <div>
@@ -513,7 +513,7 @@ export default function DashboardPage() {
                       key={s.concept}
                       onClick={() => navigate({ to: '/concepts' })}
                       className={cn(
-                        'text-left rounded-md border p-3 transition-colors hover:bg-secondary/40',
+                        'text-left rounded-[2rem] border p-3 transition-colors hover:bg-secondary/40',
                         isPriority ? 'border-primary/30 bg-primary/5' : 'border-border/50 bg-background'
                       )}
                     >
@@ -522,7 +522,7 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-1.5">
                             <p className="text-xs font-semibold text-foreground truncate">{s.concept}</p>
                             {isPriority && (
-                              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4">
+                              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 rounded-full">
                                 P
                               </Badge>
                             )}

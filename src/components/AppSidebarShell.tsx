@@ -68,16 +68,16 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
     <Link
       to={item.to}
       className={cn(
-        'flex items-center gap-2.5 rounded-md text-sm transition-all duration-200 cursor-pointer',
-        collapsed ? 'justify-center w-8 h-8 mx-auto' : 'px-3 py-2 w-full',
+        'flex items-center gap-2.5 text-sm transition-all duration-300 cursor-pointer',
+        collapsed ? 'justify-center w-10 h-10 mx-auto rounded-full' : 'px-4 py-2.5 w-full rounded-full',
         active
-          ? 'bg-primary/10 text-primary font-medium'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          ? 'bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20'
+          : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
       )}
     >
-      <span className={cn('shrink-0', active && 'text-primary')}>{item.icon}</span>
-      {!collapsed && <span className="truncate flex-1">{item.label}</span>}
-      {!collapsed && active && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+      <span className={cn('shrink-0', active && 'text-primary-foreground')}>{item.icon}</span>
+      {!collapsed && <span className="truncate flex-1 tracking-tight">{item.label}</span>}
+      {!collapsed && active && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]" />}
     </Link>
   )
 
@@ -184,7 +184,7 @@ export function AppSidebarShell() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent rounded-full"
                     onClick={toggle}
                   >
                     <PanelLeft className="h-4 w-4" />
@@ -201,10 +201,10 @@ export function AppSidebarShell() {
           <div className="px-3 pt-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-between gap-2 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 border border-sidebar-border transition-colors group">
+                <button className="w-full flex items-center justify-between gap-2 p-2.5 rounded-full bg-secondary/30 hover:bg-secondary/50 border border-sidebar-border transition-all duration-300 group shadow-sm active:scale-95">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <Users className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
+                      <Users className="w-4.5 h-4.5 text-primary" />
                     </div>
                     <div className="flex flex-col text-left min-w-0">
                       <span className="text-xs font-bold text-foreground truncate">{currentTeam?.name ?? 'Select Team'}</span>
@@ -257,7 +257,7 @@ export function AppSidebarShell() {
                     type="button"
                     onClick={toggle}
                     aria-label="Expand sidebar"
-                    className="h-8 w-8 mx-auto flex items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30 hover:bg-primary/25 hover:ring-primary/50 transition-all"
+                    className="h-8 w-8 mx-auto flex items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/30 hover:bg-primary/25 hover:ring-primary/50 transition-all"
                   >
                     <ChevronsRight className="h-4 w-4 shrink-0" />
                   </button>
@@ -313,7 +313,7 @@ export function AppSidebarShell() {
             </Tooltip>
           ) : (
             <div className={cn(
-              "flex items-center gap-3 p-2 rounded-xl border transition-all duration-200",
+              "flex items-center gap-3 p-2 rounded-full border transition-all duration-200",
               isDemo ? "bg-amber-500/5 border-amber-500/10" : "bg-sidebar-accent/50 border-sidebar-border"
             )}>
               <Avatar className={cn(
@@ -359,7 +359,7 @@ export function AppSidebarShell() {
               type="button"
               variant="ghost"
               size="sm"
-              className="w-full justify-start px-2 gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 group transition-all duration-200"
+              className="w-full justify-start px-2 gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 group transition-all duration-200 rounded-full"
               onClick={isDemo ? exitDemo : () => blink.auth.logout()}
             >
               <LogOut className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />

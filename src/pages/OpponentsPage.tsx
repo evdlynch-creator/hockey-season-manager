@@ -55,9 +55,9 @@ interface OpponentStats {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function resultBadge(result: 'W' | 'L' | 'T') {
-  if (result === 'W') return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border text-[10px] px-1.5 py-0 h-5">W</Badge>
-  if (result === 'L') return <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border text-[10px] px-1.5 py-0 h-5">L</Badge>
-  return <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">T</Badge>
+  if (result === 'W') return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border text-[10px] px-1.5 py-0 h-5 rounded-full">W</Badge>
+  if (result === 'L') return <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border text-[10px] px-1.5 py-0 h-5 rounded-full">L</Badge>
+  return <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 rounded-full">T</Badge>
 }
 
 function recordColor(wins: number, losses: number) {
@@ -69,7 +69,7 @@ function recordColor(wins: number, losses: number) {
 function DarkTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-lg text-xs">
+    <div className="bg-popover border border-border rounded-full px-4 py-2 shadow-lg text-xs">
       <p className="font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="flex items-center gap-2" style={{ color: p.color }}>
@@ -236,7 +236,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
     : null
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent rounded-[2rem]">
       <CardHeader>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
@@ -251,7 +251,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {trendLabel && (
-              <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-5">
+              <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-5 rounded-full">
                 {trendIcon}
                 {trendLabel}
               </Badge>
@@ -259,7 +259,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 h-7 text-xs"
+              className="gap-1.5 h-7 text-xs rounded-full"
               onClick={handleCopy}
               disabled={!hasAnyData}
             >
@@ -278,7 +278,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Reinforce */}
-              <div className="rounded-md border border-emerald-600/30 bg-emerald-600/5 p-3">
+              <div className="rounded-[2rem] border border-emerald-600/30 bg-emerald-600/5 p-3">
                 <div className="flex items-center gap-1.5 mb-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   <p className="text-[10px] uppercase font-bold tracking-widest text-emerald-300">Reinforce</p>
@@ -300,7 +300,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
               </div>
 
               {/* Address */}
-              <div className="rounded-md border border-red-600/30 bg-red-600/5 p-3">
+              <div className="rounded-[2rem] border border-red-600/30 bg-red-600/5 p-3">
                 <div className="flex items-center gap-1.5 mb-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
                   <p className="text-[10px] uppercase font-bold tracking-widest text-red-300">Address</p>
@@ -323,13 +323,13 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
             </div>
 
             {plan.mixed.length > 0 && (
-              <div className="rounded-md border border-border/50 bg-secondary/20 p-3">
+              <div className="rounded-[2rem] border border-border/50 bg-secondary/20 p-3">
                 <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
                   Watch — mixed results
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {plan.mixed.map((t) => (
-                    <Badge key={t.concept} variant="secondary" className="text-[10px] gap-1">
+                    <Badge key={t.concept} variant="secondary" className="text-[10px] gap-1 rounded-full">
                       {t.concept} <span className="tabular-nums opacity-70">{t.avg.toFixed(1)}</span>
                     </Badge>
                   ))}
@@ -338,7 +338,7 @@ function CoachingPlan({ stats }: { stats: OpponentStats }) {
             )}
 
             {/* Style of play running tab */}
-            <div className="rounded-md border border-border/50 bg-secondary/10 p-3">
+            <div className="rounded-[2rem] border border-border/50 bg-secondary/10 p-3">
               <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">
                 Style of play — running notes
               </p>
@@ -392,7 +392,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
     <div className="space-y-6 animate-fade-in">
       {/* Rematch alert */}
       {stats.nextGame && (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
+        <div className="rounded-[2rem] border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
             <Swords className="w-4 h-4 text-primary" />
           </div>
@@ -414,7 +414,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4 text-center">
             <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Record vs.</p>
             <p className={cn('text-xl font-bold tabular-nums', recordColor(stats.wins, stats.losses))}>
@@ -422,7 +422,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
             </p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4 text-center">
             <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Avg Goals</p>
             <p className="text-xl font-bold tabular-nums text-foreground">
@@ -432,7 +432,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
             </p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4 text-center">
             <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">Meetings</p>
             <p className="text-xl font-bold tabular-nums text-foreground">{stats.games.length}</p>
@@ -444,7 +444,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
       {insights.length > 0 ? (
         <InsightsStrip insights={insights} limit={3} title={`Top Insights vs. ${stats.name}`} />
       ) : (
-        <Card className="border-border/50 bg-card">
+        <Card className="border-border/50 bg-card rounded-[2rem]">
           <CardContent className="p-4">
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <Lightbulb className="w-4 h-4" />
@@ -462,7 +462,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
       {/* Charts & notes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Concept radar */}
-        <Card className="border-border bg-card">
+        <Card className="border-border bg-card rounded-[2rem]">
           <CardHeader>
             <CardTitle className="text-sm">Concept Performance vs. {stats.name}</CardTitle>
             <CardDescription className="text-xs">Average ratings from all reviewed games.</CardDescription>
@@ -489,7 +489,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
         </Card>
 
         {/* Concept breakdown */}
-        <Card className="border-border bg-card">
+        <Card className="border-border bg-card rounded-[2rem]">
           <CardHeader>
             <CardTitle className="text-sm">Concept Breakdown</CardTitle>
             <CardDescription className="text-xs">How each concept fared in your games against {stats.name}.</CardDescription>
@@ -548,9 +548,9 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
                   <button
                     key={g.id}
                     onClick={() => navigate({ to: '/games/$gameId', params: { gameId: g.id } })}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-md bg-secondary/30 hover:bg-secondary/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 p-2.5 rounded-full bg-secondary/30 hover:bg-secondary/50 transition-colors text-left"
                   >
-                    <div className="shrink-0">{result ? resultBadge(result) : <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">TBD</Badge>}</div>
+                    <div className="shrink-0">{result ? resultBadge(result) : <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 rounded-full">TBD</Badge>}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground">
                         {format(parseISO(g.date), 'EEE, MMM d, yyyy')} · {g.location === 'home' ? 'Home' : 'Away'}
@@ -560,7 +560,7 @@ function OpponentDetail({ stats, analytics }: { stats: OpponentStats; analytics:
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {review && <Badge variant="secondary" className="text-[9px] h-4 px-1">Reviewed</Badge>}
+                      {review && <Badge variant="secondary" className="text-[9px] h-4 px-1 rounded-full">Reviewed</Badge>}
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                   </button>
@@ -592,7 +592,7 @@ function OpponentListItem({
     <button
       onClick={onClick}
       className={cn(
-        'w-full text-left rounded-lg border p-4 transition-all duration-200',
+        'w-full text-left rounded-[2rem] border p-4 transition-all duration-200',
         selected
           ? 'border-primary/40 bg-primary/5 shadow-lg shadow-primary/10'
           : 'border-border bg-card hover:border-border/80 hover:bg-card/80'
@@ -603,7 +603,7 @@ function OpponentListItem({
           <div className="flex items-center gap-2 mb-1">
             <p className="font-semibold text-sm text-foreground truncate">{stats.name}</p>
             {stats.nextGame && (
-              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 shrink-0">
+              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 shrink-0 rounded-full">
                 Rematch
               </Badge>
             )}
@@ -710,10 +710,10 @@ export default function OpponentsPage() {
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-card rounded-md" />
+        <div className="h-8 w-48 bg-card rounded-full" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="h-96 bg-card rounded-lg" />
-          <div className="md:col-span-2 h-96 bg-card rounded-lg" />
+          <div className="h-96 bg-card rounded-[2rem]" />
+          <div className="md:col-span-2 h-96 bg-card rounded-[2rem]" />
         </div>
       </div>
     )
@@ -763,7 +763,7 @@ export default function OpponentsPage() {
           {currentStats ? (
             <>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                   <Trophy className="w-5 h-5 text-primary" />
                 </div>
                 <div>

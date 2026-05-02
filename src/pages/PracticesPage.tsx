@@ -32,10 +32,10 @@ type CreateForm = z.infer<typeof createSchema>
 
 // ── Status helpers ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: Practice['status'] }) {
-  if (status === 'draft') return <Badge variant="secondary">Draft</Badge>
-  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30">Scheduled</Badge>
-  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground">Completed</Badge>
-  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border">Reviewed</Badge>
+  if (status === 'draft') return <Badge variant="secondary" className="rounded-full">Draft</Badge>
+  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30 rounded-full">Scheduled</Badge>
+  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground rounded-full">Completed</Badge>
+  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border rounded-full">Reviewed</Badge>
 }
 
 // ── Segment concepts preview ────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ function PracticeConceptChips({ practiceId }: { practiceId: string }) {
   return (
     <div className="flex flex-wrap gap-1 mt-2">
       {concepts.map(c => (
-        <Badge key={c} variant="secondary" className="text-[10px] px-2 py-0.5">{c}</Badge>
+        <Badge key={c} variant="secondary" className="text-[10px] px-2 py-0.5 rounded-full">{c}</Badge>
       ))}
     </div>
   )
@@ -61,7 +61,7 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
 
   return (
     <Card
-      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"
+      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer rounded-[2rem]"
       onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: practice.id } })}
     >
       <CardContent className="p-4">
@@ -85,7 +85,7 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-xs gap-1.5 hidden md:flex"
+              className="h-8 px-3 text-xs gap-1.5 hidden md:flex rounded-full"
               onClick={(e) => {
                 e.stopPropagation()
                 navigate({ to: '/practices/$practiceId', params: { practiceId: practice.id } })
@@ -96,7 +96,7 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-xs gap-1.5 text-muted-foreground"
+              className="h-8 px-3 text-xs gap-1.5 text-muted-foreground rounded-full"
               onClick={(e) => {
                 e.stopPropagation()
                 onDuplicate(practice)
@@ -152,25 +152,25 @@ function CreatePracticeDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose() } }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-[2rem]">
         <DialogHeader>
           <DialogTitle>New Practice</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(d => mutation.mutate(d))} className="space-y-4 pt-2">
           <Field>
             <FieldLabel>Title</FieldLabel>
-            <Input {...register('title')} placeholder="e.g. Thursday Ice Session" />
+            <Input {...register('title')} placeholder="e.g. Thursday Ice Session" className="rounded-full" />
             {errors.title && <FieldError>{errors.title.message}</FieldError>}
           </Field>
           <Field>
             <FieldLabel>Date</FieldLabel>
-            <Input type="date" {...register('date')} />
+            <Input type="date" {...register('date')} className="rounded-full" />
             {errors.date && <FieldError>{errors.date.message}</FieldError>}
           </Field>
           <Field>
             <FieldLabel>Status</FieldLabel>
             <Select value={statusVal} onValueChange={v => setValue('status', v as CreateForm['status'])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="scheduled">Scheduled</SelectItem>
@@ -181,11 +181,11 @@ function CreatePracticeDialog({
           </Field>
           <Field>
             <FieldLabel>Notes <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-            <Textarea {...register('notes')} placeholder="Focus areas, reminders…" rows={3} />
+            <Textarea {...register('notes')} placeholder="Focus areas, reminders…" rows={3} className="rounded-[2rem]" />
           </Field>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>Cancel</Button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }} className="rounded-full">Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending} className="rounded-full">
               {mutation.isPending ? 'Creating…' : 'Create Practice'}
             </Button>
           </DialogFooter>
@@ -260,7 +260,7 @@ export default function PracticesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Practices</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
+        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto rounded-full">
           <Plus className="w-4 h-4" /> New Practice
         </Button>
       </div>
@@ -269,18 +269,18 @@ export default function PracticesPage() {
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={v => setTab(v as TabValue)}>
-        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar">
-          <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
-          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none">Scheduled</TabsTrigger>
-          <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
-          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none">Reviewed</TabsTrigger>
+        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar rounded-full">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none rounded-full">All</TabsTrigger>
+          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none rounded-full">Scheduled</TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1 sm:flex-none rounded-full">Completed</TabsTrigger>
+          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none rounded-full">Reviewed</TabsTrigger>
         </TabsList>
 
         {TABS.map(t => (
           <TabsContent key={t} value={t} className="mt-4 space-y-3">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className={cn("h-20 rounded-lg bg-card border border-border animate-pulse", i > 0 && "opacity-60")} />
+                <div key={i} className={cn("h-20 rounded-[2rem] bg-card border border-border animate-pulse", i > 0 && "opacity-60")} />
               ))
             ) : filtered.length === 0 ? (
               <EmptyState

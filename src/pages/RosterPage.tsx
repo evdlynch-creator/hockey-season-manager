@@ -129,20 +129,20 @@ export default function RosterPage() {
           </p>
         </div>
         {canEdit && (
-          <Button onClick={handleOpenAdd} className="gap-2 w-full sm:w-auto shadow-lg shadow-primary/20">
+          <Button onClick={handleOpenAdd} className="gap-2 w-full sm:w-auto shadow-lg shadow-primary/20 rounded-full">
             <UserPlus className="w-4 h-4" />
             Add Player
           </Button>
         )}
       </div>
 
-      <Card className="border-border/50 bg-sidebar/30 backdrop-blur-sm">
+      <Card className="border-border/50 bg-sidebar/30 backdrop-blur-sm rounded-[2rem] overflow-hidden">
         <CardContent className="p-4 md:p-6">
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, number, or position..."
-              className="pl-10"
+              className="pl-10 rounded-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -158,7 +158,7 @@ export default function RosterPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPlayers.map((player) => (
-                <Card key={player.id} className="border-border/40 bg-secondary/10 hover:border-primary/30 transition-colors group">
+                <Card key={player.id} className="border-border/40 bg-secondary/10 hover:border-primary/30 transition-colors group rounded-[2rem] overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
@@ -167,7 +167,7 @@ export default function RosterPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-foreground truncate">{player.name}</p>
-                          <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wider font-bold">
+                          <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wider font-bold rounded-full">
                             {player.position || 'Unknown'}
                           </Badge>
                         </div>
@@ -177,7 +177,7 @@ export default function RosterPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
                             onClick={() => handleOpenEdit(player)}
                           >
                             <Pencil className="w-4 h-4" />
@@ -185,7 +185,7 @@ export default function RosterPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-full"
                             onClick={() => deletePlayer.mutate(player.id)}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -207,14 +207,14 @@ export default function RosterPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-[2rem]">
           <DialogHeader>
             <DialogTitle>{editTarget ? 'Edit Player' : 'Add Player'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
             <Field>
               <FieldLabel>Full Name</FieldLabel>
-              <Input {...register('name')} placeholder="e.g. Connor McDavid" />
+              <Input {...register('name')} placeholder="e.g. Connor McDavid" className="rounded-full" />
               {errors.name && <FieldError>{errors.name.message}</FieldError>}
             </Field>
             
@@ -224,7 +224,7 @@ export default function RosterPage() {
                   <Hash className="w-3 h-3" />
                   Jersey #
                 </FieldLabel>
-                <Input {...register('number')} placeholder="97" />
+                <Input {...register('number')} placeholder="97" className="rounded-full" />
               </Field>
               
               <Field>
@@ -236,7 +236,7 @@ export default function RosterPage() {
                   value={setValue ? undefined : ''} 
                   onValueChange={(v) => setValue('position', v)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-full">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,12 +250,12 @@ export default function RosterPage() {
 
             <Field>
               <FieldLabel>Coach Notes</FieldLabel>
-              <Input {...register('notes')} placeholder="Handedness, line, style..." />
+              <Input {...register('notes')} placeholder="Handedness, line, style..." className="rounded-full" />
             </Field>
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createPlayer.isPending || updatePlayer.isPending}>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">Cancel</Button>
+              <Button type="submit" disabled={createPlayer.isPending || updatePlayer.isPending} className="rounded-full">
                 {editTarget ? 'Save Changes' : 'Add Player'}
               </Button>
             </DialogFooter>

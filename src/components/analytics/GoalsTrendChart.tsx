@@ -21,7 +21,7 @@ interface GoalsTrendChartProps {
 
 export function GoalsTrendChart({ data }: GoalsTrendChartProps) {
   return (
-    <Card className="lg:col-span-2 border-border bg-card">
+    <Card className="lg:col-span-2 border-border bg-card rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-base">Goals Per Game</CardTitle>
         <CardDescription className="text-xs">Scoring trend across completed games.</CardDescription>

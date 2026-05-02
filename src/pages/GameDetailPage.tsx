@@ -36,7 +36,7 @@ function RatingRow({ label, value, onChange }: { label: string; value?: number; 
             type="button"
             onClick={() => onChange(n)}
             className={cn(
-              'w-8 h-8 rounded text-xs font-bold transition-all',
+              'w-8 h-8 rounded-full text-xs font-bold transition-all',
               (value ?? 0) >= n
                 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/30'
                 : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
@@ -161,9 +161,9 @@ export default function GameDetailPage() {
   if (gameLoading) {
     return (
       <div className="p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
-        <div className="h-8 w-48 bg-card rounded-md" />
-        <div className="h-4 w-32 bg-card rounded-md" />
-        <div className="h-32 bg-card rounded-lg" />
+        <div className="h-8 w-48 bg-card rounded-full" />
+        <div className="h-4 w-32 bg-card rounded-full" />
+        <div className="h-32 bg-card rounded-[2rem]" />
       </div>
     )
   }
@@ -192,18 +192,18 @@ export default function GameDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className="bg-primary/10 text-primary border-primary/20 border">{game.status}</Badge>
+            <Badge className="bg-primary/10 text-primary border-primary/20 border rounded-full">{game.status}</Badge>
             {gameType === 'tournament' && (
-              <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border">Tournament</Badge>
+              <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border rounded-full">Tournament</Badge>
             )}
             {gameType === 'tournament' && tournamentName && (
-              <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border">{tournamentName}</Badge>
+              <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border rounded-full">{tournamentName}</Badge>
             )}
             {gameType === 'exhibition' && (
-              <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border">Exhibition</Badge>
+              <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border rounded-full">Exhibition</Badge>
             )}
             {gameType === 'league' && (
-              <Badge variant="outline" className="text-muted-foreground border-border">League</Badge>
+              <Badge variant="outline" className="text-muted-foreground border-border rounded-full">League</Badge>
             )}
             <span className="text-xs text-muted-foreground">{dateStr}</span>
             {game.gameTime && (
@@ -233,7 +233,7 @@ export default function GameDetailPage() {
       <Separator />
 
       {/* Game Type Selector */}
-      <Card className="border-border bg-card">
+      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
         <CardContent className="p-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2 text-sm">
             <Tag className="w-4 h-4 text-muted-foreground" />
@@ -251,7 +251,7 @@ export default function GameDetailPage() {
               toast.success(`Tagged as ${v}`)
             }}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-44 rounded-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -264,7 +264,7 @@ export default function GameDetailPage() {
       </Card>
 
       {/* Score Panel */}
-      <Card className="border-border bg-card">
+      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base">Game Score</CardTitle>
         </CardHeader>
@@ -272,27 +272,27 @@ export default function GameDetailPage() {
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Goals For</FieldLabel>
-              <Input type="number" min="0" value={goalsFor} onChange={e => setGoalsFor(e.target.value)} placeholder="0" />
+              <Input type="number" min="0" value={goalsFor} onChange={e => setGoalsFor(e.target.value)} placeholder="0" className="rounded-full" />
             </Field>
             <Field>
               <FieldLabel>Goals Against</FieldLabel>
-              <Input type="number" min="0" value={goalsAgainst} onChange={e => setGoalsAgainst(e.target.value)} placeholder="0" />
+              <Input type="number" min="0" value={goalsAgainst} onChange={e => setGoalsAgainst(e.target.value)} placeholder="0" className="rounded-full" />
             </Field>
             <Field>
               <FieldLabel>Shots For</FieldLabel>
-              <Input type="number" min="0" value={shotsFor} onChange={e => setShotsFor(e.target.value)} placeholder="0" />
+              <Input type="number" min="0" value={shotsFor} onChange={e => setShotsFor(e.target.value)} placeholder="0" className="rounded-full" />
             </Field>
             <Field>
               <FieldLabel>Shots Against</FieldLabel>
-              <Input type="number" min="0" value={shotsAgainst} onChange={e => setShotsAgainst(e.target.value)} placeholder="0" />
+              <Input type="number" min="0" value={shotsAgainst} onChange={e => setShotsAgainst(e.target.value)} placeholder="0" className="rounded-full" />
             </Field>
           </div>
           <Field>
             <FieldLabel>Penalties <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-            <Input value={penalties} onChange={e => setPenalties(e.target.value)} placeholder="e.g. 4 minor · 2 major" />
+            <Input value={penalties} onChange={e => setPenalties(e.target.value)} placeholder="e.g. 4 minor · 2 major" className="rounded-full" />
           </Field>
           <div className="flex justify-end">
-            <Button onClick={() => saveScore.mutate()} disabled={saveScore.isPending} className="gap-2">
+            <Button onClick={() => saveScore.mutate()} disabled={saveScore.isPending} className="gap-2 rounded-full">
               <CheckCircle className="w-4 h-4" />
               {saveScore.isPending ? 'Saving…' : 'Save Score'}
             </Button>
@@ -301,7 +301,7 @@ export default function GameDetailPage() {
       </Card>
 
       {/* Review Panel */}
-      <Card className="border-border bg-card">
+      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base">Concept Review</CardTitle>
           <p className="text-xs text-muted-foreground">Rate how each core concept performed during the game (1 = poor, 5 = excellent).</p>
@@ -319,21 +319,21 @@ export default function GameDetailPage() {
       </Card>
 
       {/* Notes Panel */}
-      <Card className="border-border bg-card">
+      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base">Notes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Field>
             <FieldLabel>Team Notes</FieldLabel>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="What worked? What needs work?" rows={3} />
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="What worked? What needs work?" rows={3} className="rounded-[2rem]" />
           </Field>
           <Field>
             <FieldLabel>Opponent Notes <span className="text-muted-foreground text-xs">(for rematch prep)</span></FieldLabel>
-            <Textarea value={opponentNotes} onChange={e => setOpponentNotes(e.target.value)} placeholder="Their tendencies, key players, strategies..." rows={3} />
+            <Textarea value={opponentNotes} onChange={e => setOpponentNotes(e.target.value)} placeholder="Their tendencies, key players, strategies..." rows={3} className="rounded-[2rem]" />
           </Field>
           <div className="flex justify-end">
-            <Button onClick={() => saveReview.mutate()} disabled={saveReview.isPending} className="gap-2 shadow-lg shadow-primary/20">
+            <Button onClick={() => saveReview.mutate()} disabled={saveReview.isPending} className="gap-2 shadow-lg shadow-primary/20 rounded-full">
               <Save className="w-4 h-4" />
               {saveReview.isPending ? 'Saving…' : 'Save Review'}
             </Button>

@@ -39,7 +39,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
       
       {/* Dashboard Preview Container */}
       <div 
-        className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20 cursor-pointer"
+        className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20 cursor-pointer"
         onClick={onEnterDemo}
       >
         {/* Browser Shell Mock */}
@@ -48,7 +48,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             <div className="w-3 h-3 rounded-full bg-red-500/20" />
             <div className="w-3 h-3 rounded-full bg-amber-500/20" />
             <div className="w-3 h-3 rounded-full bg-emerald-500/20" />
-            <div className="ml-4 h-5 w-48 bg-white/5 rounded-md flex items-center px-2">
+            <div className="ml-4 h-5 w-48 bg-white/5 rounded-full flex items-center px-2">
               <div className="h-1.5 w-full bg-white/10 rounded-full" />
             </div>
           </div>
@@ -82,15 +82,15 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             <div className="space-y-6">
               <div className="space-y-3">
                 <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-2">Main Menu</div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'overview' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-full flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'overview' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <TrendingUp className={`w-3.5 h-3.5 ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`}>Overview</span>
                 </div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'trends' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-full flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'trends' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <BarChart3 className={`w-3.5 h-3.5 ${activeView === 'trends' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'trends' ? 'text-primary' : 'text-zinc-500'}`}>Trends</span>
                 </div>
-                <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'concepts' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
+                <div className={`h-9 w-full rounded-full flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'concepts' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
                   <Layers className={`w-3.5 h-3.5 ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`}>Concepts</span>
                 </div>
@@ -100,7 +100,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
                   { icon: Swords, label: "Games" },
                   { icon: Users, label: "Roster" }
                 ].map((item, i) => (
-                  <div key={i} className="h-9 w-full hover:bg-white/5 rounded-lg flex items-center px-3 gap-2 transition-colors">
+                  <div key={i} className="h-9 w-full hover:bg-white/5 rounded-full flex items-center px-3 gap-2 transition-colors">
                     <item.icon className="w-3.5 h-3.5 text-zinc-500" />
                     <span className="text-[10px] font-medium text-zinc-500">{item.label}</span>
                   </div>

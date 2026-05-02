@@ -240,9 +240,9 @@ export default function OnboardingPage() {
   if (verifyError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="w-full max-w-md border-destructive/20 shadow-2xl shadow-destructive/5">
+        <Card className="w-full max-w-md border-destructive/20 shadow-2xl shadow-destructive/5 rounded-[2rem]">
           <CardHeader className="text-center">
-            <div className="w-12 h-12 bg-destructive/10 rounded-xl flex items-center justify-center mb-4 mx-auto">
+            <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <Rocket className="w-6 h-6 text-destructive" />
             </div>
             <CardTitle className="text-2xl">Invite Error</CardTitle>
@@ -254,7 +254,7 @@ export default function OnboardingPage() {
             <Button 
               variant="outline" 
               onClick={() => navigate({ to: '/', replace: true })} 
-              className="w-full"
+              className="w-full rounded-full"
             >
               Go to Dashboard
             </Button>
@@ -280,9 +280,9 @@ export default function OnboardingPage() {
   if (inviteData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6 animate-fade-in">
-        <Card className="w-full max-w-md border-primary/10 shadow-2xl shadow-primary/5">
+        <Card className="w-full max-w-md border-primary/10 shadow-2xl shadow-primary/5 rounded-[2rem]">
           <CardHeader className="text-center">
-            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 mx-auto">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <Users className="w-6 h-6 text-primary" />
             </div>
             <CardTitle className="text-2xl">Accept Invitation</CardTitle>
@@ -291,7 +291,7 @@ export default function OnboardingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="p-4 rounded-lg bg-secondary/20 border border-border/40 space-y-1">
+            <div className="p-4 rounded-[2rem] bg-secondary/20 border border-border/40 space-y-1">
               <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Season</p>
               <p className="font-semibold">{inviteData.seasonName}</p>
             </div>
@@ -299,7 +299,7 @@ export default function OnboardingPage() {
             <div className="space-y-3">
               <Button 
                 onClick={() => acceptInviteMutation.mutate()} 
-                className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20"
+                className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20 rounded-full"
                 disabled={acceptInviteMutation.isPending}
               >
                 {acceptInviteMutation.isPending ? 'Joining...' : 'Accept Invitation'}
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
                   setInviteData(null)
                   navigate({ to: '/onboarding', search: {}, replace: true })
                 }} 
-                className="w-full"
+                className="w-full rounded-full"
                 disabled={acceptInviteMutation.isPending}
               >
                 Setup my own team
@@ -326,9 +326,9 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-fade-in">
-      <Card className="w-full max-w-2xl border-primary/10 shadow-2xl shadow-primary/5">
+      <Card className="w-full max-w-2xl border-primary/10 shadow-2xl shadow-primary/5 rounded-[2rem]">
         <CardHeader className="text-center px-4 md:px-6">
-          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
+          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl md:text-3xl">
@@ -346,13 +346,13 @@ export default function OnboardingPage() {
               {!hasTeam && (
                 <Field>
                   <FieldLabel>Team Name</FieldLabel>
-                  <Input {...register('teamName')} placeholder="e.g. Gotham Knights" />
+                  <Input {...register('teamName')} placeholder="e.g. Gotham Knights" className="rounded-full" />
                   {errors.teamName && <FieldError>{errors.teamName.message}</FieldError>}
                 </Field>
               )}
               <Field>
                 <FieldLabel>Season Name</FieldLabel>
-                <Input {...register('seasonName')} placeholder="e.g. 2026 Winter Season" />
+                <Input {...register('seasonName')} placeholder="e.g. 2026 Winter Season" className="rounded-full" />
                 {errors.seasonName && <FieldError>{errors.seasonName.message}</FieldError>}
               </Field>
             </div>
@@ -363,7 +363,7 @@ export default function OnboardingPage() {
                   <CalendarIcon className="w-4 h-4" />
                   Season Start
                 </FieldLabel>
-                <Input type="date" {...register('startDate')} />
+                <Input type="date" {...register('startDate')} className="rounded-full" />
                 {errors.startDate && <FieldError>{errors.startDate.message}</FieldError>}
               </Field>
               <Field>
@@ -371,7 +371,7 @@ export default function OnboardingPage() {
                   <CalendarIcon className="w-4 h-4" />
                   Season End
                 </FieldLabel>
-                <Input type="date" {...register('endDate')} />
+                <Input type="date" {...register('endDate')} className="rounded-full" />
                 {errors.endDate && <FieldError>{errors.endDate.message}</FieldError>}
               </Field>
             </div>
@@ -388,7 +388,7 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => toggleConcept(concept)}
                     className={cn(
-                      "p-3 text-sm font-medium rounded-lg border transition-all text-center",
+                      "p-3 text-sm font-medium rounded-full border transition-all text-center",
                       selectedConcepts.includes(concept)
                         ? "bg-primary/10 border-primary text-primary shadow-sm"
                         : "bg-background border-border hover:border-primary/50 text-muted-foreground"
@@ -401,7 +401,7 @@ export default function OnboardingPage() {
               {errors.concepts && <FieldError>{errors.concepts.message}</FieldError>}
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20" disabled={mutation.isPending}>
+            <Button type="submit" className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20 rounded-full" disabled={mutation.isPending}>
               {mutation.isPending ? 'Setting up...' : 'Complete Season Setup'}
             </Button>
           </form>

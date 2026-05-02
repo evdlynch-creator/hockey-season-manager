@@ -63,13 +63,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
-              className="text-zinc-400 hover:text-white hover:bg-white/5 transition-colors btn-premium"
+              className="text-zinc-400 hover:text-white hover:bg-white/5 transition-colors btn-premium rounded-full"
               onClick={handleLogin}
             >
               Sign In
             </Button>
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-lg shadow-primary/20 btn-premium"
+              className="bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-lg shadow-primary/20 btn-premium rounded-full"
               onClick={handleLogin}
             >
               Get Started
@@ -102,7 +102,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]">
             <Button 
               size="lg"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group"
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
               onClick={handleLogin}
             >
               Start Your Free Trial
@@ -111,14 +111,14 @@ export default function LandingPage() {
             <Button 
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium"
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full"
               onClick={enterDemo}
             >
               Explore Interactive Demo
             </Button>
           </div>
 
-          <div className="hover-glow rounded-2xl p-1 mt-20 transition-all duration-500">
+          <div className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500">
             <DashboardPreview onEnterDemo={enterDemo} />
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-3 -z-10 opacity-40" />
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden group hover-glow">
+          <div className="rounded-[2rem] border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden group hover-glow">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[80px] rounded-full animate-float-2 -z-10" />
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
             
@@ -187,7 +187,7 @@ export default function LandingPage() {
             </p>
             <Button 
               size="lg"
-              className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 btn-premium group"
+              className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 btn-premium group rounded-full"
               onClick={handleLogin}
             >
               Get Started Now

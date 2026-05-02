@@ -30,7 +30,7 @@ export function ViewModeSwitcher({ collapsed = false }: { collapsed?: boolean })
               setMode(ITEMS[(idx + 1) % ITEMS.length].value)
             }}
             className={cn(
-              'mx-auto flex h-8 w-8 items-center justify-center rounded-md transition-colors',
+              'mx-auto flex h-8 w-8 items-center justify-center rounded-full transition-colors',
               'text-muted-foreground hover:text-foreground hover:bg-accent',
               mode === 'tournament' && 'text-amber-400 hover:text-amber-300',
             )}
@@ -49,19 +49,19 @@ export function ViewModeSwitcher({ collapsed = false }: { collapsed?: boolean })
         Season Filter
       </p>
       <Tabs value={mode} onValueChange={v => setMode(v as ViewMode)} className="w-full">
-        <TabsList className="grid grid-cols-4 h-9 w-full bg-secondary/50 border border-border/50 p-1 rounded-full">
+        <TabsList className="grid grid-cols-4 h-12 w-full bg-secondary/50 border border-border/50 p-1.5 rounded-full">
           {ITEMS.map(({ value, short, icon: Icon, label }) => (
             <Tooltip key={value}>
               <TooltipTrigger asChild>
                 <TabsTrigger
                   value={value}
                   className={cn(
-                    'h-7 rounded-full text-[10px] font-bold gap-1.5 transition-all duration-300',
-                    'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20',
-                    'text-muted-foreground hover:text-foreground'
+                    'h-9 rounded-full text-[10px] font-bold gap-1.5 transition-all duration-300',
+                    'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/40',
+                    'text-muted-foreground hover:text-foreground hover:bg-white/5'
                   )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-4 w-4" />
                   <span className="hidden xl:inline">{short}</span>
                 </TabsTrigger>
               </TooltipTrigger>

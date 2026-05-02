@@ -67,7 +67,7 @@ export function InsightsStrip({ insights, limit = 3, onViewAll, title = 'Top Ins
   const top = insights.slice(0, limit)
   if (!top.length) return null
   return (
-    <div className="rounded-lg border border-border/50 bg-card p-4">
+    <div className="rounded-[2rem] border border-border/50 bg-card p-4">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <Lightbulb className="w-4 h-4 text-primary" />

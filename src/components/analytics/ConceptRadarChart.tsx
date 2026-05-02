@@ -20,7 +20,7 @@ interface ConceptRadarChartProps {
 
 export function ConceptRadarChart({ data }: ConceptRadarChartProps) {
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-base">Concept Health</CardTitle>
         <CardDescription className="text-xs">Latest rating across all 6 core concepts.</CardDescription>

@@ -9,7 +9,7 @@ export interface DarkTooltipProps {
 export function DarkTooltip({ active, payload, label }: DarkTooltipProps) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-lg text-xs">
+    <div className="bg-popover border border-border rounded-full px-4 py-2 shadow-lg text-xs">
       <p className="font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="flex items-center gap-2" style={{ color: p.color }}>

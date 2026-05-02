@@ -43,7 +43,7 @@ function cutoffDate(filter: TimeFilter): Date | null {
 function DarkTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-lg text-xs">
+    <div className="bg-popover border border-border rounded-full px-4 py-2 shadow-lg text-xs">
       <p className="font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="flex items-center gap-2" style={{ color: p.color }}>
@@ -61,20 +61,20 @@ function DarkTooltip({ active, payload, label }: any) {
 function TrendBadge({ value }: { value: number }) {
   if (Math.abs(value) < 0.2) {
     return (
-      <Badge variant="secondary" className="gap-1 font-mono">
+      <Badge variant="secondary" className="gap-1 font-mono rounded-full">
         <Minus className="w-3 h-3" /> steady
       </Badge>
     )
   }
   if (value > 0) {
     return (
-      <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border gap-1 font-mono">
+      <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border gap-1 font-mono rounded-full">
         <TrendingUp className="w-3 h-3" /> +{value.toFixed(1)}
       </Badge>
     )
   }
   return (
-    <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border gap-1 font-mono">
+    <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border gap-1 font-mono rounded-full">
       <TrendingDown className="w-3 h-3" /> {value.toFixed(1)}
     </Badge>
   )
@@ -118,7 +118,7 @@ function ConceptCard({
     <button
       onClick={onClick}
       className={cn(
-        'text-left rounded-lg border transition-all duration-200 p-4 w-full',
+        'text-left rounded-[2rem] border transition-all duration-200 p-4 w-full',
         selected
           ? 'border-primary/40 bg-primary/5 shadow-lg shadow-primary/10'
           : 'border-border bg-card hover:border-border/80'
@@ -129,7 +129,7 @@ function ConceptCard({
           <div className="flex items-center gap-1.5">
             <h3 className="font-semibold text-sm text-foreground">{filteredSummary.concept}</h3>
             {isPriority && (
-              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4">
+              <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 rounded-full">
                 P
               </Badge>
             )}
@@ -248,11 +248,11 @@ export default function ConceptsPage() {
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-card rounded-md" />
-        <div className="h-4 w-64 bg-card rounded-md" />
+        <div className="h-8 w-48 bg-card rounded-full" />
+        <div className="h-4 w-64 bg-card rounded-full" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-32 bg-card rounded-lg" />
+            <div key={i} className="h-32 bg-card rounded-[2rem]" />
           ))}
         </div>
       </div>
@@ -296,14 +296,14 @@ export default function ConceptsPage() {
       </div>
 
       {/* Time filter tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/50 w-fit">
+      <div className="flex items-center gap-1 p-1 rounded-full bg-secondary/50 w-fit">
         <Clock className="w-3.5 h-3.5 text-muted-foreground ml-2 shrink-0" />
         {TIME_FILTERS.map(f => (
           <button
             key={f.key}
             onClick={() => setTimeFilter(f.key)}
             className={cn(
-              'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-all',
               timeFilter === f.key
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -319,7 +319,7 @@ export default function ConceptsPage() {
       {/* Season insights row */}
       {insights && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="border-border/50">
+          <Card className="border-border/50 rounded-[2rem]">
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="w-3 h-3 text-emerald-400" />
@@ -329,7 +329,7 @@ export default function ConceptsPage() {
               <p className="text-xs text-emerald-400 font-mono">{insights.strongest.latestAvg?.toFixed(1)}/5</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 rounded-[2rem]">
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingDown className="w-3 h-3 text-red-400" />
@@ -339,7 +339,7 @@ export default function ConceptsPage() {
               <p className="text-xs text-red-400 font-mono">{insights.weakest.latestAvg?.toFixed(1)}/5</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 rounded-[2rem]">
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="w-3 h-3 text-primary" />
@@ -349,7 +349,7 @@ export default function ConceptsPage() {
               <p className="text-xs text-primary font-mono">+{insights.mostImproved.trend.toFixed(1)}</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
+          <Card className="border-border/50 rounded-[2rem]">
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingDown className="w-3 h-3 text-amber-400" />
@@ -388,7 +388,7 @@ export default function ConceptsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Line chart */}
-            <Card className="lg:col-span-2 border-border bg-card">
+            <Card className="lg:col-span-2 border-border bg-card rounded-[2rem]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <BarChart3 className="w-4 h-4 text-primary" />
@@ -429,7 +429,7 @@ export default function ConceptsPage() {
 
             {/* Stats */}
             <div className="space-y-4">
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card rounded-[2rem]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xs uppercase font-bold tracking-widest text-muted-foreground">
                     {timeFilter === 'all' ? 'Season' : TIME_FILTERS.find(f => f.key === timeFilter)?.label} Rating
@@ -457,7 +457,7 @@ export default function ConceptsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card rounded-[2rem]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xs uppercase font-bold tracking-widest text-muted-foreground">
                     Coverage
@@ -485,7 +485,7 @@ export default function ConceptsPage() {
 
           {/* Bar chart — per-session detail */}
           {barData.length > 0 && (
-            <Card className="border-border bg-card">
+            <Card className="border-border bg-card rounded-[2rem]">
               <CardHeader>
                 <CardTitle className="text-base">Session-by-Session Detail</CardTitle>
                 <CardDescription className="text-xs">

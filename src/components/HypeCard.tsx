@@ -182,12 +182,12 @@ export function HypeCard({
   const hype = useMemo(() => buildHype({ nextGame, allGames, allReviews }), [nextGame, allGames, allReviews])
 
   return (
-    <Card className={`border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden ${className ?? ''}`}>
+    <Card className={`border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden rounded-[2rem] shadow-xl shadow-black/40 ${className ?? ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
             <CardTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center">
                 <Flame className="w-4 h-4 text-primary" />
               </div>
               <span className="flex flex-col">
@@ -203,7 +203,7 @@ export function HypeCard({
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 h-7 text-xs shrink-0"
+              className="gap-1.5 h-7 text-xs shrink-0 rounded-full"
               onClick={() => navigate({ to: '/games/$gameId', params: { gameId: nextGame.id } })}
             >
               <Swords className="w-3.5 h-3.5" />
@@ -225,10 +225,10 @@ export function HypeCard({
               return (
                 <li
                   key={i}
-                  className={`flex items-start gap-3 rounded-lg border ${cfg.ring} ${cfg.bg} p-3`}
+                  className={`flex items-start gap-3 rounded-full border ${cfg.ring} ${cfg.bg} p-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-md cursor-default`}
                 >
-                  <div className={`w-7 h-7 rounded-md ${cfg.bg} border ${cfg.ring} flex items-center justify-center shrink-0`}>
-                    <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                  <div className={`w-9 h-9 rounded-full ${cfg.bg} border ${cfg.ring} flex items-center justify-center shrink-0 shadow-inner`}>
+                    <Icon className={`w-4 h-4 ${cfg.color}`} />
                   </div>
                   <p className="text-sm text-foreground leading-snug pt-0.5">{p.text}</p>
                 </li>

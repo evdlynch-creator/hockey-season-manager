@@ -21,7 +21,7 @@ interface CumulativeRecordChartProps {
 
 export function CumulativeRecordChart({ data }: CumulativeRecordChartProps) {
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-base">Cumulative Record</CardTitle>
         <CardDescription className="text-xs">How your W-L-T stacks up over the season.</CardDescription>

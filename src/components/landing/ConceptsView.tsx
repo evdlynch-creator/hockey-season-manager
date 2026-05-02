@@ -28,7 +28,7 @@ export function ConceptsView() {
           { title: "Forecheck", data: [4, 4, 3, 5, 5, 5, 5], color: "text-emerald-400", bg: "bg-emerald-500", icon: Swords },
           { title: "D-Zone", data: [3, 2, 3, 4, 4, 3, 4], color: "text-amber-400", bg: "bg-amber-500", icon: Shield }
         ].map((c, i) => (
-          <div key={i} className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concept hover-glow">
+          <div key={i} className="p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concept hover-glow">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/concept:text-primary transition-colors">{c.title}</div>
               <c.icon className={`w-3 h-3 ${c.color} opacity-50 group-hover/concept:opacity-100 group-hover/concept:scale-110 transition-all`} />
@@ -51,7 +51,7 @@ export function ConceptsView() {
       </div>
 
       <div className="grid grid-cols-2 gap-8 flex-1">
-        <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col group/heatmap overflow-hidden relative hover-glow cursor-default">
+        <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex flex-col group/heatmap overflow-hidden relative hover-glow cursor-default">
           <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-float-2 opacity-30 -z-10" />
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/heatmap:text-primary transition-colors">Offensive Zone Efficiency</div>
           <div className="flex-1 grid grid-cols-5 grid-rows-3 gap-1.5">
@@ -65,7 +65,7 @@ export function ConceptsView() {
                   initial={{ opacity: intensity }}
                   animate={{ opacity: [intensity, intensity * 0.5, intensity] }}
                   transition={{ duration, repeat: Infinity, delay, ease: "easeInOut" }}
-                  className="rounded bg-primary/10 border border-primary/5 transition-all duration-500 group-hover/heatmap:bg-primary/30"
+                  className="rounded-full bg-primary/10 border border-primary/5 transition-all duration-500 group-hover/heatmap:bg-primary/30"
                 />
               );
             })}
@@ -77,7 +77,7 @@ export function ConceptsView() {
           </div>
         </div>
 
-        <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col hover-glow cursor-default group/mastery">
+        <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex flex-col hover-glow cursor-default group/mastery">
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-8 group-hover/mastery:text-primary transition-all">Concept Mastery Delta</div>
           <div className="space-y-6">
             {[

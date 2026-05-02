@@ -29,7 +29,7 @@ function heatmapColor(value: number | null): string {
 
 export function ConceptHeatmap({ rows }: ConceptHeatmapProps) {
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-base">Concept × Session Heatmap</CardTitle>
         <CardDescription className="text-xs">
@@ -61,7 +61,7 @@ export function ConceptHeatmap({ rows }: ConceptHeatmapProps) {
                       <div
                         key={c.date}
                         className={cn(
-                          'w-10 h-10 rounded flex items-center justify-center text-[10px] font-semibold transition-transform hover:scale-110',
+                          'w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-semibold transition-transform hover:scale-110',
                           c.value == null ? 'text-muted-foreground/40' : 'text-white'
                         )}
                         style={{ backgroundColor: heatmapColor(c.value) }}
@@ -75,19 +75,19 @@ export function ConceptHeatmap({ rows }: ConceptHeatmapProps) {
               </div>
               <div className="flex items-center gap-4 mt-4 pl-[140px] text-[10px] text-muted-foreground">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(239, 68, 68, 0.6)' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(239, 68, 68, 0.6)' }} />
                   &lt; 2.0
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(245, 158, 11, 0.5)' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(245, 158, 11, 0.5)' }} />
                   2.0 – 3.0
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(245, 158, 11, 0.85)' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(245, 158, 11, 0.85)' }} />
                   3.0 – 4.0
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(16, 185, 129, 0.85)' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'rgba(16, 185, 129, 0.85)' }} />
                   ≥ 4.0
                 </div>
               </div>

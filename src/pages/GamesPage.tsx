@@ -31,38 +31,38 @@ import type { Game } from '@/types'
 function GameTypeBadge({ type }: { type: GameType }) {
   if (type === 'tournament') {
     return (
-      <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border gap-1">
+      <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border gap-1 rounded-full">
         <Award className="w-3 h-3" /> Tournament
       </Badge>
     )
   }
   if (type === 'exhibition') {
     return (
-      <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border gap-1">
+      <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border gap-1 rounded-full">
         <Sparkles className="w-3 h-3" /> Exhibition
       </Badge>
     )
   }
   return (
-    <Badge variant="outline" className="text-muted-foreground border-border gap-1">
+    <Badge variant="outline" className="text-muted-foreground border-border gap-1 rounded-full">
       <Trophy className="w-3 h-3" /> League
     </Badge>
   )
 }
 
 function StatusBadge({ status }: { status: Game['status'] }) {
-  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30">Scheduled</Badge>
-  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground">Completed</Badge>
-  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border">Reviewed</Badge>
+  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30 rounded-full">Scheduled</Badge>
+  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground rounded-full">Completed</Badge>
+  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border rounded-full">Reviewed</Badge>
 }
 
 function ResultBadge({ game }: { game: Game }) {
   if (game.status === 'scheduled' || game.goalsFor == null || game.goalsAgainst == null) return null
   const gf = Number(game.goalsFor)
   const ga = Number(game.goalsAgainst)
-  if (gf > ga) return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border">W {gf}-{ga}</Badge>
-  if (gf < ga) return <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border">L {gf}-{ga}</Badge>
-  return <Badge variant="secondary">T {gf}-{ga}</Badge>
+  if (gf > ga) return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border rounded-full">W {gf}-{ga}</Badge>
+  if (gf < ga) return <Badge className="bg-red-600/20 text-red-400 border-red-600/30 border rounded-full">L {gf}-{ga}</Badge>
+  return <Badge variant="secondary" className="rounded-full">T {gf}-{ga}</Badge>
 }
 
 // ── Shared form schema ───────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ function GameCard({
 
   return (
     <Card
-      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer"
+      className="border-border bg-card hover:border-border/80 transition-all duration-200 group cursor-pointer rounded-[2rem]"
       onClick={() => navigate({ to: '/games/$gameId', params: { gameId: game.id } })}
     >
       <CardContent className="p-4">
@@ -114,7 +114,7 @@ function GameCard({
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <GameTypeBadge type={type} />
               {type === 'tournament' && tournamentName && (
-                <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border text-xs">
+                <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border text-xs rounded-full">
                   {tournamentName}
                 </Badge>
               )}
@@ -145,7 +145,7 @@ function GameCard({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text-xs gap-1.5"
+              className="h-8 px-2 text-xs gap-1.5 rounded-full"
               onClick={e => { e.stopPropagation(); navigate({ to: '/games/$gameId', params: { gameId: game.id } }) }}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -154,7 +154,7 @@ function GameCard({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text-xs gap-1.5"
+              className="h-8 px-2 text-xs gap-1.5 rounded-full"
               onClick={e => { e.stopPropagation(); onEdit(game) }}
             >
               <Pencil className="w-3.5 h-3.5" />
@@ -230,31 +230,31 @@ function CreateGameDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose() } }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-[2rem]">
         <DialogHeader>
           <DialogTitle>New Game</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(d => mutation.mutate(d))} className="space-y-4 pt-2">
           <Field>
             <FieldLabel>Opponent</FieldLabel>
-            <Input {...register('opponent')} placeholder="e.g. Bulldogs" />
+            <Input {...register('opponent')} placeholder="e.g. Bulldogs" className="rounded-full" />
             {errors.opponent && <FieldError>{errors.opponent.message}</FieldError>}
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Date</FieldLabel>
-              <Input type="date" {...register('date')} />
+              <Input type="date" {...register('date')} className="rounded-full" />
               {errors.date && <FieldError>{errors.date.message}</FieldError>}
             </Field>
             <Field>
               <FieldLabel>Time <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-              <Input type="time" {...register('time')} />
+              <Input type="time" {...register('time')} className="rounded-full" />
             </Field>
           </div>
           <Field>
             <FieldLabel>Game Type</FieldLabel>
             <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="league">League</SelectItem>
                 <SelectItem value="tournament">Tournament</SelectItem>
@@ -265,14 +265,14 @@ function CreateGameDialog({
           {gameTypeVal === 'tournament' && (
             <Field>
               <FieldLabel>Tournament Name <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" />
+              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" className="rounded-full" />
             </Field>
           )}
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Location</FieldLabel>
               <Select value={locationVal} onValueChange={v => setValue('location', v as 'home' | 'away')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="home">Home</SelectItem>
                   <SelectItem value="away">Away</SelectItem>
@@ -282,7 +282,7 @@ function CreateGameDialog({
             <Field>
               <FieldLabel>Status</FieldLabel>
               <Select value={statusVal} onValueChange={v => setValue('status', v as GameForm['status'])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -292,8 +292,8 @@ function CreateGameDialog({
             </Field>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>Cancel</Button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }} className="rounded-full">Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending} className="rounded-full">
               {mutation.isPending ? 'Creating…' : 'Schedule Game'}
             </Button>
           </DialogFooter>
@@ -362,31 +362,31 @@ function EditGameDialog({
 
   return (
     <Dialog open={!!game} onOpenChange={v => { if (!v) { reset(); onClose() } }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-[2rem]">
         <DialogHeader>
           <DialogTitle>Edit Game</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(d => mutation.mutate(d))} className="space-y-4 pt-2">
           <Field>
             <FieldLabel>Opponent</FieldLabel>
-            <Input {...register('opponent')} placeholder="e.g. Bulldogs" />
+            <Input {...register('opponent')} placeholder="e.g. Bulldogs" className="rounded-full" />
             {errors.opponent && <FieldError>{errors.opponent.message}</FieldError>}
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Date</FieldLabel>
-              <Input type="date" {...register('date')} />
+              <Input type="date" {...register('date')} className="rounded-full" />
               {errors.date && <FieldError>{errors.date.message}</FieldError>}
             </Field>
             <Field>
               <FieldLabel>Time <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-              <Input type="time" {...register('time')} />
+              <Input type="time" {...register('time')} className="rounded-full" />
             </Field>
           </div>
           <Field>
             <FieldLabel>Game Type</FieldLabel>
             <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as GameForm['gameType'])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="league">League</SelectItem>
                 <SelectItem value="tournament">Tournament</SelectItem>
@@ -397,14 +397,14 @@ function EditGameDialog({
           {gameTypeVal === 'tournament' && (
             <Field>
               <FieldLabel>Tournament Name <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" />
+              <Input {...register('tournamentName')} placeholder="e.g. Spring Classic, City Cup…" className="rounded-full" />
             </Field>
           )}
           <div className="grid grid-cols-2 gap-4">
             <Field>
               <FieldLabel>Location</FieldLabel>
               <Select value={locationVal} onValueChange={v => setValue('location', v as 'home' | 'away')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="home">Home</SelectItem>
                   <SelectItem value="away">Away</SelectItem>
@@ -414,7 +414,7 @@ function EditGameDialog({
             <Field>
               <FieldLabel>Status</FieldLabel>
               <Select value={statusVal} onValueChange={v => setValue('status', v as GameForm['status'])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -424,8 +424,8 @@ function EditGameDialog({
             </Field>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>Cancel</Button>
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button type="button" variant="outline" onClick={() => { reset(); onClose() }} className="rounded-full">Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending} className="rounded-full">
               {mutation.isPending ? 'Saving…' : 'Save Changes'}
             </Button>
           </DialogFooter>
@@ -487,7 +487,7 @@ export default function GamesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Games</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
+        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto rounded-full">
           <Plus className="w-4 h-4" /> New Game
         </Button>
       </div>
@@ -510,18 +510,18 @@ export default function GamesPage() {
       <Separator />
 
       <Tabs value={tab} onValueChange={v => setTab(v as TabValue)}>
-        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar">
-          <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
-          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none">Scheduled</TabsTrigger>
-          <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
-          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none">Reviewed</TabsTrigger>
+        <TabsList className="bg-secondary/50 border border-border w-full justify-start h-auto p-1 overflow-x-auto overflow-y-hidden flex-nowrap no-scrollbar rounded-full">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none rounded-full">All</TabsTrigger>
+          <TabsTrigger value="scheduled" className="flex-1 sm:flex-none rounded-full">Scheduled</TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1 sm:flex-none rounded-full">Completed</TabsTrigger>
+          <TabsTrigger value="reviewed" className="flex-1 sm:flex-none rounded-full">Reviewed</TabsTrigger>
         </TabsList>
 
         {TABS.map(t => (
           <TabsContent key={t} value={t} className="mt-4 space-y-3">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className={cn('h-20 rounded-lg bg-card border border-border animate-pulse', i > 0 && 'opacity-60')} />
+                <div key={i} className={cn('h-20 rounded-[2rem] bg-card border border-border animate-pulse', i > 0 && 'opacity-60')} />
               ))
             ) : filtered.length === 0 ? (
               <EmptyState

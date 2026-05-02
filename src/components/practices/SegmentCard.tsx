@@ -19,7 +19,7 @@ function RatingField({ label, value, onChange }: { label: string; value?: number
             type="button"
             onClick={() => onChange(n)}
             className={cn(
-              'w-7 h-7 rounded text-xs font-bold transition-all',
+              'w-7 h-7 rounded-full text-xs font-bold transition-all',
               (value ?? 0) >= n
                 ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/30'
                 : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
@@ -54,7 +54,7 @@ export function SegmentCard({
   }
 
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
       <CardHeader className="flex-row items-start justify-between pb-2 pt-4 px-4">
         <div className="flex-1 min-w-0">
           {segment.name && (
@@ -63,16 +63,16 @@ export function SegmentCard({
             </h3>
           )}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="font-medium">{segment.type}</Badge>
-            <Badge className="bg-primary/10 text-primary border-primary/20 border">{segment.primaryConcept}</Badge>
-            {segment.secondaryConcept && <Badge variant="secondary">{segment.secondaryConcept}</Badge>}
+            <Badge variant="outline" className="font-medium rounded-full">{segment.type}</Badge>
+            <Badge className="bg-primary/10 text-primary border-primary/20 border rounded-full">{segment.primaryConcept}</Badge>
+            {segment.secondaryConcept && <Badge variant="secondary" className="rounded-full">{segment.secondaryConcept}</Badge>}
           </div>
         </div>
         <div className="flex gap-1 shrink-0 ml-2">
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => onEdit(segment)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-full" onClick={() => onEdit(segment)}>
             <Pencil className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onDelete(segment.id)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive rounded-full" onClick={() => onDelete(segment.id)}>
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>

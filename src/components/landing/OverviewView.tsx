@@ -18,7 +18,7 @@ export function OverviewView() {
           { label: "Practice Rating", val: "4.8", icon: ClipboardList, color: "text-emerald-400" },
           { label: "Game Win %", val: "72%", icon: Swords, color: "text-blue-400" }
         ].map((stat, i) => (
-          <div key={i} className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-3 group/stat hover-glow">
+          <div key={i} className="p-6 rounded-full border border-white/5 bg-white/[0.02] space-y-3 group/stat hover-glow">
             <div className="flex items-center justify-between">
               <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{stat.label}</div>
               <stat.icon className={`w-3 h-3 ${stat.color} opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all`} />
@@ -32,7 +32,7 @@ export function OverviewView() {
       </div>
 
       {/* Mock Content: Main Performance Graph Block */}
-      <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex-1 relative overflow-hidden group/graph">
+      <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative overflow-hidden group/graph">
         <div className="absolute top-0 right-0 p-8 text-[10px] text-zinc-500 font-bold uppercase tracking-widest flex gap-4">
           <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Progress</span>
           <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-white/10" /> Baseline</span>
@@ -60,19 +60,19 @@ export function OverviewView() {
 
       {/* Mock Content: Bottom Grid */}
       <div className="grid grid-cols-2 gap-8">
-        <div className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-4">
+        <div className="p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Recent Activity</div>
           </div>
           <div className="space-y-3">
-            <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between">
+            <div className="p-3 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 <div className="text-xs font-bold text-white italic uppercase tracking-tighter">Power Play Breakouts</div>
               </div>
               <div className="text-[10px] text-zinc-500">2h ago</div>
             </div>
-            <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5 flex items-center justify-between">
+            <div className="p-3 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-blue-400" />
                 <div className="text-xs font-bold text-white italic uppercase tracking-tighter">D-Zone Coverage</div>
@@ -81,7 +81,7 @@ export function OverviewView() {
             </div>
           </div>
         </div>
-        <div className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-4">
+        <div className="p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] space-y-4">
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Top Concept Mastery</div>
           <div className="space-y-4 py-2">
             {[

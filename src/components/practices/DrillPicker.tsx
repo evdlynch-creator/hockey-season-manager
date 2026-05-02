@@ -27,7 +27,7 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden rounded-[2rem]">
         <DialogHeader className="p-6 pb-2 border-b border-border bg-muted/20">
           <DialogTitle>Drill Library</DialogTitle>
           <DialogDescription>
@@ -37,7 +37,7 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, concept, or notes..."
-              className="pl-10 h-10 bg-background"
+              className="pl-10 h-10 bg-background rounded-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -63,7 +63,7 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
               {filteredDrills.map((drill) => (
                 <Card 
                   key={drill.id} 
-                  className="border-border/40 bg-card hover:border-primary/50 transition-all cursor-pointer group flex flex-col"
+                  className="border-border/40 bg-card hover:border-primary/50 transition-all cursor-pointer group flex flex-col rounded-[2rem] overflow-hidden"
                   onClick={() => onSelect(drill)}
                 >
                   {drill.fileUrl && (
@@ -78,17 +78,17 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
                   <CardContent className="p-4 flex-1 flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="font-bold text-sm truncate leading-snug group-hover:text-primary transition-colors">{drill.name}</h3>
-                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider shrink-0 h-5 px-1.5 font-bold">
+                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider shrink-0 h-5 px-1.5 font-bold rounded-full">
                         {drill.type}
                       </Badge>
                     </div>
                     
                     <div className="flex flex-wrap gap-1 mb-3">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 border text-[9px] h-5 px-1.5 font-bold">
+                      <Badge className="bg-primary/10 text-primary border-primary/20 border text-[9px] h-5 px-1.5 font-bold rounded-full">
                         {drill.primaryConcept}
                       </Badge>
                       {drill.secondaryConcept && (
-                        <Badge variant="secondary" className="text-[9px] h-5 px-1.5 font-bold">
+                        <Badge variant="secondary" className="text-[9px] h-5 px-1.5 font-bold rounded-full">
                           {drill.secondaryConcept}
                         </Badge>
                       )}
@@ -106,7 +106,7 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
                           <ExternalLink className="w-2.5 h-2.5" /> Has Source
                         </div>
                       ) : <div />}
-                      <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1.5 font-bold uppercase tracking-widest text-primary hover:bg-primary/10 hover:text-primary">
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1.5 font-bold uppercase tracking-widest text-primary hover:bg-primary/10 hover:text-primary rounded-full">
                         <Plus className="w-3 h-3" /> Select
                       </Button>
                     </div>
@@ -118,7 +118,7 @@ export function DrillPicker({ open, onClose, onSelect }: DrillPickerProps) {
         </div>
         
         <DialogFooter className="p-4 border-t border-border/40 bg-muted/20">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose} className="rounded-full">Cancel</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

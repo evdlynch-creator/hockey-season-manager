@@ -134,19 +134,19 @@ export default function DrillLibraryPage() {
             Save and organize your favorite drills to reuse in practice plans.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="gap-2 w-full sm:w-auto shadow-lg shadow-primary/20">
+        <Button onClick={handleOpenAdd} className="gap-2 w-full sm:w-auto shadow-lg shadow-primary/20 rounded-full">
           <Plus className="w-4 h-4" />
           Add Drill
         </Button>
       </div>
 
-      <Card className="border-border/50 bg-sidebar/30 backdrop-blur-sm">
+      <Card className="border-border/50 bg-sidebar/30 backdrop-blur-sm rounded-[2rem] overflow-hidden">
         <CardContent className="p-4 md:p-6">
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, concept, or notes..."
-              className="pl-10"
+              className="pl-10 rounded-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -162,7 +162,7 @@ export default function DrillLibraryPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredDrills.map((drill) => (
-                <Card key={drill.id} className="border-border/40 bg-card hover:border-primary/30 transition-all group overflow-hidden flex flex-col">
+                <Card key={drill.id} className="border-border/40 bg-card hover:border-primary/30 transition-all group overflow-hidden flex flex-col rounded-[2rem]">
                   {drill.fileUrl && (
                     <div className="h-40 overflow-hidden border-b border-border/50 bg-secondary/10 relative">
                       <img 
@@ -171,14 +171,14 @@ export default function DrillLibraryPage() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                       <div className="absolute top-2 right-2 flex gap-1">
-                        <Badge className="bg-black/60 backdrop-blur-md border-white/20 text-[10px] uppercase">{drill.type}</Badge>
+                        <Badge className="bg-black/60 backdrop-blur-md border-white/20 text-[10px] uppercase rounded-full">{drill.type}</Badge>
                       </div>
                     </div>
                   )}
                   <CardContent className="p-4 flex-1 flex flex-col">
                     {!drill.fileUrl && (
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{drill.type}</Badge>
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider rounded-full">{drill.type}</Badge>
                       </div>
                     )}
                     <div className="flex items-start justify-between gap-4 mb-2">
@@ -187,7 +187,7 @@ export default function DrillLibraryPage() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-full"
                           onClick={() => handleOpenEdit(drill)}
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -195,7 +195,7 @@ export default function DrillLibraryPage() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive rounded-full"
                           onClick={() => deleteDrill.mutate(drill.id)}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -204,9 +204,9 @@ export default function DrillLibraryPage() {
                     </div>
                     
                     <div className="flex flex-wrap gap-1.5 mb-4">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 border text-[10px]">{drill.primaryConcept}</Badge>
+                      <Badge className="bg-primary/10 text-primary border-primary/20 border text-[10px] rounded-full">{drill.primaryConcept}</Badge>
                       {drill.secondaryConcept && (
-                        <Badge variant="secondary" className="text-[10px]">{drill.secondaryConcept}</Badge>
+                        <Badge variant="secondary" className="text-[10px] rounded-full">{drill.secondaryConcept}</Badge>
                       )}
                     </div>
 
@@ -237,7 +237,7 @@ export default function DrillLibraryPage() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-[2rem]">
           <DialogHeader>
             <DialogTitle>{editTarget ? 'Edit Drill' : 'Add Drill to Library'}</DialogTitle>
             <DialogDescription>Fill out the details below to save this drill for future practice plans.</DialogDescription>
@@ -245,7 +245,7 @@ export default function DrillLibraryPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
             <Field>
               <FieldLabel>Drill Name</FieldLabel>
-              <Input {...register('name')} placeholder="e.g. D-to-D Controlled Breakout" />
+              <Input {...register('name')} placeholder="e.g. D-to-D Controlled Breakout" className="rounded-full" />
               {errors.name && <FieldError>{errors.name.message}</FieldError>}
             </Field>
             
@@ -253,7 +253,7 @@ export default function DrillLibraryPage() {
               <Field>
                 <FieldLabel>Segment Type</FieldLabel>
                 <Select value={typeVal} onValueChange={(v) => setValue('type', v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {SEGMENT_TYPES.map(t => (
                       <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -264,7 +264,7 @@ export default function DrillLibraryPage() {
               <Field>
                 <FieldLabel>Primary Concept</FieldLabel>
                 <Select value={primaryVal} onValueChange={(v) => setValue('primaryConcept', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger className="rounded-full"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CONCEPTS.map(c => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -278,7 +278,7 @@ export default function DrillLibraryPage() {
               <Field>
                 <FieldLabel>Secondary Concept (optional)</FieldLabel>
                 <Select value={secondaryVal} onValueChange={(v) => setValue('secondaryConcept', v)}>
-                  <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectTrigger className="rounded-full"><SelectValue placeholder="None" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">None</SelectItem>
                     {CONCEPTS.map(c => (
@@ -289,7 +289,7 @@ export default function DrillLibraryPage() {
               </Field>
               <Field>
                 <FieldLabel>Source Link (YouTube/Web)</FieldLabel>
-                <Input {...register('link')} placeholder="https://..." />
+                <Input {...register('link')} placeholder="https://..." className="rounded-full" />
                 {errors.link && <FieldError>{errors.link.message}</FieldError>}
               </Field>
             </div>
@@ -299,7 +299,7 @@ export default function DrillLibraryPage() {
                 <ImageIcon className="w-3 h-3" />
                 Image URL (Diagram/Sketch)
               </FieldLabel>
-              <Input {...register('fileUrl')} placeholder="https://images.unsplash.com/..." />
+              <Input {...register('fileUrl')} placeholder="https://images.unsplash.com/..." className="rounded-full" />
               {errors.fileUrl && <FieldError>{errors.fileUrl.message}</FieldError>}
             </Field>
 
@@ -309,13 +309,13 @@ export default function DrillLibraryPage() {
                 {...register('notes')} 
                 rows={3}
                 placeholder="Key teaching points, common mistakes, variations..."
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                className="w-full rounded-[2rem] border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               />
             </Field>
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createDrill.isPending || updateDrill.isPending}>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">Cancel</Button>
+              <Button type="submit" disabled={createDrill.isPending || updateDrill.isPending} className="rounded-full">
                 {editTarget ? 'Save Changes' : 'Add to Library'}
               </Button>
             </DialogFooter>

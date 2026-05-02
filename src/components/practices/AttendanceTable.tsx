@@ -17,7 +17,7 @@ export function AttendanceTable({ players, attendance = {}, onToggle, className 
   const presentCount = Object.values(attendance).filter(Boolean).length
 
   return (
-    <Card className={cn("border-border bg-card", className)}>
+    <Card className={cn("border-border bg-card rounded-[2rem]", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -28,12 +28,12 @@ export function AttendanceTable({ players, attendance = {}, onToggle, className 
             {presentCount} of {players.length} players present
           </p>
         </div>
-        <Badge variant="outline" className="font-bold border-primary/20 text-primary bg-primary/5">
+        <Badge variant="outline" className="font-bold border-primary/20 text-primary bg-primary/5 rounded-full">
           {players.length > 0 ? Math.round((presentCount / players.length) * 100) : 0}% Present
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border border-border overflow-hidden">
+        <div className="rounded-[2rem] border border-border overflow-hidden">
           <div className="grid grid-cols-[3rem_1fr_1fr_4rem] bg-muted/50 border-b border-border text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-2">
             <div className="text-center">#</div>
             <div>Player</div>
@@ -69,7 +69,7 @@ export function AttendanceTable({ players, attendance = {}, onToggle, className 
                     </span>
                   </div>
                   <div>
-                    <Badge variant="secondary" className="text-[9px] uppercase tracking-wider h-5 px-1.5 font-bold">
+                    <Badge variant="secondary" className="text-[9px] uppercase tracking-wider h-5 px-1.5 font-bold rounded-full">
                       {player.position || 'Player'}
                     </Badge>
                   </div>

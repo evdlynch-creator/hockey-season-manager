@@ -24,10 +24,10 @@ import type { PracticeSegment } from '@/types'
 
 // ── Status badge ───────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
-  if (status === 'draft') return <Badge variant="secondary">Draft</Badge>
-  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30">Scheduled</Badge>
-  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground">Completed</Badge>
-  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border">Reviewed</Badge>
+  if (status === 'draft') return <Badge variant="secondary" className="rounded-full">Draft</Badge>
+  if (status === 'scheduled') return <Badge variant="outline" className="text-primary border-primary/30 rounded-full">Scheduled</Badge>
+  if (status === 'completed') return <Badge className="bg-primary text-primary-foreground rounded-full">Completed</Badge>
+  return <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 border rounded-full">Reviewed</Badge>
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────────
@@ -129,9 +129,9 @@ export default function PracticeDetailPage() {
   if (practiceLoading) {
     return (
       <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
-        <div className="h-8 w-48 bg-card rounded-md" />
-        <div className="h-4 w-32 bg-card rounded-md" />
-        <div className="h-32 bg-card rounded-lg" />
+        <div className="h-8 w-48 bg-card rounded-full" />
+        <div className="h-4 w-32 bg-card rounded-full" />
+        <div className="h-32 bg-card rounded-[2rem]" />
       </div>
     )
   }
@@ -166,7 +166,7 @@ export default function PracticeDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 flex-1 sm:flex-none"
+              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 flex-1 sm:flex-none rounded-full"
               onClick={() => markComplete.mutate()}
               disabled={markComplete.isPending}
             >
@@ -178,7 +178,7 @@ export default function PracticeDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex-1 sm:flex-none"
+              className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 flex-1 sm:flex-none rounded-full"
               onClick={() => markReviewed.mutate()}
               disabled={markReviewed.isPending || segments.length === 0}
               title={segments.length === 0 ? 'Add segments with ratings first' : 'Mark as reviewed once all ratings are entered'}
@@ -188,7 +188,7 @@ export default function PracticeDetailPage() {
               <span className="xs:hidden">Review</span>
             </Button>
           ) : null}
-          <Button size="sm" className="gap-1.5 shadow-lg shadow-primary/20 flex-1 sm:flex-none" onClick={openAdd}>
+          <Button size="sm" className="gap-1.5 shadow-lg shadow-primary/20 flex-1 sm:flex-none rounded-full" onClick={openAdd}>
             <Plus className="w-4 h-4" /> <span className="hidden xs:inline">Add Segment</span>
             <span className="xs:hidden">Add</span>
           </Button>
@@ -217,7 +217,7 @@ export default function PracticeDetailPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10"
+              className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 rounded-full"
               onClick={() => setPickerOpen(true)}
             >
               <BookOpen className="w-3.5 h-3.5" />
@@ -228,7 +228,7 @@ export default function PracticeDetailPage() {
 
         {segsLoading ? (
           Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-lg bg-card border border-border animate-pulse" />
+            <div key={i} className="h-28 rounded-[2rem] bg-card border border-border animate-pulse" />
           ))
         ) : segments.length === 0 ? (
           <EmptyState

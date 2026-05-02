@@ -205,13 +205,13 @@ export default function TrendsPage() {
   if (isLoading) {
     return (
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-card rounded-md" />
+        <div className="h-8 w-48 bg-card rounded-full" />
         <div className="grid grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 bg-card rounded-lg" />
+            <div key={i} className="h-24 bg-card rounded-[2rem]" />
           ))}
         </div>
-        <div className="h-80 bg-card rounded-lg" />
+        <div className="h-80 bg-card rounded-[2rem]" />
       </div>
     )
   }
@@ -233,13 +233,13 @@ export default function TrendsPage() {
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap items-center gap-1 rounded-md border border-border/60 bg-card p-1">
+          <div className="flex flex-wrap items-center gap-1 rounded-full border border-border/60 bg-card p-1">
             {WINDOW_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => setWindowMode(opt.value)}
                 className={cn(
-                  'px-2.5 py-1 text-[11px] font-semibold rounded transition-colors',
+                  'px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors',
                   windowMode === opt.value
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
@@ -254,7 +254,7 @@ export default function TrendsPage() {
               <select
                 value={selectedMonth || availableMonths[0]}
                 onChange={e => setSelectedMonth(e.target.value)}
-                className="h-7 rounded-md border border-border/60 bg-card px-2 text-[11px] font-semibold text-foreground hover:bg-secondary/60 transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-7 rounded-full border border-border/60 bg-card px-2 text-[11px] font-semibold text-foreground hover:bg-secondary/60 transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {availableMonths.map(m => (
                   <option key={m} value={m}>
@@ -273,7 +273,7 @@ export default function TrendsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <Trophy className="w-3.5 h-3.5 text-primary" />
@@ -282,7 +282,7 @@ export default function TrendsPage() {
             <p className="text-2xl font-bold tabular-nums">{wins}-{losses}-{ties}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-3.5 h-3.5 text-primary" />
@@ -295,7 +295,7 @@ export default function TrendsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -309,7 +309,7 @@ export default function TrendsPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <Activity className="w-3.5 h-3.5 text-red-400" />
@@ -343,7 +343,7 @@ export default function TrendsPage() {
       <ConceptHeatmap rows={heatmapRows} />
 
       {/* Tracked Insights */}
-      <Card className="border-border bg-card">
+      <Card className="border-border bg-card rounded-[2rem]">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-primary" />

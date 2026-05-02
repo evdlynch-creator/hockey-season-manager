@@ -90,7 +90,7 @@ export default function TeamMembersPage() {
           </p>
         </div>
         {isOwner && (
-          <Button onClick={() => setInviteOpen(true)} className="gap-2 w-full sm:w-auto">
+          <Button onClick={() => setInviteOpen(true)} className="gap-2 w-full sm:w-auto rounded-full">
             <UserPlus className="w-4 h-4" />
             Invite Coach
           </Button>
@@ -98,7 +98,7 @@ export default function TeamMembersPage() {
       </div>
 
       <div className="grid gap-8">
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardHeader className="px-4 md:px-6">
             <CardTitle>Active Members</CardTitle>
             <CardDescription>Coaches with access to this season.</CardDescription>
@@ -109,7 +109,7 @@ export default function TeamMembersPage() {
                 <EmptyState icon={<Users />} title="No members found" description="Invite your first coach to get started." />
               ) : (
                 members.map((member) => (
-                  <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-secondary/20 border border-border/40 gap-4">
+                  <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-[2rem] bg-secondary/20 border border-border/40 gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary shrink-0">
                         {member.displayName?.slice(0, 2).toUpperCase() || member.email?.slice(0, 2).toUpperCase() || '??'}
@@ -118,7 +118,7 @@ export default function TeamMembersPage() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-semibold text-foreground truncate">{member.displayName || 'Coach'}</p>
                           <Badge variant="outline" className={cn(
-                            "gap-1.5 text-[10px] uppercase font-bold",
+                            "gap-1.5 text-[10px] uppercase font-bold rounded-full",
                             member.role === 'owner' ? "text-primary border-primary/30" : "text-muted-foreground"
                           )}>
                             {roleIcon(member.role)}
@@ -135,7 +135,7 @@ export default function TeamMembersPage() {
                           value={member.role}
                           onValueChange={(v) => updateRoleMutation.mutate({ memberId: member.id, role: v as SeasonRole })}
                         >
-                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                          <SelectTrigger className="w-[120px] h-8 text-xs rounded-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -147,7 +147,7 @@ export default function TeamMembersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                           onClick={() => removeMutation.mutate(member.id)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -155,7 +155,7 @@ export default function TeamMembersPage() {
                       </div>
                     )}
                     {member.userId === user?.id && (
-                      <Badge className="bg-primary/10 text-primary border-primary/20">You</Badge>
+                      <Badge className="bg-primary/10 text-primary border-primary/20 rounded-full">You</Badge>
                     )}
                   </div>
                 ))
@@ -165,7 +165,7 @@ export default function TeamMembersPage() {
         </Card>
 
         {invitations.length > 0 && (
-          <Card className="border-border/50">
+          <Card className="border-border/50 rounded-[2rem]">
             <CardHeader className="px-4 md:px-6">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="w-5 h-5 text-amber-400" />
@@ -175,7 +175,7 @@ export default function TeamMembersPage() {
             <CardContent className="px-4 md:px-6">
               <div className="space-y-3">
                 {invitations.map((invite) => (
-                  <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-dashed border-border/60 bg-secondary/10 gap-4">
+                  <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-[2rem] border border-dashed border-border/60 bg-secondary/10 gap-4">
                     <div className="flex items-center gap-3">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <div>
@@ -188,7 +188,7 @@ export default function TeamMembersPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-xs text-muted-foreground hover:text-foreground"
+                          className="text-xs text-muted-foreground hover:text-foreground rounded-full"
                           onClick={async () => {
                             const inviteUrl = `${window.location.origin}/onboarding?invite=${invite.token}`
                             await navigator.clipboard.writeText(inviteUrl)
@@ -200,7 +200,7 @@ export default function TeamMembersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-full"
                           onClick={() => cancelMutation.mutate(invite.id)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -216,7 +216,7 @@ export default function TeamMembersPage() {
       </div>
 
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-[2rem]">
           <DialogHeader>
             <DialogTitle>Invite a Coach</DialogTitle>
             <DialogDescription>
@@ -231,12 +231,13 @@ export default function TeamMembersPage() {
                 placeholder="coach@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
+                className="rounded-full"
               />
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">Season Role</p>
               <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as SeasonRole)}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,8 +249,8 @@ export default function TeamMembersPage() {
             </div>
           </div>
           <DialogFooter className="mt-6">
-            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button onClick={handleInvite} disabled={!inviteEmail || inviteMutation.isPending}>
+            <Button variant="outline" onClick={() => setInviteOpen(false)} className="rounded-full">Cancel</Button>
+            <Button onClick={handleInvite} disabled={!inviteEmail || inviteMutation.isPending} className="rounded-full">
               {inviteMutation.isPending ? 'Generating...' : 'Generate Invite Link'}
             </Button>
           </DialogFooter>

@@ -122,13 +122,13 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="team" className="w-full">
-        <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-secondary/40 p-1">
-          <TabsTrigger value="team" className="gap-2"><Users className="w-4 h-4" /> Active Team</TabsTrigger>
-          <TabsTrigger value="teams" className="gap-2"><Users className="w-4 h-4" /> Manage Teams</TabsTrigger>
-          <TabsTrigger value="seasons" className="gap-2"><CalendarRange className="w-4 h-4" /> Seasons</TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2"><Bell className="w-4 h-4" /> Notifications</TabsTrigger>
-          <TabsTrigger value="account" className="gap-2"><UserCircle className="w-4 h-4" /> Account</TabsTrigger>
-          <TabsTrigger value="danger" className="gap-2 text-red-400 data-[state=active]:text-red-300">
+        <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-secondary/40 p-1 rounded-full">
+          <TabsTrigger value="team" className="gap-2 rounded-full"><Users className="w-4 h-4" /> Active Team</TabsTrigger>
+          <TabsTrigger value="teams" className="gap-2 rounded-full"><Users className="w-4 h-4" /> Manage Teams</TabsTrigger>
+          <TabsTrigger value="seasons" className="gap-2 rounded-full"><CalendarRange className="w-4 h-4" /> Seasons</TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2 rounded-full"><Bell className="w-4 h-4" /> Notifications</TabsTrigger>
+          <TabsTrigger value="account" className="gap-2 rounded-full"><UserCircle className="w-4 h-4" /> Account</TabsTrigger>
+          <TabsTrigger value="danger" className="gap-2 text-red-400 data-[state=active]:text-red-300 rounded-full">
             <AlertTriangle className="w-4 h-4" /> Danger Zone
           </TabsTrigger>
         </TabsList>
@@ -200,7 +200,7 @@ function ColorSwatch({
       title={title ?? color}
       style={{ backgroundColor: color }}
       className={cn(
-        'h-7 w-7 rounded-md border transition-all hover:scale-110',
+        'h-7 w-7 rounded-full border transition-all hover:scale-110',
         selected ? 'border-foreground ring-2 ring-foreground/20' : 'border-border/60',
       )}
       aria-label={title ?? color}
@@ -276,7 +276,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-border/50 rounded-[2rem]">
       <CardHeader>
         <CardTitle>Team</CardTitle>
         <CardDescription>Identifying details for your team and the current season window.</CardDescription>
@@ -292,7 +292,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
             <select
               value={prefs.ageGroup}
               onChange={(e) => setPrefs((p) => ({ ...p, ageGroup: e.target.value }))}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+              className="flex h-9 w-full rounded-full border border-input bg-background px-3 py-1 text-sm shadow-xs"
             >
               <option value="">—</option>
               {AGE_GROUPS.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -303,14 +303,14 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
             <select
               value={prefs.teamLevel}
               onChange={(e) => setPrefs((p) => ({ ...p, teamLevel: e.target.value }))}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+              className="flex h-9 w-full rounded-full border border-input bg-background px-3 py-1 text-sm shadow-xs"
             >
               <option value="">—</option>
               {TEAM_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </Field>
           <Field className="md:col-span-2">
-            <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-border/50 bg-secondary/10">
+            <div className="flex items-center justify-between gap-4 p-4 rounded-[2rem] border border-border/50 bg-secondary/10">
               <div className="space-y-0.5">
                 <FieldLabel className="text-base">Player Participation Tracking</FieldLabel>
                 <FieldDescription>
@@ -372,7 +372,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
                     type="color"
                     value={prefs.primaryColor}
                     onChange={(e) => setPrefs((p) => ({ ...p, primaryColor: e.target.value }))}
-                    className="h-9 w-14 rounded-md border border-input bg-background cursor-pointer"
+                    className="h-9 w-14 rounded-full border border-input bg-background cursor-pointer"
                   />
                   <Input
                     value={prefs.primaryColor}
@@ -383,7 +383,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>Preview</span>
                     <span
-                      className="inline-block h-5 w-12 rounded"
+                      className="inline-block h-5 w-12 rounded-full"
                       style={{ backgroundColor: prefs.primaryColor }}
                     />
                   </div>
@@ -417,7 +417,7 @@ function TeamSettings({ team, activeSeason }: { team: { id: string; name: string
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={!dirty || updateTeamName.isPending || updateSeason.isPending} className="gap-2">
+          <Button onClick={handleSave} disabled={!dirty || updateTeamName.isPending || updateSeason.isPending} className="gap-2 rounded-full">
             <Save className="w-4 h-4" />
             Save Changes
           </Button>
@@ -489,13 +489,13 @@ function SeasonsSettings({ teamId, activeSeasonId }: { teamId: string; activeSea
           <h3 className="text-lg font-semibold">Seasons</h3>
           <p className="text-sm text-muted-foreground">One season is active at a time. Past seasons can be archived.</p>
         </div>
-        <Button className="gap-2" onClick={() => setCreateOpen(true)}>
+        <Button className="gap-2 rounded-full" onClick={() => setCreateOpen(true)}>
           <Plus className="w-4 h-4" /> New Season
         </Button>
       </div>
 
       {sorted.length === 0 ? (
-        <Card className="border-border/50">
+        <Card className="border-border/50 rounded-[2rem]">
           <CardContent className="p-8">
             <EmptyState title="No seasons yet" description="Create your first season to get going." />
           </CardContent>
@@ -513,12 +513,12 @@ function SeasonsSettings({ teamId, activeSeasonId }: { teamId: string; activeSea
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-foreground truncate">{s.name}</p>
                       {isActive && (
-                        <Badge className="bg-primary/15 text-primary border-primary/30 border text-[10px] px-1.5 py-0 h-4">
+                        <Badge className="bg-primary/15 text-primary border-primary/30 border text-[10px] px-1.5 py-0 h-4 rounded-full">
                           Active
                         </Badge>
                       )}
                       {isArchived && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">Archived</Badge>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 rounded-full">Archived</Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -527,33 +527,33 @@ function SeasonsSettings({ teamId, activeSeasonId }: { teamId: string; activeSea
                     {concepts.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {concepts.map((c) => (
-                          <Badge key={c} variant="secondary" className="text-[10px]">{c}</Badge>
+                          <Badge key={c} variant="secondary" className="text-[10px] rounded-full">{c}</Badge>
                         ))}
                       </div>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 shrink-0">
                     {!isActive && (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleMakeActive(s.id)}>
+                      <Button variant="outline" size="sm" className="gap-1.5 rounded-full" onClick={() => handleMakeActive(s.id)}>
                         <CheckCircle2 className="w-3.5 h-3.5" /> Make Active
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setEditing(s)}>
+                    <Button variant="outline" size="sm" className="gap-1.5 rounded-full" onClick={() => setEditing(s)}>
                       <Pencil className="w-3.5 h-3.5" /> Edit
                     </Button>
                     {isArchived ? (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleUnarchive(s.id)}>
+                      <Button variant="outline" size="sm" className="gap-1.5 rounded-full" onClick={() => handleUnarchive(s.id)}>
                         <Archive className="w-3.5 h-3.5" /> Unarchive
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleArchive(s.id)}>
+                      <Button variant="outline" size="sm" className="gap-1.5 rounded-full" onClick={() => handleArchive(s.id)}>
                         <Archive className="w-3.5 h-3.5" /> Archive
                       </Button>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      className="gap-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full"
                       onClick={() => setConfirmDelete(s)}
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -735,8 +735,8 @@ function SeasonFormDialog({
           </Field>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={!valid || createSeason.isPending || updateSeason.isPending}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-full">Cancel</Button>
+          <Button onClick={submit} disabled={!valid || createSeason.isPending || updateSeason.isPending} className="rounded-full">
             {mode === 'create' ? 'Create Season' : 'Save Changes'}
           </Button>
         </DialogFooter>
@@ -823,7 +823,7 @@ function AccountSettings({ email }: { email: string }) {
             <p className="text-sm font-medium text-foreground">Sign out</p>
             <p className="text-xs text-muted-foreground">End your session on this device.</p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={handleLogout}>
+          <Button variant="outline" className="gap-2 rounded-full" onClick={handleLogout}>
             <LogOut className="w-4 h-4" /> Log out
           </Button>
         </CardContent>
@@ -864,19 +864,19 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="rounded-md border border-red-500/20 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
+        <div className="rounded-[2rem] border border-red-500/20 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">Archive active season</p>
             <p className="text-xs text-muted-foreground">
               Marks the current active season as archived. Data is preserved.
             </p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={handleArchive} disabled={!activeSeason}>
+          <Button variant="outline" className="gap-2 rounded-full" onClick={handleArchive} disabled={!activeSeason}>
             <Archive className="w-4 h-4" /> Archive
           </Button>
         </div>
 
-        <div className="rounded-md border border-red-500/30 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
+        <div className="rounded-[2rem] border border-red-500/30 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3">
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">Delete active season</p>
             <p className="text-xs text-muted-foreground">
@@ -885,7 +885,7 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
           </div>
           <Button
             variant="outline"
-            className="gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
+            className="gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30 rounded-full"
             onClick={() => setConfirmDelete(true)}
             disabled={!activeSeason}
           >
@@ -893,7 +893,7 @@ function DangerZone({ teamId, activeSeason }: { teamId: string; activeSeason: Se
           </Button>
         </div>
 
-        <div className="rounded-md border border-border/40 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3 opacity-70">
+        <div className="rounded-[2rem] border border-border/40 bg-background/30 p-4 flex flex-col md:flex-row md:items-center gap-3 opacity-70">
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">Remove coach access</p>
             <p className="text-xs text-muted-foreground">
@@ -964,7 +964,7 @@ function TeamsSettings({
           <h3 className="text-lg font-semibold">Your Teams</h3>
           <p className="text-sm text-muted-foreground">Manage and switch between your hockey teams.</p>
         </div>
-        <Button className="gap-2" onClick={() => navigate({ to: '/onboarding' })}>
+        <Button className="gap-2 rounded-full" onClick={() => navigate({ to: '/onboarding' })}>
           <Plus className="w-4 h-4" /> Add New Team
         </Button>
       </div>
@@ -977,7 +977,7 @@ function TeamsSettings({
               <CardContent className="p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
+                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                     isSelected ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
                   )}>
                     <Users className="w-5 h-5" />
@@ -994,11 +994,11 @@ function TeamsSettings({
 
                 <div className="flex items-center gap-2 shrink-0">
                   {!isSelected ? (
-                    <Button variant="outline" size="sm" onClick={() => onSwitch(t.id)}>
+                    <Button variant="outline" size="sm" onClick={() => onSwitch(t.id)} className="rounded-full">
                       Switch to Team
                     </Button>
                   ) : (
-                    <Badge className="bg-primary/10 text-primary border-primary/20 pointer-events-none">
+                    <Badge className="bg-primary/10 text-primary border-primary/20 pointer-events-none rounded-full">
                       Active
                     </Badge>
                   )}
@@ -1006,7 +1006,7 @@ function TeamsSettings({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-full"
                     onClick={() => setConfirmDelete(t)}
                   >
                     <Trash2 className="w-4 h-4" />

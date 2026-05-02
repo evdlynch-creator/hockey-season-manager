@@ -15,7 +15,7 @@ interface PlayerAttendanceListProps {
 
 export function PlayerAttendanceList({ players }: PlayerAttendanceListProps) {
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card rounded-[2rem]">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
@@ -55,7 +55,7 @@ export function PlayerAttendanceList({ players }: PlayerAttendanceListProps) {
                     <span className="text-xs font-bold text-foreground">100%</span>
                     <span className="text-[9px] text-muted-foreground">Attendance</span>
                   </div>
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] h-5">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] h-5 rounded-full">
                     Active
                   </Badge>
                 </div>

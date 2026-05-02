@@ -17,13 +17,13 @@ export function TrendsView() {
           <p className="text-xs text-zinc-500">Offensive vs Defensive performance delta</p>
         </div>
         <div className="flex gap-2">
-          <div className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest">+12% vs LY</div>
-          <div className="px-3 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold tracking-widest">RECORD: 12-4-2</div>
+          <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest">+12% vs LY</div>
+          <div className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold tracking-widest">RECORD: 12-4-2</div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-8 h-[55%]">
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/goals hover-glow">
+        <div className="p-8 rounded-[2rem] border border-white/5 bg-white/[0.02] flex flex-col justify-between group/goals hover-glow">
           <div className="flex items-center justify-between mb-4">
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/goals:text-primary transition-colors">Shot Volume Trends</div>
             <Swords className="w-3 h-3 text-blue-400 opacity-50" />
@@ -42,7 +42,7 @@ export function TrendsView() {
           </div>
         </div>
 
-        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concepts hover-glow">
+        <div className="p-8 rounded-[2rem] border border-white/5 bg-white/[0.02] flex flex-col justify-between group/concepts hover-glow">
           <div className="flex items-center justify-between mb-4">
             <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover/concepts:text-primary transition-colors">System Execution</div>
             <Target className="w-3 h-3 text-primary opacity-50" />
@@ -78,7 +78,7 @@ export function TrendsView() {
         </div>
       </div>
 
-      <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow">
+      <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative group/record hover-glow">
         <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 group-hover/record:text-primary transition-colors">Cumulative Season Record</div>
         <div className="h-32 w-full flex items-center px-4">
           <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100">
