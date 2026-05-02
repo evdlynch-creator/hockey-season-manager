@@ -11,7 +11,8 @@ import {
   ArrowRight,
   ClipboardList,
   Swords,
-  Users
+  Users,
+  Plus
 } from 'lucide-react'
 
 export default function LandingPage() {
@@ -124,12 +125,17 @@ export default function LandingPage() {
                       <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-2">Main Menu</div>
                       <div className="h-9 w-full bg-primary/10 border border-primary/20 rounded-lg flex items-center px-3 gap-2">
                         <TrendingUp className="w-3.5 h-3.5 text-primary" />
-                        <div className="h-2 w-16 bg-primary/40 rounded" />
+                        <span className="text-[10px] font-bold text-primary">Overview</span>
                       </div>
-                      {[Target, ClipboardList, Swords, Users].map((Icon, i) => (
+                      {[
+                        { icon: Target, label: "Analytics" },
+                        { icon: ClipboardList, label: "Practices" },
+                        { icon: Swords, label: "Games" },
+                        { icon: Users, label: "Roster" }
+                      ].map((item, i) => (
                         <div key={i} className="h-9 w-full hover:bg-white/5 rounded-lg flex items-center px-3 gap-2 transition-colors">
-                          <Icon className="w-3.5 h-3.5 text-zinc-500" />
-                          <div className="h-2 w-20 bg-zinc-700 rounded" />
+                          <item.icon className="w-3.5 h-3.5 text-zinc-500" />
+                          <span className="text-[10px] font-medium text-zinc-500">{item.label}</span>
                         </div>
                       ))}
                     </div>
@@ -221,14 +227,15 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="p-6 rounded-xl border border-white/5 bg-white/[0.02] space-y-4">
-                      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Top Concept Understanding</div>
+                      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Top Concept Mastery</div>
                       <div className="space-y-4 py-2">
                         {[
                           { label: "Forecheck", val: 92 },
-                          { label: "Transition", val: 78 }
+                          { label: "Transition", val: 78 },
+                          { label: "D-Zone", val: 64 }
                         ].map((c, i) => (
                           <div key={i} className="space-y-2">
-                            <div className="flex justify-between text-xs">
+                            <div className="flex justify-between text-[10px]">
                               <span className="text-white font-medium">{c.label}</span>
                               <span className="text-primary">{c.val}%</span>
                             </div>
