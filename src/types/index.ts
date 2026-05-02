@@ -38,14 +38,14 @@ export interface SeasonMember {
   userId: string
   role: SeasonRole
   createdAt: string
-  // Joined from users table
-  email?: string
-  displayName?: string
+  email: string
+  displayName: string
 }
 
 export interface Invitation {
   id: string
   seasonId: string
+  userId?: string
   email: string
   role: SeasonRole
   token: string

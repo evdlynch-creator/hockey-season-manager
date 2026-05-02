@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   format, addMonths, subMonths, addDays, addWeeks,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   isSameMonth, isSameDay, isToday, parseISO, getISOWeek,
 } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, Circle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, Circle, ArrowLeft } from 'lucide-react'
 import { usePractices } from '@/hooks/usePractices'
 import { useGames } from '@/hooks/useGames'
 import { cn } from '@/lib/utils'
@@ -25,22 +25,34 @@ function eventDotClass(ev: CalendarEvent) {
   return ev.kind === 'practice' ? 'text-amber-500' : 'text-blue-500'
 }
 
+function formatGameTime(t: string): string {
+  const [h, m] = t.split(':').map(Number)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${m.toString().padStart(2, '0')} ${period}`
+}
+
 // ── Mini month ───────────────────────────────────────────────────────────────
 
 function MiniMonth({
   cursor,
-  setCursor,
+  onSelectDate,
   eventDates,
   view,
   setView,
 }: {
   cursor: Date
-  setCursor: (d: Date) => void
+  onSelectDate: (d: Date) => void
   eventDates: Set<string>
   view: 'week' | 'month'
   setView: (v: 'week' | 'month') => void
 }) {
   const [monthCursor, setMonthCursor] = useState(cursor)
+
+  // Keep monthCursor in sync when cursor changes externally
+  useEffect(() => {
+    setMonthCursor(cursor)
+  }, [cursor])
 
   const weeks = useMemo(() => {
     if (view === 'week') {
@@ -67,6 +79,7 @@ function MiniMonth({
 
   const wkStart = startOfWeek(monthCursor, { weekStartsOn: 1 })
   const wkEnd = addDays(wkStart, 6)
+
   return (
     <div>
       {/* Header */}
@@ -74,7 +87,7 @@ function MiniMonth({
         <h2 className="text-base font-semibold truncate">
           {view === 'week' ? (
             <span className="text-white tabular-nums">
-              {format(wkStart, 'MM/dd/yyyy')} – {format(wkEnd, 'MM/dd/yyyy')}
+              {format(wkStart, 'MMM d')} – {format(wkEnd, 'MMM d, yyyy')}
             </span>
           ) : (
             <>
@@ -140,7 +153,7 @@ function MiniMonth({
               {week.map(day => {
                 const isCurrentMonth = isSameMonth(day, monthCursor)
                 const selected = isSameDay(day, cursor)
-                const today = isToday(day)
+                const todayDay = isToday(day)
                 const hasEvent = eventDates.has(format(day, 'yyyy-MM-dd'))
                 const dow = day.getDay()
                 const isWeekend = dow === 0 || dow === 6
@@ -148,12 +161,12 @@ function MiniMonth({
                 return (
                   <button
                     key={day.toISOString()}
-                    onClick={() => setCursor(day)}
+                    onClick={() => onSelectDate(day)}
                     className={cn(
-                      'relative aspect-square flex items-center justify-center rounded-full text-[11px] tabular-nums transition-colors group',
+                      'relative aspect-square flex items-center justify-center rounded-full text-[11px] tabular-nums transition-colors',
                       !isCurrentMonth && 'text-white/25',
-                      isCurrentMonth && !selected && !today && (isWeekend ? 'text-white/60' : 'text-white/85'),
-                      today && !selected && 'text-primary font-semibold',
+                      isCurrentMonth && !selected && !todayDay && (isWeekend ? 'text-white/60' : 'text-white/85'),
+                      todayDay && !selected && 'text-primary font-semibold',
                       selected && 'bg-primary text-primary-foreground font-semibold',
                       !selected && 'hover:bg-white/10',
                     )}
@@ -173,72 +186,129 @@ function MiniMonth({
   )
 }
 
-// ── Agenda item ──────────────────────────────────────────────────────────────
+// ── Event row ─────────────────────────────────────────────────────────────────
 
-function AgendaSection({
-  label,
+function EventRow({ ev, onOpen }: { ev: CalendarEvent; onOpen: (ev: CalendarEvent) => void }) {
+  const timeStr = ev.kind === 'game' && ev.data.gameTime ? formatGameTime(ev.data.gameTime) : null
+  return (
+    <button
+      onClick={() => onOpen(ev)}
+      className="w-full text-left rounded-lg p-3 transition-colors flex items-start gap-3 hover:bg-white/5"
+    >
+      <Circle className={cn('w-2.5 h-2.5 shrink-0 mt-1.5 fill-current', eventDotClass(ev))} />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-white/50 truncate">
+          {ev.kind === 'practice'
+            ? 'Practice'
+            : `Game · ${ev.data.location === 'home' ? 'Home' : 'Away'}${timeStr ? ` · ${timeStr}` : ''}`}
+        </p>
+        <p className="text-base font-semibold text-white/95 truncate">{eventTitle(ev)}</p>
+      </div>
+    </button>
+  )
+}
+
+// ── Day view ──────────────────────────────────────────────────────────────────
+
+function DayView({
   date,
   events,
   onOpen,
-  selectedId,
+  onBack,
 }: {
-  label: string
   date: Date
   events: CalendarEvent[]
   onOpen: (ev: CalendarEvent) => void
-  selectedId?: string
+  onBack: () => void
 }) {
-  const isSpecial = label === 'Today' || label === 'Tomorrow'
+  const label = isToday(date)
+    ? 'Today'
+    : format(date, 'EEEE, MMMM d')
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between px-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
-        {isSpecial && (
-          <span className="text-xs text-primary tabular-nums">{format(date, 'MM/dd/yyyy')}</span>
-        )}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Upcoming
+        </button>
       </div>
-      <div className="space-y-1">
+      <div className="rounded-xl bg-sidebar border border-sidebar-border overflow-hidden">
+        <div className="flex items-baseline justify-between px-4 py-3 border-b border-sidebar-border">
+          <h2 className="text-base font-semibold text-white">{label}</h2>
+          <span className="text-xs text-primary tabular-nums">{format(date, 'MMM d, yyyy')}</span>
+        </div>
         {events.length === 0 ? (
-          <p className="text-sm text-white/30 italic px-1 py-1">No events</p>
+          <div className="px-4 py-8 text-center">
+            <CalendarDays className="w-8 h-8 text-white/20 mx-auto mb-2" />
+            <p className="text-sm text-white/40">Nothing scheduled</p>
+          </div>
         ) : (
-          events.map(ev => {
-            const selected = ev.data.id === selectedId
-            return (
-              <button
-                key={ev.data.id}
-                onClick={() => onOpen(ev)}
-                className={cn(
-                  'w-full text-left rounded-lg p-3 transition-colors flex items-start gap-3 group',
-                  selected ? 'bg-primary text-primary-foreground' : 'hover:bg-white/5'
-                )}
-              >
-                <Circle
-                  className={cn(
-                    'w-2.5 h-2.5 shrink-0 mt-1.5 fill-current',
-                    selected ? 'text-primary-foreground' : eventDotClass(ev)
-                  )}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    'text-xs font-medium truncate',
-                    selected ? 'text-primary-foreground/80' : 'text-white/50'
-                  )}>
-                    {ev.kind === 'practice' ? 'Practice' : `Game · ${ev.data.location === 'home' ? 'Home' : 'Away'}`}
-                  </p>
-                  <p className={cn(
-                    'text-base font-semibold truncate',
-                    selected ? 'text-primary-foreground' : 'text-white/95'
-                  )}>
-                    {eventTitle(ev)}
-                  </p>
-                </div>
-              </button>
-            )
-          })
+          <div className="p-2 space-y-1">
+            {events.map(ev => <EventRow key={ev.data.id} ev={ev} onOpen={onOpen} />)}
+          </div>
         )}
       </div>
     </div>
+  )
+}
+
+// ── Zone block ────────────────────────────────────────────────────────────────
+
+function ZoneBlock({
+  label,
+  sub,
+  days,
+  onOpen,
+  compact,
+}: {
+  label: string
+  sub: string
+  days: { date: Date; label: string; events: CalendarEvent[] }[]
+  onOpen: (ev: CalendarEvent) => void
+  compact?: boolean
+}) {
+  const eventCount = days.reduce((a, d) => a + d.events.length, 0)
+  if (eventCount === 0) return null
+
+  return (
+    <section>
+      <div className="flex items-baseline justify-between mb-3 px-1">
+        <div>
+          <h2 className="text-lg font-semibold text-white">{label}</h2>
+          <p className="text-xs text-primary tabular-nums">{sub}</p>
+        </div>
+        <span className="text-xs text-white/40 tabular-nums">
+          {eventCount} {eventCount === 1 ? 'event' : 'events'}
+        </span>
+      </div>
+      {compact ? (
+        <div className="rounded-xl bg-sidebar border border-sidebar-border p-2 space-y-1">
+          {days.flatMap(day => day.events).map(ev => (
+            <EventRow key={ev.data.id} ev={ev} onOpen={onOpen} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl bg-sidebar border border-sidebar-border overflow-hidden">
+          {days.map((day, i) => (
+            <div key={day.date.toISOString()}>
+              {i > 0 && <div className="border-t border-sidebar-border" />}
+              <div className="px-4 pt-3 pb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-white/60">
+                  {day.label}
+                </span>
+              </div>
+              <div className="p-2 pt-1 space-y-1">
+                {day.events.map(ev => <EventRow key={ev.data.id} ev={ev} onOpen={onOpen} />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -250,6 +320,8 @@ export default function CalendarPage() {
   const { data: games = [] } = useGames()
   const [cursor, setCursor] = useState(new Date())
   const [calView, setCalView] = useState<'week' | 'month'>('week')
+  const [dayFilter, setDayFilter] = useState<Date | null>(null)
+  const agendaRef = useRef<HTMLDivElement>(null)
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
@@ -274,6 +346,13 @@ export default function CalendarPage() {
 
   const eventDates = useMemo(() => new Set(eventsByDate.keys()), [eventsByDate])
 
+  const handleSelectDate = (d: Date) => {
+    setCursor(d)
+    setDayFilter(d)
+    // Scroll agenda into view smoothly
+    setTimeout(() => agendaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
   const openEvent = (ev: CalendarEvent) => {
     if (ev.kind === 'practice') {
       navigate({ to: '/practices/$practiceId', params: { practiceId: ev.data.id } })
@@ -294,9 +373,9 @@ export default function CalendarPage() {
 
     type Zone = { id: string; label: string; sub: string; compact?: boolean; days: { date: Date; label: string; events: CalendarEvent[] }[] }
     const zoneList: Zone[] = [
-      { id: 'today', label: 'Today', sub: format(today, 'MM/dd/yyyy'), compact: true, days: [] },
+      { id: 'today', label: 'Today', sub: format(today, 'MMMM d, yyyy'), compact: true, days: [] },
       { id: 'thisWeek', label: 'This Week', sub: 'Rest of the week', days: [] },
-      { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MM/dd/yyyy') + ' – ' + format(endOfNextWeek, 'MM/dd/yyyy'), days: [] },
+      { id: 'nextWeek', label: 'Next Week', sub: format(startOfNextWeek, 'MMM d') + ' – ' + format(endOfNextWeek, 'MMM d'), days: [] },
       { id: 'thisMonth', label: 'Later This Month', sub: format(today, 'MMMM yyyy'), days: [] },
       { id: 'nextMonth', label: 'Next Month', sub: format(addMonths(today, 1), 'MMMM yyyy'), days: [] },
     ]
@@ -328,6 +407,9 @@ export default function CalendarPage() {
     [zones]
   )
 
+  const dayFilterKey = dayFilter ? format(dayFilter, 'yyyy-MM-dd') : null
+  const dayFilterEvents = dayFilterKey ? (eventsByDate.get(dayFilterKey) ?? []) : []
+
   return (
     <div className="min-h-dvh w-full bg-background">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
@@ -346,21 +428,39 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        {/* Stacked: compact calendar on top, agenda below */}
         <div className="space-y-6">
-          {/* Mini month — narrow, sits above the agenda */}
+          {/* Mini calendar */}
           <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:p-5">
-            <MiniMonth cursor={cursor} setCursor={setCursor} eventDates={eventDates} view={calView} setView={setCalView} />
+            <MiniMonth
+              cursor={cursor}
+              onSelectDate={handleSelectDate}
+              eventDates={eventDates}
+              view={calView}
+              setView={setCalView}
+            />
           </div>
 
-          {/* Agenda zones */}
-          <div className="space-y-6 min-w-0">
-            {totalUpcoming === 0 ? (
+          {/* Agenda area */}
+          <div ref={agendaRef} className="space-y-6 min-w-0 scroll-mt-4">
+            {dayFilter ? (
+              // ── Day filter view ──
+              <DayView
+                date={dayFilter}
+                events={dayFilterEvents}
+                onOpen={openEvent}
+                onBack={() => {
+                  setDayFilter(null)
+                  setCursor(new Date())
+                }}
+              />
+            ) : totalUpcoming === 0 ? (
+              // ── Empty state ──
               <div className="text-center py-12 rounded-xl bg-sidebar border border-sidebar-border">
                 <CalendarDays className="w-10 h-10 text-white/20 mx-auto mb-3" />
                 <p className="text-sm text-white/40">No upcoming events</p>
               </div>
             ) : (
+              // ── Zone view ──
               zones.map(zone => (
                 <ZoneBlock
                   key={zone.id}
@@ -376,69 +476,5 @@ export default function CalendarPage() {
         </div>
       </div>
     </div>
-  )
-}
-
-function ZoneBlock({
-  label,
-  sub,
-  days,
-  onOpen,
-  compact,
-}: {
-  label: string
-  sub: string
-  days: { date: Date; label: string; events: CalendarEvent[] }[]
-  onOpen: (ev: CalendarEvent) => void
-  compact?: boolean
-}) {
-  const eventCount = days.reduce((a, d) => a + d.events.length, 0)
-  return (
-    <section>
-      <div className="flex items-baseline justify-between mb-3 px-1">
-        <div>
-          <h2 className="text-lg font-semibold text-white">{label}</h2>
-          <p className="text-xs text-primary tabular-nums">{sub}</p>
-        </div>
-        <span className="text-xs text-white/40 tabular-nums">
-          {eventCount} {eventCount === 1 ? 'event' : 'events'}
-        </span>
-      </div>
-      {eventCount === 0 ? (
-        <div className="rounded-lg bg-sidebar/50 border border-sidebar-border px-4 py-3">
-          <p className="text-sm text-white/30 italic">Nothing scheduled</p>
-        </div>
-      ) : compact ? (
-        <div className="space-y-1">
-          {days.flatMap(day => day.events).map(ev => (
-            <button
-              key={ev.data.id}
-              onClick={() => onOpen(ev)}
-              className="w-full text-left rounded-lg p-3 transition-colors flex items-start gap-3 hover:bg-white/5"
-            >
-              <Circle className={cn('w-2.5 h-2.5 shrink-0 mt-1.5 fill-current', eventDotClass(ev))} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white/50 truncate">
-                  {ev.kind === 'practice' ? 'Practice' : `Game · ${ev.data.location === 'home' ? 'Home' : 'Away'}`}
-                </p>
-                <p className="text-base font-semibold text-white/95 truncate">{eventTitle(ev)}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {days.map(day => (
-            <AgendaSection
-              key={day.date.toISOString()}
-              label={day.label}
-              date={day.date}
-              events={day.events}
-              onOpen={onOpen}
-            />
-          ))}
-        </div>
-      )}
-    </section>
   )
 }

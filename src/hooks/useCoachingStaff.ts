@@ -9,24 +9,29 @@ export function useCoachingStaff() {
   const seasonId = teamData?.season?.id
 
   const staffQuery = useQuery({
-    queryKey: ['coaching-staff', seasonId, isDemoMode()],
+    queryKey: ['coaching-staff', seasonId],
     queryFn: async () => {
       if (isDemoMode()) {
         return { members: DEMO_MEMBERS, invitations: DEMO_INVITATIONS }
       }
-      if (!seasonId) return []
+      if (!seasonId) return { members: [], invitations: [] }
       
-      // Fetch members and resolve emails
-      const members = (await blink.db.seasonMembers.list({
-        where: { seasonId },
-      })) as SeasonMember[]
+      try {
+        // Fetch members
+        const members = (await blink.db.seasonMembers.list({
+          where: { seasonId },
+        })) as SeasonMember[]
 
-      // Fetch invitation list
-      const invitations = (await blink.db.invitations.list({
-        where: { seasonId, status: 'pending' }
-      })) as Invitation[]
+        // Fetch invitation list
+        const invitations = (await blink.db.invitations.list({
+          where: { seasonId, status: 'pending' }
+        })) as Invitation[]
 
-      return { members, invitations }
+        return { members, invitations }
+      } catch (err) {
+        console.error('Error fetching coaching staff:', err)
+        return { members: [], invitations: [] }
+      }
     },
     enabled: !!seasonId || isDemoMode(),
   })
