@@ -133,8 +133,8 @@ export function startTour(navigate: (path: string) => void) {
     title: 'Analytics',
     text: 'Deep dive into your season performance. Track win rates, goal differentials, and tactical momentum to see exactly how your team is trending.',
     attachTo: {
-      element: '#tour-analytics-performance',
-      on: 'top'
+      element: '#tour-analytics-kpis',
+      on: 'bottom'
     },
     beforeShowPromise: () => {
       return new Promise((resolve) => {
