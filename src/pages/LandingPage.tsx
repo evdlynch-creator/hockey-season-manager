@@ -85,23 +85,56 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
               onClick={enterDemo}
             >
-              Explore Demo Dashboard
+              Enter Interactive Demo
             </Button>
           </div>
 
-          <div className="mt-20 relative group">
-            {/* Stable glow instead of pulse */}
-            <div className="absolute -inset-4 bg-primary/20 blur-[100px] rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
-            <div className="relative rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/50 overflow-hidden transition-all duration-700 ease-out group-hover:scale-[1.01] group-hover:border-primary/30 group-hover:shadow-primary/10">
-              <img 
-                src={heroUrl} 
-                alt="Blue Line IQ Dashboard" 
-                className="w-full h-auto object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1515703407324-5f753eed23cca?q=80&w=2000&auto=format&fit=crop'
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-60" />
+          <div className="mt-20 relative">
+            <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-20" />
+            
+            <div className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden group cursor-pointer" onClick={enterDemo}>
+              {/* Browser-like Header */}
+              <div className="h-10 border-b border-white/5 bg-white/[0.03] flex items-center px-4 gap-2 shrink-0">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                </div>
+                <div className="ml-4 flex-1 h-5 bg-white/5 rounded-md max-w-[200px]" />
+              </div>
+
+              <div className="relative aspect-[16/10] bg-zinc-900 flex">
+                {/* Mock Sidebar */}
+                <div className="w-16 md:w-48 border-r border-white/5 bg-white/[0.01] p-3 space-y-3 shrink-0 hidden sm:block">
+                  <div className="h-4 w-full bg-white/10 rounded" />
+                  <div className="space-y-2">
+                    <div className="h-3 w-3/4 bg-white/5 rounded" />
+                    <div className="h-3 w-1/2 bg-white/5 rounded" />
+                    <div className="h-3 w-2/3 bg-white/5 rounded" />
+                  </div>
+                </div>
+
+                <div className="flex-1 relative overflow-hidden">
+                  <img 
+                    src={heroUrl} 
+                    alt="Blue Line IQ Dashboard" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700 ease-in-out"
+                    loading="eager"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1515703407324-5f753eed23cca?q=80&w=2000&auto=format&fit=crop'
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-60" />
+                </div>
+              </div>
+              
+              {/* Hover CTA Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#0a0a0c]/40 backdrop-blur-[2px]">
+                <div className="px-8 py-4 rounded-full bg-primary text-white font-bold shadow-2xl flex items-center gap-3 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 active:scale-95">
+                  <ArrowRight className="w-6 h-6" />
+                  Enter Interactive Dashboard
+                </div>
+              </div>
             </div>
           </div>
         </div>
