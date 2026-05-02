@@ -18,7 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY}
         auth={{ mode: isInIframe ? 'headless' : 'managed' }}
       >
-        <BlinkUIProvider theme="linear" darkMode="dark">
+        <BlinkUIProvider theme="glass" darkMode="dark">
           <Toaster />
           <div className="flex w-full flex-1 flex-col min-h-0">
             <App />

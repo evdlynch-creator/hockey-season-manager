@@ -12,6 +12,8 @@ import { usePlayers } from '@/hooks/usePlayers'
 import { useTeamPreferences } from '@/hooks/usePreferences'
 import { CONCEPTS } from '@/types'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem, AnimatedCounter } from '@/components/Interactivity'
 
 // Analytics Components
 import { GoalsTrendChart } from '@/components/analytics/GoalsTrendChart'
@@ -225,9 +227,14 @@ export default function TrendsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="show"
+      className="p-4 md:p-6 max-w-6xl mx-auto space-y-6"
+    >
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <motion.div variants={staggerItem} className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Season Trends</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
@@ -267,108 +274,132 @@ export default function TrendsPage() {
             )
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <Separator />
+      <motion.div variants={staggerItem}>
+        <Separator />
+      </motion.div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-3.5 h-3.5 text-primary" />
-              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Record</p>
-            </div>
-            <p className="text-2xl font-bold tabular-nums">{wins}-{losses}-{ties}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-3.5 h-3.5 text-primary" />
-              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Goals / Game</p>
-            </div>
-            <p className="text-2xl font-bold tabular-nums">
-              {avgGoalsFor.toFixed(1)}
-              <span className="text-muted-foreground text-sm"> – </span>
-              {avgGoalsAgainst.toFixed(1)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Strongest</p>
-            </div>
-            <p className="text-sm font-semibold truncate">{strongest ?? '—'}</p>
-            {strongest && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {(analytics.byConcept[strongest].latestAvg ?? 0).toFixed(1)}/5
+        <motion.div variants={staggerItem}>
+          <Card className="border-border/50 rounded-[2rem]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-3.5 h-3.5 text-primary" />
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Record</p>
+              </div>
+              <p className="text-2xl font-bold tabular-nums">
+                <AnimatedCounter value={wins} />-<AnimatedCounter value={losses} />-<AnimatedCounter value={ties} />
               </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 rounded-[2rem]">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-3.5 h-3.5 text-red-400" />
-              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Needs Work</p>
-            </div>
-            <p className="text-sm font-semibold truncate">{weakest ?? '—'}</p>
-            {weakest && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {(analytics.byConcept[weakest].latestAvg ?? 0).toFixed(1)}/5
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="border-border/50 rounded-[2rem]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Goals / Game</p>
+              </div>
+              <p className="text-2xl font-bold tabular-nums">
+                <AnimatedCounter value={avgGoalsFor} decimals={1} />
+                <span className="text-muted-foreground text-sm"> – </span>
+                <AnimatedCounter value={avgGoalsAgainst} decimals={1} />
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="border-border/50 rounded-[2rem]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Strongest</p>
+              </div>
+              <p className="text-sm font-semibold truncate">{strongest ?? '—'}</p>
+              {strongest && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  <AnimatedCounter value={analytics.byConcept[strongest].latestAvg ?? 0} decimals={1} />/5
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="border-border/50 rounded-[2rem]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-3.5 h-3.5 text-red-400" />
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Needs Work</p>
+              </div>
+              <p className="text-sm font-semibold truncate">{weakest ?? '—'}</p>
+              {weakest && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  <AnimatedCounter value={analytics.byConcept[weakest].latestAvg ?? 0} decimals={1} />/5
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Row 1: Goals area chart + Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <GoalsTrendChart data={goalsData} />
-        <ConceptRadarChart data={radarData} />
+        <motion.div variants={staggerItem} className="lg:col-span-2">
+          <GoalsTrendChart data={goalsData} />
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <ConceptRadarChart data={radarData} />
+        </motion.div>
       </div>
 
       {/* Row 2: Cumulative record + Attendance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={cn(teamPrefs.enableAttendance ? "lg:col-span-2" : "lg:col-span-3")}>
+        <motion.div variants={staggerItem} className={cn(teamPrefs.enableAttendance ? "lg:col-span-2" : "lg:col-span-3")}>
           <CumulativeRecordChart data={recordData} />
-        </div>
-        {teamPrefs.enableAttendance && <PlayerAttendanceList players={players} />}
+        </motion.div>
+        {teamPrefs.enableAttendance && (
+          <motion.div variants={staggerItem}>
+            <PlayerAttendanceList players={players} />
+          </motion.div>
+        )}
       </div>
 
       {/* Row 3: Heatmap */}
-      <ConceptHeatmap rows={heatmapRows} />
+      <motion.div variants={staggerItem}>
+        <ConceptHeatmap rows={heatmapRows} />
+      </motion.div>
 
       {/* Tracked Insights */}
-      <Card className="border-border bg-card rounded-[2rem]">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Lightbulb className="w-4 h-4 text-primary" />
-            <CardTitle className="text-base">Tracked Insights</CardTitle>
-          </div>
-          <CardDescription className="text-xs">
-            Plain-English signals from your ratings and results. Updates as more games are reviewed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {insights.length === 0 ? (
-            <div className="py-8 text-center">
-              <Lightbulb className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Insights appear here once you've reviewed a few games in this window.
-              </p>
+      <motion.div variants={staggerItem}>
+        <Card className="border-border bg-card rounded-[2rem]">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">Tracked Insights</CardTitle>
             </div>
-          ) : (
-            <InsightsList insights={insights} />
-          )}
-        </CardContent>
-      </Card>
+            <CardDescription className="text-xs">
+              Plain-English signals from your ratings and results. Updates as more games are reviewed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {insights.length === 0 ? (
+              <div className="py-8 text-center">
+                <Lightbulb className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Insights appear here once you've reviewed a few games in this window.
+                </p>
+              </div>
+            ) : (
+              <InsightsList insights={insights} />
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Hide Badge unused import warning */}
       <div className="hidden"><Badge>_</Badge></div>
-    </div>
+    </motion.div>
   )
 }

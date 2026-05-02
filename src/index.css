@@ -287,32 +287,6 @@
   @apply translate-x-full;
 }
 
-/* ── Force Pill Shaping & Large Rounding ────────────────────────────────── */
-
-@layer components {
-  .rounded-full {
-    border-radius: 9999px !important;
-  }
-  
-  .rounded-3xl, 
-  .rounded-\[2rem\] {
-    border-radius: 2rem !important;
-  }
-
-  .rounded-2xl {
-    border-radius: 1.5rem !important;
-  }
-
-  /* Override internal @blinkdotnew/ui components if they use md/lg */
-  .rounded-md {
-    border-radius: 1.25rem !important;
-  }
-
-  .rounded-lg {
-    border-radius: 1.5rem !important;
-  }
-}
-
 /* ── Reduced motion ───────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,

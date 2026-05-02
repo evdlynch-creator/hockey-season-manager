@@ -5,6 +5,8 @@ import { Flame, ChevronRight, Swords, Trophy, ShieldCheck, ShieldAlert, Sparkles
 import { format, parseISO } from 'date-fns'
 import type { Game, GameReview } from '@/types'
 import { CONCEPTS } from '@/types'
+import { motion } from 'framer-motion'
+import { staggerItem } from './Interactivity'
 
 const CONCEPT_FIELD_MAP: Record<string, keyof GameReview> = {
   'Breakouts': 'breakoutsRating',
@@ -223,15 +225,18 @@ export function HypeCard({
               const cfg = ICON_MAP[p.icon]
               const Icon = cfg.Comp
               return (
-                <li
+                <motion.li
                   key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
                   className={`flex items-start gap-3 rounded-full border ${cfg.ring} ${cfg.bg} p-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-md cursor-default`}
                 >
                   <div className={`w-9 h-9 rounded-full ${cfg.bg} border ${cfg.ring} flex items-center justify-center shrink-0 shadow-inner`}>
                     <Icon className={`w-4 h-4 ${cfg.color}`} />
                   </div>
                   <p className="text-sm text-foreground leading-snug pt-0.5">{p.text}</p>
-                </li>
+                </motion.li>
               )
             })}
           </ul>
