@@ -1,6 +1,12 @@
 import { motion } from 'framer-motion'
 import { Target, ClipboardList, Swords } from 'lucide-react'
 
+function PulseNode({ className }: { className?: string }) {
+  return (
+    <div className={`absolute w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(56,189,248,0.8)] animate-pulse ${className}`} />
+  )
+}
+
 export function OverviewView() {
   return (
     <motion.div 
@@ -33,6 +39,9 @@ export function OverviewView() {
 
       {/* Mock Content: Main Performance Graph Block */}
       <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.03] flex-1 relative overflow-hidden group/graph">
+        <PulseNode className="top-12 left-1/2" />
+        <PulseNode className="bottom-1/3 left-1/4" style={{ animationDelay: '1s' }} />
+        
         <div className="absolute top-0 right-0 p-8 text-[10px] text-zinc-500 font-bold uppercase tracking-widest flex gap-4">
           <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Progress</span>
           <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-white/10" /> Baseline</span>
@@ -47,13 +56,15 @@ export function OverviewView() {
           {[40, 70, 45, 90, 65, 80, 55, 85, 45, 75, 60, 95].map((h, i) => (
             <div 
               key={i} 
-              className="flex-1 bg-primary/20 rounded-t-lg transition-all duration-700 group-hover/graph:bg-primary group-hover/graph:translate-y-[-4px]"
+              className="flex-1 bg-primary/20 rounded-t-lg transition-all duration-700 group-hover/graph:bg-primary group-hover/graph:translate-y-[-4px] relative"
               style={{ 
                 height: `${h}%`,
                 opacity: 0.3 + (h / 100) * 0.7,
                 transitionDelay: `${i * 50}ms`
               }}
-            />
+            >
+              {i === 3 && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-ping" />}
+            </div>
           ))}
         </div>
       </div>

@@ -256,10 +256,10 @@
   100% { transform: translate(0, 0) scale(1); filter: saturate(1) hue-rotate(0deg); }
 }
 
-.animate-float-1 { animation: float-random-1 40s linear infinite; }
-.animate-float-2 { animation: float-random-2 50s linear infinite; }
-.animate-float-3 { animation: float-random-3 45s linear infinite; }
-.animate-float-4 { animation: float-random-4 60s linear infinite; }
+.animate-float-1 { animation: float-random-1 80s linear infinite; }
+.animate-float-2 { animation: float-random-2 100s linear infinite; }
+.animate-float-3 { animation: float-random-3 90s linear infinite; }
+.animate-float-4 { animation: float-random-4 120s linear infinite; }
 
 @keyframes blob-pulse {
   0%, 100% { transform: scale(1); opacity: 0.5; filter: blur(150px); }
@@ -267,7 +267,7 @@
 }
 
 .animate-blob-pulse {
-  animation: blob-pulse 12s ease-in-out infinite;
+  animation: blob-pulse 24s ease-in-out infinite;
 }
 
 /* Interactive Elements */
