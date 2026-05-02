@@ -19,6 +19,7 @@ import PracticesPage from './pages/PracticesPage'
 import PracticeDetailPage from './pages/PracticeDetailPage'
 import GamesPage from './pages/GamesPage'
 import GameDetailPage from './pages/GameDetailPage'
+import BenchModePage from './pages/BenchModePage'
 import CalendarPage from './pages/CalendarPage'
 import ConceptsPage from './pages/ConceptsPage'
 import TrendsPage from './pages/TrendsPage'
@@ -78,6 +79,12 @@ const gameDetailRoute = createRoute({
   component: GameDetailPage,
 })
 
+const benchModeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/games/$gameId/bench',
+  component: BenchModePage,
+})
+
 const opponentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/opponents',
@@ -116,6 +123,7 @@ const routeTree = rootRoute.addChildren([
   practiceDetailRoute,
   gamesRoute,
   gameDetailRoute,
+  benchModeRoute,
   opponentsRoute,
   conceptsRoute,
   trendsRoute,

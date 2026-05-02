@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from '@tanstack/react-router'
+import { useParams, Link, useNavigate } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import {
@@ -53,6 +53,7 @@ function RatingRow({ label, value, onChange }: { label: string; value?: number; 
 
 export default function GameDetailPage() {
   const { gameId } = useParams({ from: '/games/$gameId' })
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const { data: game, isLoading: gameLoading } = useGame(gameId)
@@ -193,9 +194,20 @@ export default function GameDetailPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Games
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Games
+        </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
+          onClick={() => navigate({ to: '/games/$gameId/bench', params: { gameId } })}
+        >
+          <Swords className="w-4 h-4" />
+          Enter Bench Mode
+        </Button>
+      </div>
 
       <CoachsMic onApplyNote={handleApplyMicNote} gameId={gameId} />
 
