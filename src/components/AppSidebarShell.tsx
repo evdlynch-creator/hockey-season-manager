@@ -33,6 +33,7 @@ import {
   Users,
   BarChart3,
   TrendingUp,
+  Activity,
   Settings,
   UserCog,
   LogOut,

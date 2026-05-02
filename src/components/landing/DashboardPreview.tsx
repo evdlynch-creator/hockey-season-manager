@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import { 
   TrendingUp, 
   BarChart3, 
+  Activity, 
   Layers, 
   Target, 
   ClipboardList, 
@@ -97,7 +98,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
                   <span className={`text-[10px] font-bold ${activeView === 'trends' ? 'text-primary' : 'text-zinc-500'}`}>Trends</span>
                 </div>
                 <div className={`h-9 w-full rounded-full flex items-center px-3 gap-2 transition-all duration-300 ${activeView === 'concepts' ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]' : 'hover:bg-white/5'}`}>
-                  <Layers className={`w-3.5 h-3.5 ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`} />
+                  <Activity className={`w-3.5 h-3.5 ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'concepts' ? 'text-primary' : 'text-zinc-500'}`}>Concepts</span>
                 </div>
                 {[
