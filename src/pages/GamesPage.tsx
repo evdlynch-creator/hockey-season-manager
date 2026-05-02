@@ -51,6 +51,7 @@ const createSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   location: z.enum(['home', 'away']),
   status: z.enum(['scheduled', 'completed', 'reviewed']),
+  gameType: z.enum(['league', 'tournament', 'exhibition']),
 })
 type CreateForm = z.infer<typeof createSchema>
 
@@ -114,23 +115,26 @@ function CreateGameDialog({
   open,
   onClose,
   seasonId,
-}: { open: boolean; onClose: () => void; seasonId: string }) {
+  onSetType,
+}: { open: boolean; onClose: () => void; seasonId: string; onSetType: (id: string, type: import('@/hooks/usePreferences').GameType) => void }) {
   const queryClient = useQueryClient()
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CreateForm>({
     resolver: zodResolver(createSchema),
-    defaultValues: { opponent: '', date: '', location: 'home', status: 'scheduled' },
+    defaultValues: { opponent: '', date: '', location: 'home', status: 'scheduled', gameType: 'league' },
   })
 
   const locationVal = watch('location')
   const statusVal = watch('status')
+  const gameTypeVal = watch('gameType')
 
   const mutation = useMutation({
     mutationFn: async (data: CreateForm) => {
       const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
+      const id = crypto.randomUUID()
       await blink.db.games.create({
-        id: crypto.randomUUID(),
+        id,
         seasonId,
         userId: user.id,
         opponent: data.opponent,
@@ -139,6 +143,8 @@ function CreateGameDialog({
         status: data.status,
         createdAt: new Date().toISOString(),
       })
+      onSetType(id, data.gameType)
+      return id
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] })
@@ -165,6 +171,17 @@ function CreateGameDialog({
             <FieldLabel>Date</FieldLabel>
             <Input type="date" {...register('date')} />
             {errors.date && <FieldError>{errors.date.message}</FieldError>}
+          </Field>
+          <Field>
+            <FieldLabel>Game Type</FieldLabel>
+            <Select value={gameTypeVal} onValueChange={v => setValue('gameType', v as CreateForm['gameType'])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="league">League</SelectItem>
+                <SelectItem value="tournament">Tournament</SelectItem>
+                <SelectItem value="exhibition">Exhibition</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field>
@@ -210,7 +227,7 @@ export default function GamesPage() {
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
   const { data: rawGames = [], isLoading } = useGames()
-  const { types: gameTypes, getType } = useGameTypes(teamId)
+  const { types: gameTypes, getType, setType } = useGameTypes(teamId)
   const { mode } = useViewMode(teamId)
 
   const seasonId = teamData?.season?.id ?? ''
@@ -282,7 +299,7 @@ export default function GamesPage() {
         ))}
       </Tabs>
 
-      <CreateGameDialog open={createOpen} onClose={() => setCreateOpen(false)} seasonId={seasonId} />
+      <CreateGameDialog open={createOpen} onClose={() => setCreateOpen(false)} seasonId={seasonId} onSetType={setType} />
     </div>
   )
 }
