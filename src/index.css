@@ -157,15 +157,19 @@
   animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.animate-shimmer {
+.text-shimmer {
   background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
+    to right,
+    #ffffff 20%,
+    hsl(var(--primary)) 40%,
+    hsl(var(--primary)) 60%,
+    #ffffff 80%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer-text 4s linear infinite;
 }
 
 @keyframes fadeIn {
@@ -179,9 +183,10 @@
   }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes shimmer-text {
+  to {
+    background-position: 200% center;
+  }
 }
 
 /* ── Reduced motion ───────────────────────────────────────────────────────── */

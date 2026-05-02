@@ -58,7 +58,7 @@ export default function LandingPage() {
           
           <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
             Master Your Season with <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white bg-[length:200%_auto] animate-shimmer">
+            <span className="text-shimmer">
               Intelligence and Precision
             </span>
           </h1>
@@ -88,12 +88,15 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-20 relative animate-fade-in [animation-delay:800ms]">
-            <div className="absolute -inset-1 bg-gradient-to-t from-primary/20 to-transparent blur-2xl opacity-20" />
-            <div className="relative rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-2 shadow-2xl shadow-black/50">
+            <div className="absolute -inset-1 bg-gradient-to-t from-primary/30 to-transparent blur-3xl opacity-30" />
+            <div className="relative rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/50 overflow-hidden">
               <img 
                 src={heroUrl} 
-                alt="Blue Line IQ Dashboard Preview" 
-                className="rounded-xl w-full h-auto object-cover border border-white/5"
+                alt="Blue Line IQ Dashboard" 
+                className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1515703407324-5f753eed23cca?q=80&w=2000&auto=format&fit=crop'
+                }}
               />
             </div>
           </div>
