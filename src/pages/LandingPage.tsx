@@ -23,7 +23,22 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
+      {/* ── Background Floating Glows ────────────────────── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[5%] left-[10%] w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full animate-float-1" />
+        <div className="absolute top-[35%] right-[5%] w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-float-2" />
+        <div className="absolute bottom-[20%] left-[25%] w-[700px] h-[700px] bg-primary/10 blur-[140px] rounded-full animate-float-3" />
+        <div className="absolute top-[60%] left-[-5%] w-[400px] h-[400px] bg-blue-500/5 blur-[80px] rounded-full animate-float-1" style={{ animationDelay: '-5s' }} />
+        <div className="absolute top-[15%] right-[25%] w-[550px] h-[550px] bg-primary/10 blur-[110px] rounded-full animate-float-2" style={{ animationDelay: '-12s' }} />
+        <div className="absolute bottom-[5%] right-[15%] w-[650px] h-[650px] bg-primary/5 blur-[130px] rounded-full animate-float-3" style={{ animationDelay: '-8s' }} />
+        
+        {/* Additional Small Random Sparkles */}
+        <div className="absolute top-[20%] left-[40%] w-2 h-2 bg-primary blur-md rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-[60%] right-[30%] w-3 h-3 bg-blue-400 blur-md rounded-full animate-pulse" style={{ animationDelay: '2.5s' }} />
+        <div className="absolute bottom-[40%] left-[15%] w-2 h-2 bg-primary blur-sm rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
       {/* ── Navigation ──────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -50,8 +65,6 @@ export default function LandingPage() {
 
       {/* ── Hero Section ────────────────────────────────── */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        {/* Background glow effects - Simplified to prevent glitching */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/10 blur-[120px] rounded-full -z-10 opacity-30" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic">
@@ -95,7 +108,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features Grid ──────────────────────────────── */}
-      <section className="py-24 bg-[#08080a] relative">
+      <section className="py-24 bg-[#08080a] relative overflow-hidden">
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-float-3 -z-10" />
+        <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-blue-500/5 blur-[80px] rounded-full animate-float-1 -z-10" />
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-5xl mb-4 heading-premium">Powerful Tools for the Rink</h2>
@@ -140,10 +156,13 @@ export default function LandingPage() {
       {/* ── CTA Section ────────────────────────────────── */}
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 -z-10" />
+        <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full animate-float-1 -z-10 opacity-50" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-3 -z-10 opacity-40" />
+        
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative">
+          <div className="rounded-3xl border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[80px] rounded-full animate-float-2 -z-10" />
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
-            <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
             
             <h2 className="text-3xl lg:text-5xl mb-6 heading-premium">Ready to Level Up Your Coaching?</h2>
             <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto">

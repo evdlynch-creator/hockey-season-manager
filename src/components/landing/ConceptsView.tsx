@@ -51,16 +51,21 @@ export function ConceptsView() {
       </div>
 
       <div className="grid grid-cols-2 gap-8 flex-1">
-        <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col group/heatmap">
+        <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col group/heatmap overflow-hidden relative">
+          <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-float-2 opacity-30 -z-10" />
           <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Offensive Zone Efficiency</div>
           <div className="flex-1 grid grid-cols-5 grid-rows-3 gap-1.5">
             {Array.from({ length: 15 }).map((_, i) => {
               const intensity = 0.3 + Math.random() * 0.7;
+              const delay = Math.random() * 5;
+              const duration = 2 + Math.random() * 3;
               return (
-                <div 
+                <motion.div 
                   key={i} 
+                  initial={{ opacity: intensity }}
+                  animate={{ opacity: [intensity, intensity * 0.5, intensity] }}
+                  transition={{ duration, repeat: Infinity, delay, ease: "easeInOut" }}
                   className="rounded bg-primary/10 border border-primary/5 transition-all duration-500 group-hover/heatmap:bg-primary/30"
-                  style={{ opacity: intensity }}
                 />
               );
             })}
