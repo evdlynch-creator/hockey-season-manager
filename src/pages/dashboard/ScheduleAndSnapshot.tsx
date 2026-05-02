@@ -83,7 +83,7 @@ export const ScheduleAndSnapshot = ({
         </Card>
       </motion.div>
 
-      <motion.div variants={staggerItem}>
+      <motion.div variants={staggerItem} id="tour-snapshot">
         <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30 h-full">
           <CardHeader>
             <div className="flex items-start justify-between gap-2">

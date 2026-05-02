@@ -59,6 +59,7 @@ interface NavItemDef {
   to: string
   icon: ReactNode
   label: string
+  id?: string
 }
 
 function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) {
@@ -68,6 +69,7 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
   const link = (
     <Link
       to={item.to}
+      id={item.id}
       className={cn(
         'flex items-center gap-2.5 text-sm transition-all duration-300 cursor-pointer',
         collapsed ? 'justify-center w-10 h-10 mx-auto rounded-full' : 'px-4 py-2.5 w-full rounded-full',
@@ -118,16 +120,16 @@ export function AppSidebarShell() {
   const currentTeam = teamData?.team
 
   const navItems = [
-    { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard' },
-    { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar' },
-    { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices' },
-    { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games' },
+    { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', id: 'tour-dashboard' },
+    { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar', id: 'tour-calendar' },
+    { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices', id: 'tour-practice' },
+    { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games', id: 'tour-games' },
     ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
     ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
-    { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents' },
+    { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents', id: 'tour-opponents' },
     { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics' },
-    { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts' },
-    { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends' },
+    { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
+    { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
     { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
     { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
   ]

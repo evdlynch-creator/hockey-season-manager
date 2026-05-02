@@ -5,6 +5,8 @@ import {
 } from '@blinkdotnew/ui'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { isDemoMode } from './hooks/useDemoData'
+import { useEffect } from 'react'
+import { startTour } from './tour'
 import {
   createRouter,
   createRoute,
@@ -149,6 +151,13 @@ declare module '@tanstack/react-router' {
 export default function App() {
   const { user, isLoading } = useAuth()
   const demoActive = isDemoMode()
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTour()
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   if (isLoading && !demoActive) return <LoadingOverlay show />
 
