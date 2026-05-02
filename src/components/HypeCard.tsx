@@ -191,10 +191,10 @@ export function HypeCard({
                 <Flame className="w-4 h-4 text-primary" />
               </div>
               <span className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-primary">
+                <span className="text-[10px] uppercase font-black tracking-widest text-primary font-avega italic text-shimmer">
                   Coaching points
                 </span>
-                <span className="text-base font-bold tracking-tight">{hype.headline}</span>
+                <span className="text-base font-bold tracking-tight font-avega italic text-shimmer">{hype.headline}</span>
               </span>
             </CardTitle>
             <CardDescription className="text-xs mt-2">{hype.sub}</CardDescription>

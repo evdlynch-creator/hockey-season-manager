@@ -39,7 +39,7 @@ export function OverviewView() {
         </div>
         <div className="flex items-center justify-between mb-10">
           <div className="space-y-2">
-            <div className="text-lg font-bold text-white italic">Seasonal Concept Progression</div>
+            <div className="text-lg heading-premium">Seasonal Concept Progression</div>
             <div className="text-xs text-zinc-500 tracking-tight">Tracking team understanding across all core segments</div>
           </div>
         </div>

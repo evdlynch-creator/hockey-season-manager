@@ -125,6 +125,10 @@
   font-family: 'Avega', sans-serif;
 }
 
+.heading-premium {
+  @apply font-avega italic text-shimmer font-black;
+}
+
 /* Dark-mode overrides — same palette since the app is always dark */
 :root.dark,
 .theme-linear.dark,

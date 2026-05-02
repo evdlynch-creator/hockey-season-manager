@@ -13,7 +13,7 @@ export function ConceptsView() {
     >
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-2xl font-black italic uppercase text-white tracking-tighter">Tactical Intelligence</h3>
+          <h3 className="text-2xl tracking-tighter heading-premium">Tactical Intelligence</h3>
           <p className="text-xs text-zinc-500 tracking-tight">Concept progression & ice segment efficiency</p>
         </div>
         <div className="h-10 w-48 bg-white/5 rounded-full border border-white/10 flex items-center px-4 gap-2">

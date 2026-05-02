@@ -13,7 +13,7 @@ export function TrendsView() {
     >
       <div className="flex items-center justify-between mb-2">
         <div className="space-y-1">
-          <h3 className="text-2xl font-black italic uppercase text-white tracking-tighter">Goal Trends</h3>
+          <h3 className="text-2xl tracking-tighter heading-premium">Goal Trends</h3>
           <p className="text-xs text-zinc-500">Offensive vs Defensive performance delta</p>
         </div>
         <div className="flex gap-2">

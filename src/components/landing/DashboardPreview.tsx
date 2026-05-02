@@ -61,8 +61,8 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
                     e.stopPropagation();
                     setActiveView(view);
                   }}
-                  className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                    activeView === view ? 'text-primary' : 'text-zinc-600 hover:text-zinc-400'
+                  className={`text-[10px] uppercase tracking-widest transition-colors ${
+                    activeView === view ? 'text-primary heading-premium' : 'text-zinc-600 hover:text-zinc-400'
                   }`}
                 >
                   {view}
@@ -81,7 +81,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             </div>
             <div className="space-y-6">
               <div className="space-y-3">
-                <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest px-2">Main Menu</div>
+                <div className="text-[10px] px-2 heading-premium">Main Menu</div>
                 <div className={`h-9 w-full rounded-lg flex items-center px-3 gap-2 transition-colors ${activeView === 'overview' ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'}`}>
                   <TrendingUp className={`w-3.5 h-3.5 ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`} />
                   <span className={`text-[10px] font-bold ${activeView === 'overview' ? 'text-primary' : 'text-zinc-500'}`}>Overview</span>

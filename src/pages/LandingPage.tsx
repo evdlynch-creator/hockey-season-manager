@@ -54,14 +54,14 @@ export default function LandingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/10 blur-[120px] rounded-full -z-10 opacity-30" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic">
             <Trophy className="w-3 h-3" />
             Built for High-Performance Coaching
           </div>
           
           <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
             Master Your Season with <br />
-            <span className="text-shimmer font-avega">
+            <span className="heading-premium">
               Intelligence and Precision
             </span>
           </h1>
@@ -98,7 +98,7 @@ export default function LandingPage() {
       <section className="py-24 bg-[#08080a] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4">Powerful Tools for the Rink</h2>
+            <h2 className="text-3xl lg:text-5xl mb-4 heading-premium">Powerful Tools for the Rink</h2>
             <p className="text-zinc-400 max-w-xl mx-auto">Everything you need to manage your team and drive player development.</p>
           </div>
 
@@ -145,7 +145,7 @@ export default function LandingPage() {
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
             <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
             
-            <h2 className="text-3xl lg:text-5xl font-bold mb-6 italic">Ready to Level Up Your Coaching?</h2>
+            <h2 className="text-3xl lg:text-5xl mb-6 heading-premium">Ready to Level Up Your Coaching?</h2>
             <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto">
               Join hundreds of coaches using Blue Line IQ to streamline their season and maximize player potential.
             </p>
