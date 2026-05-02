@@ -44,26 +44,28 @@ export function ViewModeSwitcher({ collapsed = false }: { collapsed?: boolean })
   }
 
   return (
-    <div className="space-y-1.5">
-      <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
-        View
+    <div className="space-y-2 px-1">
+      <p className="px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+        Season Filter
       </p>
       <Tabs value={mode} onValueChange={v => setMode(v as ViewMode)} className="w-full">
-        <TabsList className="grid grid-cols-4 h-8 w-full bg-secondary/40 border border-border p-0.5">
+        <TabsList className="grid grid-cols-4 h-9 w-full bg-secondary/50 border border-border/50 p-1 rounded-full">
           {ITEMS.map(({ value, short, icon: Icon, label }) => (
             <Tooltip key={value}>
               <TooltipTrigger asChild>
                 <TabsTrigger
                   value={value}
                   className={cn(
-                    'h-7 px-1 text-[10px] font-semibold gap-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
+                    'h-7 rounded-full text-[10px] font-bold gap-1.5 transition-all duration-300',
+                    'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20',
+                    'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="h-3.5 w-3.5" />
                   <span className="hidden xl:inline">{short}</span>
                 </TabsTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{label}</TooltipContent>
+              <TooltipContent side="bottom" className="text-[10px] font-bold uppercase tracking-wider">{label}</TooltipContent>
             </Tooltip>
           ))}
         </TabsList>

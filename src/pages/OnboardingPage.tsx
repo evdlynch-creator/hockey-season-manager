@@ -331,7 +331,7 @@ export default function OnboardingPage() {
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
             <Rocket className="w-6 h-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl md:text-3xl heading-premium">
+          <CardTitle className="text-2xl md:text-3xl">
             {hasTeam ? `Start a new season for ${existingTeam?.team?.name}` : 'Set up your season'}
           </CardTitle>
           <CardDescription className="text-sm md:text-base">
