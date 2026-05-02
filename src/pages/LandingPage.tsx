@@ -108,10 +108,10 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]">
             <Button 
               size="lg"
-              className="w-full sm:w-auto h-14 px-8 bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
+              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
               onClick={handleLogin}
             >
-              <span className="text-lg font-black font-avega italic uppercase tracking-tighter">Create Free Account</span>
+              Create Free Account
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
@@ -120,8 +120,8 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center group/demo"
               onClick={enterDemo}
             >
-              <span className="text-lg font-black font-avega italic uppercase tracking-tighter leading-none">Explore the Pulse</span>
-              <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-zinc-500 group-hover/demo:text-primary/70 transition-colors mt-1">
+              <span className="text-lg font-bold">Explore the Pulse</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">
                 Interactive Demo
               </span>
             </Button>
