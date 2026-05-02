@@ -231,51 +231,58 @@
 
 /* Shepherd.js Custom Theme */
 .shepherd-element.custom-shepherd-theme {
-  @apply rounded-xl border border-white/10 shadow-2xl shadow-black overflow-hidden bg-card;
-  max-width: 320px;
+  @apply rounded-[2rem] border border-white/10 shadow-2xl shadow-black overflow-hidden bg-card/95 backdrop-blur-xl;
+  max-width: 360px;
+  animation: fadeIn 0.4s ease-out;
+  box-shadow: 0 0 40px -10px hsla(var(--primary) / 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .custom-shepherd-theme .shepherd-header {
-  background-color: #042C53;
-  padding: 1rem;
+  @apply bg-sidebar/80 border-b border-white/5;
+  padding: 1.5rem 1.5rem 1rem;
 }
 
 .custom-shepherd-theme .shepherd-title {
-  color: #E6F1FB;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  @apply font-avega italic text-primary font-black tracking-tight;
+  font-size: 1.1rem;
+  text-transform: none;
 }
 
 .custom-shepherd-theme .shepherd-text {
-  padding: 1rem;
+  @apply text-muted-foreground leading-relaxed;
+  padding: 1rem 1.5rem 1.5rem;
   font-size: 13px;
-  line-height: 1.6;
-  color: hsl(var(--muted-foreground));
+  font-family: var(--font-sans);
 }
 
 .custom-shepherd-theme .shepherd-footer {
-  padding: 0.5rem 1rem 1rem;
+  padding: 0 1.5rem 1.5rem;
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
 }
 
 .custom-shepherd-theme .shepherd-button {
-  @apply rounded-full px-4 py-1.5 text-xs transition-all duration-200;
+  @apply rounded-full px-6 py-2 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 active:scale-95;
 }
 
 .custom-shepherd-theme .shepherd-button-secondary {
-  @apply hover:bg-white/5;
+  @apply text-muted-foreground hover:text-foreground hover:bg-white/5;
 }
 
 .custom-shepherd-theme .shepherd-button-primary {
-  @apply shadow-lg shadow-blue-900/20 active:scale-95;
+  @apply bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110;
 }
 
 .shepherd-modal-overlay-container {
-  opacity: 0.6;
+  @apply backdrop-blur-sm;
+  opacity: 0.4;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.shepherd-arrow:before {
+  @apply bg-card;
 }
 
 @keyframes float-random-1 {

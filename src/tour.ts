@@ -17,19 +17,19 @@ export function startTour() {
     {
       text: 'Skip tour',
       action: tour.cancel,
-      classes: 'shepherd-button-secondary text-gray-500 hover:text-gray-700 font-medium'
+      classes: 'shepherd-button-secondary'
     },
     {
       text: 'Next',
       action: tour.next,
-      classes: 'shepherd-button-primary bg-[#042C53] text-white hover:bg-[#063b6b]'
+      classes: 'shepherd-button-primary'
     }
   ]
 
   tour.addStep({
     id: 'dashboard',
     title: 'Dashboard',
-    text: 'Your command center. See your upcoming games, current record, and how your team is trending across recent games, all in one place.',
+    text: 'Your coaching command center. See upcoming games, current record, and how your team is trending across recent games, all in one high-velocity view.',
     attachTo: {
       element: '#tour-dashboard',
       on: 'right'
@@ -117,7 +117,7 @@ export function startTour() {
         action: () => {
           window.location.href = '/signup'
         },
-        classes: 'shepherd-button-primary bg-[#042C53] text-white hover:bg-[#063b6b]'
+        classes: 'shepherd-button-primary'
       }
     ]
   })
