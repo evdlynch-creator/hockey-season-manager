@@ -153,9 +153,6 @@
 }
 
 /* ── Animations ───────────────────────────────────────────────────────────── */
-.animate-fade-in {
-  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
 
 .text-shimmer {
   background: linear-gradient(

@@ -48,9 +48,8 @@ export default function LandingPage() {
 
       {/* ── Hero Section ────────────────────────────────── */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        {/* Background glow effects */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/20 blur-[120px] rounded-full -z-10 opacity-30" />
-        <div className="absolute top-[20%] right-0 w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full -z-10" />
+        {/* Background glow effects - Simplified to prevent glitching */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/10 blur-[120px] rounded-full -z-10 opacity-30" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in">
@@ -85,54 +84,63 @@ export default function LandingPage() {
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
               onClick={enterDemo}
             >
-              Enter Interactive Demo
+              Explore Interactive Demo
             </Button>
           </div>
 
-          <div className="mt-20 relative">
-            <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-20" />
+          <div className="mt-20 relative group">
+            {/* Background Glow for Preview */}
+            <div className="absolute -inset-1 bg-gradient-to-t from-primary/20 to-transparent blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
             
-            <div className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden group cursor-pointer" onClick={enterDemo}>
-              {/* Browser-like Header */}
-              <div className="h-10 border-b border-white/5 bg-white/[0.03] flex items-center px-4 gap-2 shrink-0">
+            {/* Dashboard Preview Container */}
+            <div 
+              className="relative rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20 cursor-pointer"
+              onClick={enterDemo}
+            >
+              {/* Browser Shell Mock */}
+              <div className="h-11 border-b border-white/5 bg-white/[0.03] flex items-center px-4 gap-2 shrink-0">
                 <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
                 </div>
-                <div className="ml-4 flex-1 h-5 bg-white/5 rounded-md max-w-[200px]" />
+                <div className="ml-4 h-6 w-48 bg-white/5 rounded-md" />
               </div>
 
-              <div className="relative aspect-[16/10] bg-zinc-900 flex">
-                {/* Mock Sidebar */}
-                <div className="w-16 md:w-48 border-r border-white/5 bg-white/[0.01] p-3 space-y-3 shrink-0 hidden sm:block">
-                  <div className="h-4 w-full bg-white/10 rounded" />
-                  <div className="space-y-2">
-                    <div className="h-3 w-3/4 bg-white/5 rounded" />
-                    <div className="h-3 w-1/2 bg-white/5 rounded" />
-                    <div className="h-3 w-2/3 bg-white/5 rounded" />
+              <div className="relative aspect-[16/10] bg-zinc-950 flex">
+                {/* Dashboard Sidebar Mock */}
+                <div className="hidden md:flex w-48 border-r border-white/5 bg-white/[0.01] p-4 flex-col gap-6 shrink-0">
+                  <div className="h-4 w-32 bg-white/10 rounded" />
+                  <div className="space-y-4">
+                    <div className="h-3 w-24 bg-white/5 rounded" />
+                    <div className="h-3 w-28 bg-white/5 rounded" />
+                    <div className="h-3 w-20 bg-white/5 rounded" />
+                    <div className="h-3 w-26 bg-white/5 rounded" />
                   </div>
                 </div>
 
-                <div className="flex-1 relative overflow-hidden">
+                <div className="flex-1 relative overflow-hidden bg-zinc-900">
+                  {/* The actual image preview */}
                   <img 
                     src={heroUrl} 
-                    alt="Blue Line IQ Dashboard" 
-                    className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700 ease-in-out"
-                    loading="eager"
+                    alt="Blue Line IQ Dashboard Preview" 
+                    className="absolute inset-0 w-full h-full object-cover object-top opacity-90 transition-all duration-700 group-hover:opacity-100 group-hover:scale-105"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1515703407324-5f753eed23cca?q=80&w=2000&auto=format&fit=crop'
+                      // Professional dashboard-like fallback
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1551288049-bbda38a10ad5?q=80&w=2000&auto=format&fit=crop'
                     }}
                   />
+                  
+                  {/* Subtle dark gradient overlay to blend into bottom */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent opacity-60" />
-                </div>
-              </div>
-              
-              {/* Hover CTA Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#0a0a0c]/40 backdrop-blur-[2px]">
-                <div className="px-8 py-4 rounded-full bg-primary text-white font-bold shadow-2xl flex items-center gap-3 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 active:scale-95">
-                  <ArrowRight className="w-6 h-6" />
-                  Enter Interactive Dashboard
+                  
+                  {/* Centered CTA on hover */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#0a0a0c]/20 backdrop-blur-[1px]">
+                    <div className="px-6 py-3 rounded-full bg-primary text-white font-bold shadow-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      <ArrowRight className="w-5 h-5" />
+                      Open Dashboard Demo
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
