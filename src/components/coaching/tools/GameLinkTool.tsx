@@ -24,10 +24,11 @@ export function GameLinkTool({ open, onClose, onSelect }: GameLinkToolProps) {
   const { data: games = [], isLoading } = useGames()
   const [search, setSearch] = useState('')
 
-  const filtered = games
+  const filtered = [...games]
     .filter(g => 
       g.opponent.toLowerCase().includes(search.toLowerCase())
     )
+    .sort((a, b) => b.date.localeCompare(a.date)) // Latest games first
     .slice(0, 10)
 
   return (
@@ -36,7 +37,7 @@ export function GameLinkTool({ open, onClose, onSelect }: GameLinkToolProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Swords className="w-5 h-5 text-primary" />
-            Link Game for Debrief
+            Link Game Reference
           </DialogTitle>
         </DialogHeader>
 

@@ -76,7 +76,7 @@ function PracticeConceptChips({ practiceId }: { practiceId: string }) {
 }
 
 // ── Practice card ───────────────────────────────────────────────────────────────
-function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplicate: (p: Practice) => void }) {
+function PracticeCard({ practice, index, onDuplicate }: { practice: Practice; index: number; onDuplicate: (p: Practice) => void }) {
   const navigate = useNavigate()
   const dateStr = practice.date
     ? format(new Date(practice.date + 'T00:00:00'), 'MMM d, yyyy')
@@ -92,6 +92,9 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
+              <Badge variant="outline" className="h-4 px-1 text-[8px] border-primary/30 text-primary font-black uppercase rounded-full shrink-0">
+                #{index}
+              </Badge>
               <StatusBadge status={practice.status} />
               <div className="flex items-center gap-3">
                 <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground flex items-center gap-1">
@@ -327,6 +330,10 @@ export default function PracticesPage() {
 
   const filtered = tab === 'all' ? practices : practices.filter(p => p.status === tab)
 
+  // We need the full practices list to determine index consistently
+  const sortedAll = [...practices].sort((a, b) => a.date.localeCompare(b.date))
+  const getIndex = (id: string) => sortedAll.findIndex(p => p.id === id) + 1
+
   const duplicate = useMutation({
     mutationFn: async (practice: Practice) => {
       const user = await blink.auth.me()
@@ -408,7 +415,12 @@ export default function PracticesPage() {
               />
             ) : (
               filtered.map(p => (
-                <PracticeCard key={p.id} practice={p} onDuplicate={p => duplicate.mutate(p)} />
+                <PracticeCard 
+                  key={p.id} 
+                  practice={p} 
+                  index={getIndex(p.id)}
+                  onDuplicate={p => duplicate.mutate(p)} 
+                />
               ))
             )}
           </TabsContent>

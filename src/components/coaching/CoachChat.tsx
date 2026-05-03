@@ -64,7 +64,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
 
   const handleLinkGame = (id: string, opponent: string, date: string, score?: string) => {
     const formattedDate = format(new Date(date + 'T00:00:00'), 'MMM do')
-    sendMessage(`Debriefing game vs ${opponent} (${formattedDate})${score ? ` • Result: ${score}` : ''}`, JSON.stringify({
+    sendMessage(`Referencing game vs ${opponent} (${formattedDate})${score ? ` • Result: ${score}` : ''}`, JSON.stringify({
       type: 'game_link',
       gameId: id,
       opponent,
@@ -248,7 +248,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                               <button 
                                 onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
                                 className={cn(
-                                  "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn",
+                                  "w-full mt-3 flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group/btn",
                                   isOwn 
                                     ? "bg-white/10 border-white/20 hover:bg-white/20" 
                                     : "bg-primary/10 border-primary/20 hover:bg-primary/20"
@@ -259,10 +259,10 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                                     <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-primary text-primary-foreground">#{meta.practiceIndex || '?'}</Badge>
                                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Linked Practice • {meta.practiceDate}</p>
                                   </div>
-                                  <p className="font-bold text-base truncate group-hover/btn:translate-x-1 transition-transform">{meta.practiceTitle}</p>
+                                  <p className="font-bold text-sm truncate group-hover/btn:translate-x-1 transition-transform">{meta.practiceTitle}</p>
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
-                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-primary" />
                                 </div>
                               </button>
                             )
@@ -273,22 +273,22 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                               <button 
                                 onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
                                 className={cn(
-                                  "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn",
+                                  "w-full mt-3 flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group/btn",
                                   isOwn 
                                     ? "bg-white/10 border-white/20 hover:bg-white/20" 
-                                    : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                                    : "bg-primary/10 border-primary/20 hover:bg-primary/20"
                                 )}
                               >
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-amber-500 text-black">VS</Badge>
-                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-amber-500/80">Game Debrief • {meta.gameDate}</p>
+                                    <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-primary text-primary-foreground">GAME</Badge>
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Linked Game • {meta.gameDate}</p>
                                   </div>
-                                  <p className="font-bold text-base truncate group-hover/btn:translate-x-1 transition-transform">vs. {meta.opponent}</p>
-                                  {meta.score && <p className="text-[10px] font-black text-amber-500/60 uppercase mt-1 tracking-widest">Final Score: {meta.score}</p>}
+                                  <p className="font-bold text-sm truncate group-hover/btn:translate-x-1 transition-transform">vs. {meta.opponent}</p>
+                                  {meta.score && <p className="text-[10px] font-black text-primary/60 uppercase mt-1 tracking-widest leading-none">Result: {meta.score}</p>}
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
-                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-amber-500" />
+                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-primary" />
                                 </div>
                               </button>
                             )
@@ -403,7 +403,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
           </button>
           <button 
             onClick={() => setGameToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-amber-500 hover:text-black transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Swords className="w-3 h-3" /> Game Link
           </button>

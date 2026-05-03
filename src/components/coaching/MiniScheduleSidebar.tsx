@@ -11,18 +11,22 @@ export function MiniScheduleSidebar() {
   const { data: games = [] } = useGames()
   const { data: practices = [] } = usePractices()
 
-  const upcomingEvents = useMemo(() => {
+  const { upcomingEvents, practiceIndices } = useMemo(() => {
     const today = startOfDay(new Date())
     
+    const sortedPractices = [...practices].sort((a, b) => a.date.localeCompare(b.date))
+    const indices: Record<string, number> = {}
+    sortedPractices.forEach((p, i) => indices[p.id] = i + 1)
+
     const all = [
       ...games.map(g => ({ ...g, type: 'game' as const })),
-      ...practices.map(p => ({ ...p, type: 'practice' as const }))
+      ...practices.map(p => ({ ...p, type: 'practice' as const, index: indices[p.id] }))
     ]
     .filter(e => !isAfter(today, parseISO(e.date))) // Show today and future
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4)
 
-    return all
+    return { upcomingEvents: all, practiceIndices: indices }
   }, [games, practices])
 
   if (upcomingEvents.length === 0) return null
@@ -66,7 +70,12 @@ export function MiniScheduleSidebar() {
                   </p>
                 </div>
                 <h4 className="text-xs font-bold text-zinc-300 truncate">
-                  {isGame ? `vs. ${(event as any).opponent}` : (event as any).title}
+                  {isGame ? `vs. ${(event as any).opponent}` : (
+                    <span className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="h-3.5 px-1 text-[7px] border-primary/20 text-primary/60 font-black">#{event.index}</Badge>
+                      {(event as any).title}
+                    </span>
+                  )}
                 </h4>
               </div>
               <ArrowRight className="w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all shrink-0 mr-1" />
