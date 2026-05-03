@@ -23,11 +23,32 @@ import { SocialProofStrip } from '../components/landing/SocialProofStrip'
 import { TestimonialSection } from '../components/landing/TestimonialSection'
 import { FAQSection } from '../components/landing/FAQSection'
 import { SeasonImpactStats } from '../components/landing/SeasonImpactStats'
+import { IceParticles } from '../components/landing/IceParticles'
+import { MagneticButton } from '../components/landing/MagneticButton'
+import { HorizontalFeatures } from '../components/landing/HorizontalFeatures'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 
 export default function LandingPage() {
   const { enterDemo } = useDemoMode()
+  
+  // Spotlight effect
+  const mouseX = useSpring(useMotionValue(0), { stiffness: 300, damping: 30 })
+  const mouseY = useSpring(useMotionValue(0), { stiffness: 300, damping: 30 })
+  const heroRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!heroRef.current) return
+      const { left, top } = heroRef.current.getBoundingClientRect()
+      mouseX.set(e.clientX - left)
+      mouseY.set(e.clientY - top)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [mouseX, mouseY])
 
   const handleLogin = () => {
     blink.auth.login(window.location.href)
@@ -35,6 +56,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
+      <IceParticles />
+      
       {/* ── Background Floating Blobs ────────────────────── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         {/* Large pulsing primary blobs with color shifting */}
@@ -91,13 +114,27 @@ export default function LandingPage() {
 
       {/* ── Hero Section ────────────────────────────────── */}
       <motion.section 
+        ref={heroRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden"
+        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden group/hero"
       >
+        {/* Spotlight Overlay */}
+        <motion.div 
+          className="absolute inset-0 pointer-events-none z-10 opacity-0 group-hover/hero:opacity-100 transition-opacity duration-700"
+          style={{
+            background: useTransform(
+              [mouseX, mouseY],
+              ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(56, 189, 248, 0.08), transparent 80%)`
+            )
+          }}
+        />
+
+        {/* Scanline Pulse Overlay */}
+        <div className="scanlines scanline-pulse" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -136,25 +173,29 @@ export default function LandingPage() {
             transition={{ delay: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]"
           >
-            <Button 
-              size="lg"
-              className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
-              onClick={handleLogin}
-            >
-              Create Free Account
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center group/demo"
-              onClick={enterDemo}
-            >
-              <span className="text-lg font-bold">Explore the Pulse</span>
-              <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">
-                Interactive Demo
-              </span>
-            </Button>
+            <MagneticButton>
+              <Button 
+                size="lg"
+                className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
+                onClick={handleLogin}
+              >
+                Request Early Access
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </MagneticButton>
+            <MagneticButton>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center group/demo"
+                onClick={enterDemo}
+              >
+                <span className="text-lg font-bold">Explore the Pulse</span>
+                <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">
+                  Interactive Demo
+                </span>
+              </Button>
+            </MagneticButton>
           </motion.div>
 
           <motion.div 
@@ -170,90 +211,8 @@ export default function LandingPage() {
 
       <SocialProofStrip />
 
-      {/* ── Workflow Section ────────────────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8 }}
-        className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 rounded-full uppercase tracking-widest text-[10px] font-black px-4 py-1 mb-4">
-              Automated Workflow
-            </Badge>
-            <h2 className="text-4xl lg:text-6xl font-black italic uppercase tracking-tighter text-white leading-none mb-6">
-              From Bench to <span className="text-primary">Practice Plan</span>
-            </h2>
-            <p className="text-zinc-500 max-w-2xl mx-auto font-medium italic">
-              Blue Line IQ eliminates manual data entry. Our "Tactical Pulse" system automates your post-game reviews so you can focus on winning.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-            {/* Connecting lines for desktop */}
-            <div className="hidden md:block absolute top-[40px] left-[16.6%] right-[16.6%] h-[2px] bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 -translate-y-1/2 z-0">
-              <div className="absolute inset-0 bg-primary/20 blur-[2px]" />
-            </div>
-            
-            {[
-              { 
-                step: "01", 
-                title: "Live Bench Mode", 
-                desc: "Tap tactical +/- during the game. Dictate tactical notes via AI Mic between shifts.",
-                icon: Swords,
-                color: "text-blue-400",
-                bg: "bg-blue-400/5",
-                border: "border-blue-400/20"
-              },
-              { 
-                step: "02", 
-                title: "Auto-Scoring", 
-                desc: "Exit the bench and see your scores already calculated. One click to save the review.",
-                icon: Zap,
-                color: "text-emerald-400",
-                bg: "bg-emerald-400/5",
-                border: "border-emerald-400/20"
-              },
-              { 
-                step: "03", 
-                title: "Practice Architect", 
-                desc: "AI identifies your weakest concepts and generates a practice plan targeting those exact gaps.",
-                icon: Brain,
-                color: "text-primary",
-                bg: "bg-primary/5",
-                border: "border-primary/20"
-              }
-            ].map((item, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                className="relative z-10 space-y-6 group flex flex-col items-center text-center"
-              >
-                <div className={cn(
-                  "w-20 h-20 rounded-[2rem] flex items-center justify-center border shadow-2xl transition-all duration-500 group-hover:scale-110",
-                  item.bg, item.border
-                )}>
-                  <item.icon className={cn("w-10 h-10", item.color)} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className={cn("text-[10px] font-black italic", item.color)}>{item.step}</span>
-                    <h3 className="text-xl font-bold italic uppercase tracking-tight text-white">{item.title}</h3>
-                  </div>
-                  <p className="text-sm text-zinc-500 leading-relaxed font-medium italic max-w-[240px]">
-                    {item.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+      {/* ── Workflow Section (Horizontal Scroll) ────────── */}
+      <HorizontalFeatures />
 
       {/* ── Features Grid ──────────────────────────────── */}
       <motion.section 
@@ -353,11 +312,13 @@ export default function LandingPage() {
                 placeholder="Enter your email" 
                 className="flex-1 bg-transparent border-none focus:ring-0 px-6 text-sm text-white placeholder:text-zinc-600 font-medium"
               />
-              <Button 
-                className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 rounded-full shrink-0"
-              >
-                Request Early Access
-              </Button>
+              <MagneticButton>
+                <Button 
+                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 rounded-full shrink-0"
+                >
+                  Request Early Access
+                </Button>
+              </MagneticButton>
             </div>
           </div>
         </div>

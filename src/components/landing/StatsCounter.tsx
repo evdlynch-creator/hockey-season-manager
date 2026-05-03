@@ -16,9 +16,9 @@ export function StatsCounter({ value, label, delay = 0 }: StatsCounterProps) {
 
   useEffect(() => {
     const controls = animate(0, numberValue, {
-      duration: 2,
+      duration: 1.8,
       delay: delay + 0.2,
-      ease: "easeOut",
+      ease: [0.16, 1, 0.3, 1], // Custom ease out expo
       onUpdate: (latest) => {
         if (value.includes('.')) {
           setDisplayValue(latest.toFixed(1) + suffix)
