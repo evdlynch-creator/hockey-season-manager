@@ -7,7 +7,8 @@ import {
   Input,
   ScrollArea,
   Badge,
-  Skeleton
+  Skeleton,
+  toast
 } from '@blinkdotnew/ui'
 import { Send, MessageSquare, Loader2 } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
@@ -28,6 +29,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   const { messages, isLoading, isConnected, sendMessage, isSending } = useCoachMessages(contextType, contextId)
   const [content, setContent] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
+  const prevMessagesCount = useRef(messages.length)
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +42,18 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
     }
-  }, [messages])
+
+    // Show toast for new messages if they weren't sent by current user and chat was already loaded
+    if (messages.length > prevMessagesCount.current && !isLoading) {
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage.userId !== user?.id) {
+        toast.info(`New message from ${lastMessage.userDisplayName}`, {
+          description: lastMessage.content.slice(0, 50) + (lastMessage.content.length > 50 ? '...' : '')
+        })
+      }
+    }
+    prevMessagesCount.current = messages.length
+  }, [messages, user?.id, isLoading])
 
   return (
     <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-2xl", className)}>

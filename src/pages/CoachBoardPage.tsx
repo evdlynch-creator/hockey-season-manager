@@ -1,8 +1,29 @@
 import { CoachChat } from '@/components/coaching/CoachChat'
-import { MessageSquare, Info } from 'lucide-react'
-import { Card, CardContent } from '@blinkdotnew/ui'
+import { MessageSquare, Info, Bell } from 'lucide-react'
+import { Card, CardContent, Button, toast } from '@blinkdotnew/ui'
+import { useState, useEffect } from 'react'
 
 export default function CoachBoardPage() {
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotifPermission(Notification.permission)
+    }
+  }, [])
+
+  const requestPermission = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Notifications not supported in this browser')
+      return
+    }
+    const permission = await Notification.requestPermission()
+    setNotifPermission(permission)
+    if (permission === 'granted') {
+      toast.success('Desktop alerts enabled!')
+    }
+  }
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto animate-fade-in space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -15,6 +36,16 @@ export default function CoachBoardPage() {
             Centralized strategic discussions and team-wide planning.
           </p>
         </div>
+        {notifPermission !== 'granted' && (
+          <Button 
+            onClick={requestPermission} 
+            variant="outline" 
+            className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <Bell className="w-4 h-4" />
+            Enable Desktop Alerts
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

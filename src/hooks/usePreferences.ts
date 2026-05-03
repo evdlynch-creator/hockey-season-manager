@@ -12,6 +12,7 @@ export interface NotificationPreferences {
   gameReminders: boolean
   rematchPrep: boolean
   weeklySummary: boolean
+  coachMessages: boolean
 }
 
 export interface SeasonState {
@@ -31,6 +32,7 @@ const DEFAULT_NOTIFS: NotificationPreferences = {
   gameReminders: true,
   rematchPrep: true,
   weeklySummary: false,
+  coachMessages: true,
 }
 
 const DEFAULT_SEASON_STATE: SeasonState = {
