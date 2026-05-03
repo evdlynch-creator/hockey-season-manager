@@ -200,6 +200,7 @@
   background-clip: text;
   -webkit-background-clip: text;
   animation: shimmer-text 3s linear infinite;
+  animation-play-state: var(--shimmer-state, running);
 }
 
 .shimmer-paused {

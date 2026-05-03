@@ -128,7 +128,7 @@ export default function LandingPage() {
           {/* Pixel-Locked Heading Container */}
           <div 
             className="min-h-[140px] lg:min-h-[200px] flex flex-col items-center justify-center relative z-30"
-            style={{ isolation: "isolate", contain: "layout paint" }}
+            style={{ isolation: "isolate", contain: "strict" }}
           >
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
@@ -138,10 +138,10 @@ export default function LandingPage() {
             >
               Master Your Season with <br />
               <span className="relative inline-block">
-                <span className={cn(
-                  "heading-premium",
-                  isDashboardHovered && "shimmer-paused"
-                )}>
+                <span 
+                  className="heading-premium"
+                  style={{ '--shimmer-state': isDashboardHovered ? 'paused' : 'running' } as any}
+                >
                   Automated Intelligence
                 </span>
                 <span className="heading-glow-backdrop" aria-hidden="true">
@@ -203,8 +203,11 @@ export default function LandingPage() {
             >
               {/* Inner hover effect wrapper to prevent layout shift */}
               <motion.div
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                style={{ 
+                  transform: "translateY(var(--hover-y, 0))",
+                  transition: "transform 0.3s ease-out",
+                  '--hover-y': isDashboardHovered ? '-8px' : '0px'
+                } as any}
                 className="relative w-full h-full"
               >
                 <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
