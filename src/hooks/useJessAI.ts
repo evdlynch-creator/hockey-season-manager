@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { blink } from '../blink/client'
-import { JESS_IDENTITY, JESS_SYSTEM_PROMPT } from '../lib/jess-ai'
+import { JESS_IDENTITY, JESS_SYSTEM_PROMPT, type JessMetadata } from '../lib/jess-ai'
 import { useGames } from './useGames'
 import { useTeam } from './useTeam'
 import type { CoachMessage, CoachMessageContext } from '../types'
@@ -83,6 +83,10 @@ export function useJessAI({ messages, sendMessage, contextType, contextId }: Use
         .filter(g => g.status === 'scheduled' && isAfter(parseISO(g.date), subHours(now, 24)))
         .sort((a, b) => a.date.localeCompare(b.date))[0]
       
+      const lastCompleted = games
+        .filter(g => g.status !== 'scheduled')
+        .sort((a, b) => b.date.localeCompare(a.date))[0]
+
       const last3 = games
         .filter(g => g.status !== 'scheduled')
         .sort((a, b) => b.date.localeCompare(a.date))
@@ -95,7 +99,15 @@ export function useJessAI({ messages, sendMessage, contextType, contextId }: Use
           time: upcoming.gameTime || 'TBD',
           location: upcoming.location
         } : null,
-        recentResults: last3.map(g => `${g.opponent}: ${g.goalsFor}-${g.goalsAgainst} (${g.date})`).join(', ')
+        recentResults: last3.map(g => `${g.opponent}: ${g.goalsFor}-${g.goalsAgainst} (${g.date})`).join(', '),
+        lastGame: lastCompleted
+      }
+
+      // Check if they are asking about the last game specifically
+      const isAskingAboutLastGame = message.content.toLowerCase().match(/last game|previous game|result|debrief/)
+
+      if (isAskingAboutLastGame && lastCompleted) {
+        return checkAndSendDebrief(lastCompleted, true)
       }
 
       const response = await blink.ai.generateText({
@@ -148,8 +160,8 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
   }
 
   // ── Helper: Game Debriefs ────────────────────────────────────────────────
-  async function checkAndSendDebrief(game: any) {
-    const alreadySent = messages.some(m => {
+  async function checkAndSendDebrief(game: any, forced: boolean = false) {
+    const alreadySent = !forced && messages.some(m => {
       if (m.userId !== JESS_IDENTITY.userId) return false
       try {
         const meta = JSON.parse(m.metadata || '{}')
@@ -161,16 +173,41 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
 
     isGenerating.current = true
     try {
-      const prompt = `Game vs ${game.opponent} ended ${game.goalsFor}-${game.goalsAgainst}. Provide a very brief tactical debrief (2-3 sentences) for the coaching staff chat.`
-      const response = await blink.ai.generateText({
+      // Get detailed game review if available
+      const reviews = await blink.db.gameReviews.list({ where: { gameId: game.id }, limit: 1 })
+      const review = reviews[0]
+
+      const prompt = `Game vs ${game.opponent} ended ${game.goalsFor}-${game.goalsAgainst}. Shots: ${game.shotsFor}-${game.shotsAgainst}.
+      Tactical Ratings: Breakouts(${review?.breakoutsRating || 'N/A'}), Forecheck(${review?.forecheckRating || 'N/A'}), D-Zone(${review?.defensiveZoneRating || 'N/A'}).
+      Coach Notes: ${review?.notes || 'None'}.
+      
+      Generate a concise 1-sentence tactical summary AND a list of 3 specific tactical highlights (F1 pressure, D-to-D speed, etc.) for a high-performance debrief card.
+      JSON format: { "summary": "...", "highlights": ["...", "...", "..."] }`
+
+      const { object } = await blink.ai.generateObject({
         model: 'google/gemini-3-flash',
-        system: JESS_SYSTEM_PROMPT,
-        prompt
+        prompt,
+        schema: {
+          type: 'object',
+          properties: {
+            summary: { type: 'string' },
+            highlights: { type: 'array', items: { type: 'string' } }
+          },
+          required: ['summary', 'highlights']
+        }
       })
 
-      await sendJessMessage(response.text, { 
+      const summary = object as any
+
+      await sendJessMessage(summary.summary, { 
         type: 'jess_debrief', 
-        gameId: game.id 
+        gameId: game.id,
+        summaryData: {
+          opponent: game.opponent,
+          score: `${game.goalsFor}-${game.goalsAgainst}`,
+          shots: game.shotsFor ? `${game.shotsFor}-${game.shotsAgainst}` : undefined,
+          tacticalHighlights: summary.highlights
+        }
       })
     } catch (err) {
       console.error('Jess debrief failed:', err)

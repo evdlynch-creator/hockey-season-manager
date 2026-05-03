@@ -43,7 +43,19 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   const [voiceToolOpen, setVoiceToolOpen] = useState(false)
   
   const scrollRef = useRef<HTMLDivElement>(null)
-  const prevMessagesCount = useRef(messages.length)
+
+  // ── Auto-scroll to bottom ────────────────────────────────────────────────
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }, [messages.length, isLoading])
 
   const handleLinkPractice = (id: string, title: string, date: string, index: number) => {
     const formattedDate = format(new Date(date + 'T00:00:00'), 'MMM do')
@@ -88,13 +100,6 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
       audioUrl
     }))
   }
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-    }
-    prevMessagesCount.current = messages.length
-  }, [messages, isLoading])
 
   return (
     <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-[20px] rounded-[2.5rem] overflow-hidden shadow-2xl", className)}>

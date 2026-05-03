@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { Brain, Sparkles, AlertCircle, ArrowRight, Users, BarChart3, Mic, ClipboardList } from 'lucide-react'
+import { Brain, Sparkles, AlertCircle, ArrowRight, Users, BarChart3, Mic, ClipboardList, Target } from 'lucide-react'
 import { Badge } from '@blinkdotnew/ui'
 import { cn } from '@/lib/utils'
 import { JESS_IDENTITY } from '@/lib/jess-ai'
@@ -122,29 +122,63 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
               
               if (meta.type === 'jess_analysis' || meta.type === 'jess_debrief' || meta.type === 'jess_reminder') {
                 const isHigh = meta.priority === 'high'
+                const isDebrief = meta.type === 'jess_debrief'
+
                 return (
                   <div className={cn(
-                    "mt-3 p-3 rounded-xl border flex items-start gap-3",
+                    "mt-3 p-3 rounded-xl border flex flex-col gap-3",
                     isHigh ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/5 border-white/10"
                   )}>
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      isHigh ? "bg-indigo-500/20 text-indigo-400" : "bg-white/10 text-zinc-400"
-                    )}>
-                      {meta.type === 'jess_reminder' ? <AlertCircle className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">
-                        {meta.type === 'jess_analysis' ? 'Tactical Insight' : meta.type === 'jess_reminder' ? 'Strategic Alert' : 'Post-Game Debrief'}
-                      </p>
-                      {meta.gameId && (
-                        <button 
-                          onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                          className="text-[10px] font-bold text-indigo-400 hover:underline block"
-                        >
-                          View Related Game Reference
-                        </button>
-                      )}
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                        isHigh ? "bg-indigo-500/20 text-indigo-400" : "bg-white/10 text-zinc-400"
+                      )}>
+                        {meta.type === 'jess_reminder' ? <AlertCircle className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">
+                          {meta.type === 'jess_analysis' ? 'Tactical Insight' : meta.type === 'jess_reminder' ? 'Strategic Alert' : 'Post-Game Debrief'}
+                        </p>
+                        
+                        {isDebrief && meta.summaryData && (
+                          <div className="mt-2 space-y-3">
+                            <div className="flex items-center justify-between bg-black/40 rounded-lg p-2 border border-white/5">
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Opponent</p>
+                                <p className="text-xs font-black truncate">{meta.summaryData.opponent}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Score</p>
+                                <p className="text-xs font-black text-indigo-400">{meta.summaryData.score}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60 flex items-center gap-1.5">
+                                <Target className="w-2.5 h-2.5" /> Tactical Highlights
+                              </p>
+                              <div className="space-y-1">
+                                {meta.summaryData.tacticalHighlights.map((h: string, idx: number) => (
+                                  <div key={idx} className="flex items-start gap-2 text-[11px] text-zinc-300 leading-tight">
+                                    <div className="w-1 h-1 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                                    <span>{h}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {meta.gameId && (
+                          <button 
+                            onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                            className="mt-2 text-[10px] font-bold text-indigo-400 hover:underline flex items-center gap-1"
+                          >
+                            View Game Tape <ArrowRight className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )

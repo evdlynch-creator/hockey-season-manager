@@ -40,4 +40,10 @@ export interface JessMetadata {
   insight?: string
   priority?: 'low' | 'medium' | 'high'
   gameId?: string
+  summaryData?: {
+    opponent: string
+    score: string
+    shots?: string
+    tacticalHighlights: string[]
+  }
 }
