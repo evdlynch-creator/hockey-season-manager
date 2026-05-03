@@ -128,16 +128,16 @@
 }
 
 .heading-premium {
-  @apply font-avega italic text-shimmer font-black relative inline-block;
+  @apply font-avega italic text-shimmer font-black relative z-10;
 }
 
 .heading-glow-backdrop {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   color: #38bdf8;
-  opacity: 0.3;
-  filter: blur(25px);
+  opacity: 0.2;
+  filter: blur(20px);
   pointer-events: none;
   user-select: none;
   -webkit-text-fill-color: initial;

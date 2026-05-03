@@ -125,26 +125,20 @@ export default function LandingPage() {
           
           {/* Stable Heading Container */}
           <div 
-            className="min-h-[140px] lg:min-h-[180px] flex flex-col items-center justify-center overflow-visible"
-            style={{ contain: "paint" }}
+            className="min-h-[140px] lg:min-h-[180px] flex flex-col items-center justify-center relative"
+            style={{ isolation: "isolate", contain: "layout paint" }}
           >
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] relative text-glow"
-              style={{ 
-                transform: "translate3d(0,0,0)", 
-                willChange: "transform, opacity", 
-                backfaceVisibility: "hidden",
-                isolation: "isolate",
-                contain: "layout",
-                WebkitFontSmoothing: "antialiased"
-              }}
+              className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] relative"
             >
               Master Your Season with <br />
-              <span className="heading-premium">
-                Automated Intelligence
+              <span className="relative inline-block">
+                <span className="heading-premium">
+                  Automated Intelligence
+                </span>
                 <span className="heading-glow-backdrop" aria-hidden="true">
                   Automated Intelligence
                 </span>
