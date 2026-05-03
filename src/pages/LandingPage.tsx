@@ -113,30 +113,35 @@ export default function LandingPage() {
         <div className="scanlines scanline-pulse" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 font-avega italic"
-          >
-            <Trophy className="w-3 h-3" />
-            Built for <span className="text-white">High-Performance</span> Coaching
-          </motion.div>
+          <div className="z-30 relative mb-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider font-avega italic"
+            >
+              <Trophy className="w-3 h-3" />
+              Built for <span className="text-white">High-Performance</span> Coaching
+            </motion.div>
+          </div>
           
-          {/* Stable Heading Container */}
+          {/* Pixel-Locked Heading Container */}
           <div 
-            className="min-h-[140px] lg:min-h-[180px] flex flex-col items-center justify-center relative"
+            className="min-h-[140px] lg:min-h-[200px] flex flex-col items-center justify-center relative z-30"
             style={{ isolation: "isolate", contain: "layout paint" }}
           >
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] relative"
+              className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[60px] lg:leading-[80px] relative"
             >
               Master Your Season with <br />
               <span className="relative inline-block">
-                <span className="heading-premium">
+                <span className={cn(
+                  "heading-premium",
+                  isDashboardHovered && "shimmer-paused"
+                )}>
                   Automated Intelligence
                 </span>
                 <span className="heading-glow-backdrop" aria-hidden="true">
@@ -146,67 +151,70 @@ export default function LandingPage() {
             </motion.h1>
           </div>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10"
-          >
-            Blue Line IQ turns live game action into actionable coaching plans. 
-            Track stats, dictate tactical notes, and generate practice plans in seconds.
-          </motion.p>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <MagneticButton>
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full" onClick={handleLogin}>
-                Request Early Access
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </MagneticButton>
-            <MagneticButton>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center group/demo" onClick={enterDemo}>
-                <span className="text-lg font-bold">Explore the Pulse</span>
-                <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">Interactive Demo</span>
-              </Button>
-            </MagneticButton>
-          </motion.div>
-
-          {/* Interactive Dashboard Block */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            onHoverStart={() => setIsDashboardHovered(true)}
-            onHoverEnd={() => setIsDashboardHovered(false)}
-            transition={{ 
-              initial: { delay: 1, duration: 1 },
-              animate: { delay: 1, duration: 1 }
-            }}
-            className="rounded-[2rem] p-1 mt-20 relative isolation-auto group/preview"
-            style={{ 
-              transform: "translate3d(0,0,0)", 
-              backfaceVisibility: "hidden",
-              isolation: "isolate",
-              contain: "layout"
-            }}
-          >
-            {/* Inner hover effect wrapper to prevent layout shift */}
-            <motion.div
-              whileHover={{ y: -8 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="relative w-full h-full"
+          <div className="z-30 relative">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10"
             >
-              <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
-              <div className="absolute -inset-4 rounded-[3rem] opacity-0 group-hover/preview:opacity-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-opacity duration-300 pointer-events-none" />
-              <div className="relative z-10">
-                <DashboardPreview onEnterDemo={enterDemo} />
-              </div>
+              Blue Line IQ turns live game action into actionable coaching plans. 
+              Track stats, dictate tactical notes, and generate practice plans in seconds.
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+            >
+              <MagneticButton>
+                <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full" onClick={handleLogin}>
+                  Request Early Access
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </MagneticButton>
+              <MagneticButton>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 border-white/10 bg-white/5 hover:bg-white/10 text-white btn-premium rounded-full flex flex-col items-center justify-center group/demo" onClick={enterDemo}>
+                  <span className="text-lg font-bold">Explore the Pulse</span>
+                  <span className="text-[10px] uppercase tracking-widest opacity-60 font-medium -mt-0.5">Interactive Demo</span>
+                </Button>
+              </MagneticButton>
             </motion.div>
-          </motion.div>
+          </div>
+
+          {/* Interactive Dashboard Block - Separated stacking context */}
+          <div className="relative z-20 mt-20">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              onHoverStart={() => setIsDashboardHovered(true)}
+              onHoverEnd={() => setIsDashboardHovered(false)}
+              transition={{ 
+                initial: { delay: 1, duration: 1 },
+                animate: { delay: 1, duration: 1 }
+              }}
+              className="rounded-[2rem] p-1 relative isolation-auto group/preview"
+              style={{ 
+                transform: "translate3d(0,0,0)", 
+                backfaceVisibility: "hidden",
+                contain: "layout"
+              }}
+            >
+              {/* Inner hover effect wrapper to prevent layout shift */}
+              <motion.div
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="relative w-full h-full"
+              >
+                <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
+                <div className="absolute -inset-4 rounded-[3rem] opacity-0 group-hover/preview:opacity-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-opacity duration-300 pointer-events-none" />
+                <div className="relative z-10">
+                  <DashboardPreview onEnterDemo={enterDemo} />
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </motion.section>
 

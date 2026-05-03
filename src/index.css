@@ -200,7 +200,10 @@
   background-clip: text;
   -webkit-background-clip: text;
   animation: shimmer-text 3s linear infinite;
-  /* Removed transform and will-change as they can conflict with parent layers */
+}
+
+.shimmer-paused {
+  animation-play-state: paused !important;
 }
 
 /* Removed text-glow filter as it causes blackout with background-clip: text */
