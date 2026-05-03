@@ -79,22 +79,6 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
               if (prev.find(m => m.id === messageData.id)) return prev
               return [...prev, messageData]
             })
-
-            // Show browser notification if enabled and tab is hidden or message is from someone else
-            if (
-              notifPrefs.coachMessages &&
-              messageData.userId !== user.id &&
-              'Notification' in window &&
-              Notification.permission === 'granted'
-            ) {
-              const title = contextType === 'general' ? 'Locker Room Talk' : 
-                            contextType === 'practice' ? 'Practice Planning' : 'Game Strategy'
-              
-              new Notification(title, {
-                body: `${messageData.userDisplayName}: ${messageData.content}`,
-                icon: '/favicon.png'
-              })
-            }
           }
         })
       } catch (err) {
@@ -135,6 +119,14 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
       // 2. Broadcast via realtime
       if (channelRef.current) {
         await channelRef.current.publish('new_message', newMessage)
+      }
+
+      // 3. Broadcast to global team channel for notifications across the app
+      try {
+        const globalChannel = blink.realtime.channel(`coach-messages-${teamId}-global`)
+        await globalChannel.publish('new_message', newMessage)
+      } catch (err) {
+        console.error('Failed to broadcast global message:', err)
       }
 
       return newMessage

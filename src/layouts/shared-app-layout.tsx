@@ -6,6 +6,7 @@ import React, { createContext, useContext } from 'react'
 import { Shell } from '../Shell'
 import { AppSidebarShell } from '../components/AppSidebarShell'
 import { ThemeAccent } from '../components/ThemeAccent'
+import { useGlobalCoachNotifications } from '../hooks/useGlobalNotifications'
 
 import { TacticalAssistant } from '../components/dashboard/TacticalAssistant'
 
@@ -36,6 +37,7 @@ export function SharedAppLayout({
   sidebar = <AppSidebarShell />,
   children,
 }: SharedAppLayoutProps) {
+  useGlobalCoachNotifications()
   const value = React.useMemo(() => ({ appName }), [appName])
 
   return (
