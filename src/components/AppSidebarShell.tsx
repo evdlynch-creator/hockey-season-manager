@@ -41,8 +41,8 @@ import {
   ChevronsRight,
   Plus,
   ChevronDown,
-  Contact,
   Library,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'

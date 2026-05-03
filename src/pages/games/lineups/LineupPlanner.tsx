@@ -50,7 +50,7 @@ interface LineupPlannerProps {
   onImportDefaults?: () => void
 }
 
-export function LineupPlanner({ gameId, formationId }: LineupPlannerProps) {
+export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupPlannerProps) {
   const mode = formationId ? 'formation' : 'game'
   const targetId = (mode === 'formation' ? formationId : gameId) as string
 
