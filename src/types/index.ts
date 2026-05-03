@@ -101,12 +101,14 @@ export interface GameReview {
   breakoutsRating?: number
   forecheckRating?: number
   defensiveZoneRating?: number
-  transitionRating?: number
+  zoneEntryRating?: number
+  offensiveZoneRating?: number
   passingRating?: number
   skatingRating?: number
   notes?: string
   opponentNotes?: string
   createdAt: string
+  userId: string
 }
 
 export interface Player {
@@ -134,7 +136,8 @@ export const CONCEPTS = [
   'Breakouts',
   'Forecheck',
   'Defensive Zone',
-  'Transition',
+  'Zone Entry',
+  'Offensive Zone',
   'Passing',
   'Skating',
 ] as const

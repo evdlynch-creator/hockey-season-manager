@@ -21,7 +21,8 @@ const CONCEPT_FIELDS: { key: string; label: string }[] = [
   { key: 'breakoutsRating', label: 'Breakouts' },
   { key: 'forecheckRating', label: 'Forecheck' },
   { key: 'defensiveZoneRating', label: 'Defensive Zone' },
-  { key: 'transitionRating', label: 'Transition' },
+  { key: 'zoneEntryRating', label: 'Zone Entry' },
+  { key: 'offensiveZoneRating', label: 'Offensive Zone' },
   { key: 'passingRating', label: 'Passing' },
   { key: 'skatingRating', label: 'Skating' },
 ]

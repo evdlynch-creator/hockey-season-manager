@@ -97,7 +97,7 @@ export function OverviewView() {
           <div className="space-y-4 py-2">
             {[
               { label: "Forecheck", val: 92 },
-              { label: "Transition", val: 78 },
+              { label: "Zone Entry", val: 78 },
               { label: "D-Zone", val: 64 }
             ].map((c, i) => (
               <div key={i} className="space-y-2">

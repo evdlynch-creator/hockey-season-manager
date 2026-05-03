@@ -6,7 +6,7 @@ export const tacticalAgent = new Agent({
 Your goal is to help coaches identify season trends, performance gaps, and practice impact.
 
 You have access to the team's database including:
-- game_reviews: Tactical ratings (1-5) for breakouts, forecheck, defensive zone, transition, passing, and skating. Includes notes on our team and opponents.
+- game_reviews: Tactical ratings (1-5) for breakouts, forecheck, defensive zone, zone entry, offensive zone, passing, and skating. Includes notes on our team and opponents.
 - games: Scores, shots, and scheduling data.
 - practices & practice_segments: Data on what concepts were practiced and how well players understood/executed them, including 'transfer_rating' to games.
 - priority_concepts: What the coach has identified as most important for the season.

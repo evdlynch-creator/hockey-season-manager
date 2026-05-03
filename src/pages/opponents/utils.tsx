@@ -8,7 +8,8 @@ export const CONCEPT_FIELD_MAP: Record<string, keyof GameReview> = {
   'Breakouts': 'breakoutsRating',
   'Forecheck': 'forecheckRating',
   'Defensive Zone': 'defensiveZoneRating',
-  'Transition': 'transitionRating',
+  'Zone Entry': 'zoneEntryRating',
+  'Offensive Zone': 'offensiveZoneRating',
   'Passing': 'passingRating',
   'Skating': 'skatingRating',
 }

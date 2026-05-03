@@ -110,7 +110,7 @@ export function ConceptsView() {
             </div>
             <div className="p-4 rounded-[1.5rem] bg-white/[0.02] border border-white/5 opacity-50 scale-95 origin-top">
               <p className="text-[10px] italic leading-relaxed text-zinc-500">
-                "Transitions were sharp in the 2nd. The clean exits from our own end led to 4 odd-man rushes..."
+                "Zone entries were sharp in the 2nd. The clean entries into their end led to 4 odd-man rushes..."
               </p>
             </div>
           </div>

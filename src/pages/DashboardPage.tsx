@@ -28,7 +28,8 @@ const SNAPSHOT_FIELD: Record<string, string> = {
   'Breakouts': 'breakoutsRating',
   'Forecheck': 'forecheckRating',
   'Defensive Zone': 'defensiveZoneRating',
-  'Transition': 'transitionRating',
+  'Zone Entry': 'zoneEntryRating',
+  'Offensive Zone': 'offensiveZoneRating',
   'Passing': 'passingRating',
   'Skating': 'skatingRating',
 }
