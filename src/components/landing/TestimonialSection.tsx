@@ -22,7 +22,7 @@ export function TestimonialSection() {
 
           <blockquote className="relative">
             <p className="text-3xl md:text-5xl lg:text-6xl font-black italic tracking-tight text-white leading-[1.1] font-avega selection:bg-primary/30">
-              "Blue Line IQ cut my post-game prep time in half. I walk into practice the next morning with a full plan already built. My staff can't imagine going back."
+              "<span className="text-primary">Blue Line IQ</span> cut my post-game prep time in half. I walk into practice the next morning with a full plan already built. My staff can't imagine going back."
             </p>
           </blockquote>
 
