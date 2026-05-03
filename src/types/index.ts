@@ -132,6 +132,24 @@ export interface Lineup {
   createdAt: string
 }
 
+export interface Formation {
+  id: string
+  name: string
+  seasonId: string
+  userId: string
+  createdAt: string
+}
+
+export interface FormationAssignment {
+  id: string
+  formationId: string
+  playerId: string
+  unit: string
+  position?: string
+  userId: string
+  createdAt: string
+}
+
 export const CONCEPTS = [
   'Breakouts',
   'Forecheck',

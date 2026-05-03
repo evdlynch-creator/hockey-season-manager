@@ -17,7 +17,7 @@ import { useGameTypes } from '@/hooks/usePreferences'
 import type { GameType } from '@/hooks/usePreferences'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
-import { LineupPlanner } from './games/LineupPlanner'
+import { LineupPlanner } from './games/lineups/LineupPlanner'
 import { useUpdateLineup } from '@/hooks/useLineups'
 
 const CONCEPT_FIELDS: { key: string; label: string }[] = [
@@ -191,30 +191,6 @@ export default function GameDetailPage() {
     },
     onError: (e: Error) => toast.error('Failed to save review', { description: e.message }),
   })
-
-  const handleImportDefaults = async () => {
-    try {
-      // 1. Fetch defaults
-      const defaults = (await blink.db.lineups.list({ where: { gameId: 'SEASON_DEFAULT' } })) as any[]
-      
-      if (defaults.length === 0) {
-        toast.error('No default lines found. Set them up in Team Management first.')
-        return
-      }
-
-      // 2. Prepare payload
-      const playerLineups = defaults.map(d => ({
-        playerId: d.playerId,
-        unit: d.unit
-      }))
-
-      // 3. Save to current game
-      await updateLineup.mutateAsync({ gameId, playerLineups })
-      toast.success('Default lines imported!')
-    } catch (err: any) {
-      toast.error('Failed to import defaults', { description: err.message })
-    }
-  }
 
   if (gameLoading) {
     return (
@@ -440,7 +416,7 @@ export default function GameDetailPage() {
 
         <TabsContent value="lineup" className="mt-0">
           <Card className="border-border bg-card rounded-[2rem] overflow-hidden p-6 md:p-10">
-            <LineupPlanner gameId={gameId} onImportDefaults={handleImportDefaults} />
+            <LineupPlanner gameId={gameId} />
           </Card>
         </TabsContent>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Card,
   CardContent,
@@ -28,7 +28,7 @@ import {
   TabsTrigger,
   TabsContent
 } from '@blinkdotnew/ui'
-import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog } from 'lucide-react'
+import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog, Plus, MoreVertical } from 'lucide-react'
 import { usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer } from '../hooks/usePlayers'
 import { useTeam } from '../hooks/useTeam'
 import { useTeamPreferences } from '../hooks/usePreferences'
@@ -39,8 +39,15 @@ import { z } from 'zod'
 import { cn } from '@/lib/utils'
 import type { Player } from '../types'
 import { useNavigate } from '@tanstack/react-router'
-import { LineupPlanner } from './games/LineupPlanner'
+import { LineupPlanner } from './games/lineups/LineupPlanner'
 import { StaffManagement } from './management/StaffManagement'
+import { 
+  useFormations, 
+  useCreateFormation, 
+  useUpdateFormation, 
+  useDeleteFormation 
+} from '../hooks/useFormations'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@blinkdotnew/ui'
 
 const playerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -56,10 +63,17 @@ const POSITIONS = ['Goalie', 'Defense', 'Forward', 'Center', 'Left Wing', 'Right
 export default function RosterPage() {
   const { data: teamData } = useTeam()
   const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
-  const { data: players = [], isLoading } = usePlayers()
+  const { data: players = [], isLoading: playersLoading } = usePlayers()
+  const { data: formations = [], isLoading: formationsLoading } = useFormations()
+  
   const createPlayer = useCreatePlayer()
   const updatePlayer = useUpdatePlayer()
   const deletePlayer = useDeletePlayer()
+  
+  const createFormation = useCreateFormation()
+  const updateFormation = useUpdateFormation()
+  const deleteFormation = useDeleteFormation()
+  
   const canEdit = useCanEdit()
   const navigate = useNavigate()
 
@@ -67,6 +81,11 @@ export default function RosterPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Player | null>(null)
   const [activeTab, setActiveTab] = useState('players')
+  
+  const [selectedFormationId, setSelectedFormationId] = useState<string | null>(null)
+  const [formationDialogOpen, setFormationDialogOpen] = useState(false)
+  const [formationEditName, setFormationName] = useState('')
+  const [formationEditId, setFormationEditId] = useState<string | null>(null)
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
@@ -77,6 +96,12 @@ export default function RosterPage() {
     p.number?.includes(searchQuery) ||
     p.position?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  useEffect(() => {
+    if (formations.length > 0 && !selectedFormationId) {
+      setSelectedFormationId(formations[0].id)
+    }
+  }, [formations, selectedFormationId])
 
   const handleOpenAdd = () => {
     setEditTarget(null)
@@ -110,7 +135,37 @@ export default function RosterPage() {
     }
   }
 
-  if (isLoading) return <div className="p-8">Loading roster...</div>
+  const handleOpenAddFormation = () => {
+    setFormationEditId(null)
+    setFormationName('')
+    setFormationDialogOpen(true)
+  }
+
+  const handleOpenEditFormation = (f: any) => {
+    setFormationEditId(f.id)
+    setFormationName(f.name)
+    setFormationDialogOpen(true)
+  }
+
+  const onFormationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formationEditName.trim()) return
+    try {
+      if (formationEditId) {
+        await updateFormation.mutateAsync({ id: formationEditId, name: formationEditName })
+        toast.success('Formation renamed')
+      } else {
+        const newF = await createFormation.mutateAsync(formationEditName)
+        setSelectedFormationId(newF.id)
+        toast.success('Formation created')
+      }
+      setFormationDialogOpen(false)
+    } catch (err: any) {
+      toast.error('Failed to save formation')
+    }
+  }
+
+  if (playersLoading || formationsLoading) return <div className="p-8">Loading roster...</div>
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in space-y-8">
@@ -221,9 +276,73 @@ export default function RosterPage() {
         </TabsContent>
 
         <TabsContent value="lineups" className="mt-0">
-          <Card className="border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden p-6 md:p-10">
-            <LineupPlanner gameId="SEASON_DEFAULT" />
-          </Card>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Formation Sidebar */}
+            <div className="w-full md:w-64 space-y-4 shrink-0">
+              <div className="flex items-center justify-between px-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">Formations</h3>
+                {canEdit && (
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleOpenAddFormation}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                {formations.length === 0 ? (
+                  <p className="text-[10px] text-zinc-600 italic px-2">No formations yet.</p>
+                ) : (
+                  formations.map(f => (
+                    <div 
+                      key={f.id}
+                      className={cn(
+                        "group flex items-center justify-between p-2 rounded-xl text-sm font-medium transition-all cursor-pointer",
+                        selectedFormationId === f.id 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                      )}
+                      onClick={() => setSelectedFormationId(f.id)}
+                    >
+                      <span className="truncate">{f.name}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 rounded-full">
+                            <MoreVertical className="w-3 h-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenEditFormation(f)}>
+                            <Pencil className="w-3 h-3 mr-2" /> Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-400" onClick={() => deleteFormation.mutate(f.id)}>
+                            <Trash2 className="w-3 h-3 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Planner Area */}
+            <div className="flex-1 min-w-0">
+              {selectedFormationId ? (
+                <Card className="border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden p-6 md:p-8">
+                  <LineupPlanner formationId={selectedFormationId} />
+                </Card>
+              ) : (
+                <Card className="border-border bg-card/30 backdrop-blur-sm rounded-[2rem] h-[400px] flex items-center justify-center">
+                  <EmptyState 
+                    icon={<LayoutGrid />} 
+                    title="No Formation Selected" 
+                    description="Select a formation from the sidebar or create a new one to start planning."
+                    action={canEdit ? { label: 'Create First Formation', onClick: handleOpenAddFormation } : undefined}
+                  />
+                </Card>
+              )}
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="staff" className="mt-0">
@@ -282,6 +401,32 @@ export default function RosterPage() {
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">Cancel</Button>
               <Button type="submit" disabled={createPlayer.isPending || updatePlayer.isPending} className="rounded-full">
                 {editTarget ? 'Save Changes' : 'Add Player'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={formationDialogOpen} onOpenChange={setFormationDialogOpen}>
+        <DialogContent className="max-w-sm rounded-[2rem]">
+          <DialogHeader>
+            <DialogTitle>{formationEditId ? 'Rename Formation' : 'New Formation'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={onFormationSubmit} className="space-y-4 pt-4">
+            <Field>
+              <FieldLabel>Formation Name</FieldLabel>
+              <Input 
+                value={formationEditName} 
+                onChange={e => setFormationName(e.target.value)} 
+                placeholder="e.g. Standard, Defensive, PP Lines..." 
+                className="rounded-full"
+                autoFocus
+              />
+            </Field>
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => setFormationDialogOpen(false)} className="rounded-full">Cancel</Button>
+              <Button type="submit" disabled={createFormation.isPending || updateFormation.isPending} className="rounded-full">
+                {formationEditId ? 'Rename' : 'Create'}
               </Button>
             </DialogFooter>
           </form>
