@@ -63,19 +63,6 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden relative">
       <IceParticles />
       
-      {/* ── Background Floating Blobs ────────────────────── */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-15%] w-[100vw] h-[100vw] bg-primary/40 blur-[200px] rounded-full animate-float-1 animate-blob-pulse" style={{ opacity: 0.8 }} />
-        <div className="absolute bottom-[-30%] right-[-10%] w-[110vw] h-[110vw] bg-blue-600/30 blur-[180px] rounded-full animate-float-2 animate-blob-pulse" style={{ animationDelay: '-7s', opacity: 0.7 }} />
-        <div className="absolute top-[20%] right-[-15%] w-[80vw] h-[80vw] bg-cyan-500/25 blur-[160px] rounded-full animate-float-3 animate-blob-pulse" style={{ animationDelay: '-12s', opacity: 0.6 }} />
-        <div className="absolute top-[50%] left-[-15%] w-[70vw] h-[70vw] bg-blue-400/20 blur-[140px] rounded-full animate-float-4 animate-blob-pulse" style={{ animationDelay: '-4s', opacity: 0.5 }} />
-        <div className="absolute bottom-[20%] left-[10%] w-[75vw] h-[75vw] bg-indigo-500/25 blur-[170px] rounded-full animate-float-1 animate-blob-pulse" style={{ animationDelay: '-18s', opacity: 0.6 }} />
-        <div className="absolute top-[5%] left-[35%] w-[60vw] h-[60vw] bg-sky-400/25 blur-[130px] rounded-full animate-float-3 animate-blob-pulse" style={{ animationDelay: '-25s', opacity: 0.5 }} />
-        <div className="absolute top-[40%] right-[30%] w-[40vw] h-[40vw] bg-primary/15 blur-[110px] rounded-full animate-blob-pulse" style={{ animationDelay: '-2s', opacity: 0.4 }} />
-        <div className="absolute bottom-[10%] left-[40%] w-[45vw] h-[45vw] bg-blue-500/15 blur-[130px] rounded-full animate-blob-pulse" style={{ animationDelay: '-5s', opacity: 0.4 }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] h-[140vh] bg-primary/10 blur-[250px] rounded-full opacity-60" />
-      </div>
-
       {/* ── Navigation ──────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
