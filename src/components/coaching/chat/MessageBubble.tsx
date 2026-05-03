@@ -83,8 +83,8 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
   return (
     <div className={cn("flex items-start gap-4", isOwn ? "flex-row-reverse" : "flex-row")}>
       {isJess ? (
-        <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shadow-lg shadow-primary/10 shrink-0 mt-1 animate-pulse-subtle">
-          <Brain className="w-5 h-5" />
+        <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10 shrink-0 mt-1 animate-pulse-subtle">
+          <Sparkles className="w-5 h-5" />
         </div>
       ) : (
         <div className={cn(
@@ -97,8 +97,8 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
       
       <div className={cn("flex flex-col max-w-[85%]", isOwn ? "items-end" : "items-start")}>
         <div className="flex items-center gap-2 mb-1.5 px-1">
-          <span className={cn("text-[10px] font-black uppercase tracking-wider italic", isOwn ? "text-primary" : isJess ? "text-primary font-black" : "text-zinc-500")}>
-            {isOwn ? 'You' : isJess ? 'Jess (AI)' : message.userDisplayName}
+          <span className={cn("text-[10px] font-black uppercase tracking-wider italic", isOwn ? "text-primary" : isJess ? "text-indigo-400 font-black" : "text-zinc-500")}>
+            {isOwn ? 'You' : isJess ? 'Jess (AI Staff)' : message.userDisplayName}
           </span>
           <span className="text-[9px] text-zinc-600 font-medium uppercase">
             {format(new Date(message.createdAt), 'h:mm a')}
@@ -109,7 +109,7 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
           isOwn 
             ? "bg-primary text-primary-foreground rounded-tr-none border border-primary/20" 
             : isJess
-              ? "bg-zinc-900 border border-primary/30 text-zinc-100 rounded-tl-none ring-1 ring-primary/5"
+              ? "bg-indigo-950/20 border border-indigo-500/20 text-zinc-100 rounded-tl-none ring-1 ring-indigo-500/10"
               : "bg-zinc-900/80 border border-white/5 text-zinc-100 rounded-tl-none"
         )}>
           <div className={cn(isJess && "italic font-medium")}>
@@ -125,11 +125,11 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                 return (
                   <div className={cn(
                     "mt-3 p-3 rounded-xl border flex items-start gap-3",
-                    isHigh ? "bg-primary/10 border-primary/30" : "bg-white/5 border-white/10"
+                    isHigh ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/5 border-white/10"
                   )}>
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      isHigh ? "bg-primary/20 text-primary" : "bg-white/10 text-zinc-400"
+                      isHigh ? "bg-indigo-500/20 text-indigo-400" : "bg-white/10 text-zinc-400"
                     )}>
                       {meta.type === 'jess_reminder' ? <AlertCircle className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
                     </div>
@@ -140,7 +140,7 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                       {meta.gameId && (
                         <button 
                           onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                          className="text-[10px] font-bold text-primary hover:underline block"
+                          className="text-[10px] font-bold text-indigo-400 hover:underline block"
                         >
                           View Related Game Reference
                         </button>
