@@ -78,10 +78,34 @@ export function useJessAI({ messages, sendMessage, contextType, contextId }: Use
   async function handleJessMention(message: CoachMessage) {
     isGenerating.current = true
     try {
+      const now = new Date()
+      const upcoming = games
+        .filter(g => g.status === 'scheduled' && isAfter(parseISO(g.date), subHours(now, 24)))
+        .sort((a, b) => a.date.localeCompare(b.date))[0]
+      
+      const last3 = games
+        .filter(g => g.status !== 'scheduled')
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 3)
+
+      const contextData = {
+        upcomingGame: upcoming ? {
+          opponent: upcoming.opponent,
+          date: format(parseISO(upcoming.date), 'EEEE, MMM do'),
+          time: upcoming.gameTime || 'TBD',
+          location: upcoming.location
+        } : null,
+        recentResults: last3.map(g => `${g.opponent}: ${g.goalsFor}-${g.goalsAgainst} (${g.date})`).join(', ')
+      }
+
       const response = await blink.ai.generateText({
         model: 'google/gemini-3-flash',
         system: JESS_SYSTEM_PROMPT,
-        prompt: `The coach said: "${message.content}". Provide a tactical response as Jess.`
+        prompt: `TEAM CONTEXT:
+Upcoming Game: ${contextData.upcomingGame ? `${contextData.upcomingGame.opponent} on ${contextData.upcomingGame.date} at ${contextData.upcomingGame.time}` : 'No games scheduled'}
+Recent Results: ${contextData.recentResults || 'No recent games'}
+
+The coach said: "${message.content}". Provide a tactical response as Jess. Remember the 1-3 sentence rule and use the data provided.`
       })
 
       // Send the response as Jess
