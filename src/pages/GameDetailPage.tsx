@@ -1,60 +1,25 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import {
-  Button, Badge, Card, CardHeader, CardTitle, CardContent,
-  Input, Textarea, Field, FieldLabel,
-  EmptyState, toast, Separator,
-  Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
+  Badge, Card,
+  EmptyState, toast,
   Tabs, TabsList, TabsTrigger, TabsContent
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic, ClipboardList, LayoutList, Calendar, MessageSquare } from 'lucide-react'
+import { Swords, CheckCircle, ClipboardList, LayoutList, MessageSquare } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes } from '@/hooks/usePreferences'
 import type { GameType } from '@/hooks/usePreferences'
-import { cn } from '@/lib/utils'
-import { CoachsMic } from '@/components/dashboard/CoachsMic'
 import { LineupPlanner } from './games/lineups/LineupPlanner'
 import { CoachChat } from '@/components/coaching/CoachChat'
-import { useUpdateLineup } from '@/hooks/useLineups'
-
-const CONCEPT_FIELDS: { key: string; label: string }[] = [
-  { key: 'breakoutsRating', label: 'Breakouts' },
-  { key: 'forecheckRating', label: 'Forecheck' },
-  { key: 'defensiveZoneRating', label: 'Defensive Zone' },
-  { key: 'zoneEntryRating', label: 'Zone Entry' },
-  { key: 'offensiveZoneRating', label: 'Offensive Zone' },
-  { key: 'passingRating', label: 'Passing' },
-  { key: 'skatingRating', label: 'Skating' },
-]
-
-function RatingRow({ label, value, onChange }: { label: string; value?: number; onChange: (v: number) => void }) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-2">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(n => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(n)}
-            className={cn(
-              'w-8 h-8 rounded-full text-xs font-bold transition-all',
-              (value ?? 0) >= n
-                ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/30'
-                : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-            )}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
+import { GameSummaryHeader } from './games/components/GameSummaryHeader'
+import { GameScorePanel } from './games/components/GameScorePanel'
+import { GameReviewPanel } from './games/components/GameReviewPanel'
+import { GameConfigSidebar } from './games/components/GameConfigSidebar'
+import { CONCEPT_FIELDS } from './games/schema'
 
 export default function GameDetailPage() {
   const { gameId } = useParams({ from: '/games/$gameId' })
@@ -65,12 +30,9 @@ export default function GameDetailPage() {
   const { data: game, isLoading: gameLoading } = useGame(gameId)
   const { data: review } = useGameReview(gameId)
   const { data: teamData } = useTeam()
-  const { getType, getTournamentName, setType } = useGameTypes(teamData?.team?.id)
+  const { getType, setType } = useGameTypes(teamData?.team?.id)
   const gameType: GameType = getType(gameId)
-  const tournamentName = getTournamentName(gameId)
   
-  const updateLineup = useUpdateLineup()
-
   const [activeTab, setActiveTab] = useState('summary')
 
   // Score form state
@@ -158,7 +120,32 @@ export default function GameDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['games'] })
       toast.success('Game score saved')
     },
-    onError: (e: Error) => toast.error('Failed to save', { description: e.message }),
+    onError: (e: Error) => toast.error('Failed to save score', { description: e.message }),
+  })
+
+  const saveReport = useMutation({
+    mutationFn: async (summary: string) => {
+      if (review) {
+        await blink.db.gameReviews.update(review.id, { summary })
+      } else {
+        const user = await blink.auth.me()
+        if (!user) throw new Error('Not authenticated')
+        await blink.db.gameReviews.create({
+          id: crypto.randomUUID(),
+          gameId,
+          userId: user.id,
+          summary,
+          createdAt: new Date().toISOString(),
+        })
+      }
+      await blink.db.games.update(gameId, { status: 'reviewed' })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['game-review', gameId] })
+      toast.success('Post-game report shared to staff board')
+    },
+    onError: (e: Error) => toast.error('Failed to save report', { description: e.message }),
   })
 
   const saveReview = useMutation({
@@ -219,28 +206,17 @@ export default function GameDetailPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Games
-          </Link>
-          <div className="h-4 w-px bg-border hidden sm:block" />
-          <h1 className="text-xl font-bold tracking-tight truncate hidden sm:block">vs. {game.opponent}</h1>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <CoachsMic onApplyNote={handleApplyMicNote} gameId={gameId} />
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
-            onClick={() => navigate({ to: '/games/$gameId/bench', params: { gameId } })}
-          >
-            <Swords className="w-4 h-4" />
-            Enter Bench Mode
-          </Button>
-        </div>
-      </div>
+      <GameSummaryHeader 
+        game={game} 
+        gameId={gameId}
+        resultLabel={resultLabel} 
+        gf={gf} 
+        ga={ga} 
+        dateStr={dateStr} 
+        gameType={gameType} 
+        formatTime={formatTime} 
+        onApplyMicNote={handleApplyMicNote}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -259,7 +235,7 @@ export default function GameDetailPage() {
             </TabsTrigger>
             <TabsTrigger value="review" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <CheckCircle className="w-4 h-4" />
-              Game Review
+              Game Review & Report
             </TabsTrigger>
           </TabsList>
 
@@ -272,150 +248,24 @@ export default function GameDetailPage() {
         <TabsContent value="summary" className="space-y-6 mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              {/* Header Info */}
-              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                        <Swords className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold tracking-tight italic uppercase tracking-tighter">vs. {game.opponent}</h2>
-                        {resultLabel && (
-                          <p className={cn(
-                            'text-sm font-semibold',
-                            resultLabel === 'Win' && 'text-emerald-400',
-                            resultLabel === 'Loss' && 'text-red-400',
-                            resultLabel === 'Tie' && 'text-muted-foreground',
-                          )}>
-                            {resultLabel} — {gf}-{ga}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {dateStr}
-                      </div>
-                      {game.gameTime && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="w-3.5 h-3.5" />
-                          {formatTime(game.gameTime)}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {game.location === 'home' ? 'Home Ice' : 'On the Road'}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Tag className="w-3.5 h-3.5" />
-                        {gameType.charAt(0).toUpperCase() + gameType.slice(1)}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Score Panel */}
-              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Game Result</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                    <Field>
-                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Goals For</FieldLabel>
-                      <Input type="number" min="0" value={goalsFor} onChange={e => setGoalsFor(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
-                    </Field>
-                    <Field>
-                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Goals Against</FieldLabel>
-                      <Input type="number" min="0" value={goalsAgainst} onChange={e => setGoalsAgainst(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
-                    </Field>
-                    <Field>
-                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Shots For</FieldLabel>
-                      <Input type="number" min="0" value={shotsFor} onChange={e => setShotsFor(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
-                    </Field>
-                    <Field>
-                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Shots Against</FieldLabel>
-                      <Input type="number" min="0" value={shotsAgainst} onChange={e => setShotsAgainst(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
-                    </Field>
-                  </div>
-                  
-                  <Field>
-                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Penalties / Discipline</FieldLabel>
-                    <Input value={penalties} onChange={e => setPenalties(e.target.value)} placeholder="e.g. 4 minor · 2 major" className="rounded-2xl" />
-                  </Field>
-
-                  <div className="flex justify-end pt-2">
-                    <Button onClick={() => saveScore.mutate()} disabled={saveScore.isPending} className="gap-2 rounded-full px-8 shadow-lg shadow-primary/20 font-bold uppercase italic tracking-tighter">
-                      <CheckCircle className="w-4 h-4" />
-                      {saveScore.isPending ? 'Saving…' : 'Save Scoreboard'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <GameScorePanel 
+                goalsFor={goalsFor} setGoalsFor={setGoalsFor} 
+                goalsAgainst={goalsAgainst} setGoalsAgainst={setGoalsAgainst} 
+                shotsFor={shotsFor} setShotsFor={setShotsFor} 
+                shotsAgainst={shotsAgainst} setShotsAgainst={setShotsAgainst} 
+                penalties={penalties} setPenalties={setPenalties} 
+                onSave={() => saveScore.mutate()} 
+                isSaving={saveScore.isPending} 
+              />
             </div>
 
-            <div className="space-y-6">
-              {/* Game Settings */}
-              <Card className="border-border bg-sidebar/20 rounded-[2rem] overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Game Configuration</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Field>
-                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Match Type</FieldLabel>
-                    <Select
-                      value={gameType}
-                      disabled={!teamData?.team?.id}
-                      onValueChange={(v) => {
-                        if (!teamData?.team?.id) return
-                        setType(gameId, v as GameType)
-                        toast.success(`Tagged as ${v}`)
-                      }}
-                    >
-                      <SelectTrigger className="rounded-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="league">League</SelectItem>
-                        <SelectItem value="tournament">Tournament</SelectItem>
-                        <SelectItem value="exhibition">Exhibition</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-
-                  {gameType === 'tournament' && (
-                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-2">
-                      <p className="text-[10px] font-black uppercase text-amber-500/80">Tournament View Active</p>
-                      <p className="text-xs text-muted-foreground">This game will contribute to tournament-specific analytics.</p>
-                    </div>
-                  )}
-
-                  <div className="pt-4 flex flex-col gap-2">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start rounded-full gap-2 text-zinc-500 hover:text-white"
-                      onClick={() => setActiveTab('lineup')}
-                    >
-                      <LayoutList className="w-4 h-4" />
-                      Plan Game Lineup
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start rounded-full gap-2 text-zinc-500 hover:text-white"
-                      onClick={() => setActiveTab('review')}
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Post-Game Review
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <GameConfigSidebar 
+              gameId={gameId} 
+              gameType={gameType} 
+              teamId={teamData?.team?.id}
+              setType={setType} 
+              onTabChange={setActiveTab} 
+            />
           </div>
         </TabsContent>
 
@@ -430,50 +280,19 @@ export default function GameDetailPage() {
         </TabsContent>
 
         <TabsContent value="review" className="space-y-6 mt-0">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <Card className="border-border bg-card rounded-[2rem] overflow-hidden h-full">
-                <CardHeader>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Tactical Assessment</CardTitle>
-                  <p className="text-xs text-muted-foreground">Rate performance across core concepts.</p>
-                </CardHeader>
-                <CardContent className="space-y-1 divide-y divide-border">
-                  {CONCEPT_FIELDS.map(({ key, label }) => (
-                    <RatingRow
-                      key={key}
-                      label={label}
-                      value={ratings[key]}
-                      onChange={v => setRatings(prev => ({ ...prev, [key]: v }))}
-                    />
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Coaching Journal</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <Field>
-                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Our Performance</FieldLabel>
-                    <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="What worked? What needs work?" rows={5} className="rounded-[1.5rem] bg-white/[0.02] italic" />
-                  </Field>
-                  <Field>
-                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Opponent Intel <span className="text-muted-foreground lowercase font-normal italic">(for rematch prep)</span></FieldLabel>
-                    <Textarea value={opponentNotes} onChange={e => setOpponentNotes(e.target.value)} placeholder="Their tendencies, key players, strategies..." rows={5} className="rounded-[1.5rem] bg-white/[0.02] italic" />
-                  </Field>
-                  <div className="flex justify-end">
-                    <Button onClick={() => saveReview.mutate()} disabled={saveReview.isPending} className="gap-2 shadow-lg shadow-primary/20 rounded-full px-8 font-black uppercase italic tracking-tighter">
-                      <Save className="w-4 h-4" />
-                      {saveReview.isPending ? 'Saving…' : 'Finalize Review'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <GameReviewPanel 
+            game={game} 
+            review={review} 
+            ratings={ratings} 
+            onRatingChange={(key, val) => setRatings(prev => ({ ...prev, [key]: val }))}
+            notes={notes} 
+            setNotes={setNotes} 
+            opponentNotes={opponentNotes} 
+            setOpponentNotes={setOpponentNotes} 
+            onSave={() => saveReview.mutate()} 
+            isSaving={saveReview.isPending}
+            onSaveReport={(summary) => saveReport.mutate(summary)}
+          />
         </TabsContent>
       </Tabs>
     </div>

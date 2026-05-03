@@ -3,8 +3,9 @@ import { PinnedTopic } from '@/components/coaching/PinnedTopic'
 import { NextEventBanner } from '@/components/coaching/NextEventBanner'
 import { TalkingPointsSidebar } from '@/components/coaching/TalkingPointsSidebar'
 import { RematchBriefingSidebar } from '@/components/coaching/RematchBriefingSidebar'
-import { MessageSquare, Info, Bell, Sparkles } from 'lucide-react'
-import { Card, CardContent, Button, toast } from '@blinkdotnew/ui'
+import { TrendingAnalyticsSidebar } from '@/components/coaching/TrendingAnalyticsSidebar'
+import { MessageSquare, Info, Bell, Sparkles, Brain } from 'lucide-react'
+import { Card, CardContent, Button, toast, Badge } from '@blinkdotnew/ui'
 import { useState, useEffect } from 'react'
 
 export default function CoachBoardPage() {
@@ -57,61 +58,26 @@ export default function CoachBoardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
           <PinnedTopic />
-          <CoachChat contextType="general" title="Strategic Discussion" className="h-[700px]" />
+          <CoachChat contextType="general" title="Strategic Discussion" className="h-[750px]" />
         </div>
         <div className="lg:col-span-4 space-y-6">
           <RematchBriefingSidebar />
+          <TrendingAnalyticsSidebar />
           <TalkingPointsSidebar />
           
-          <Card className="border-primary/20 bg-primary/5 rounded-[2rem] overflow-hidden">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-3 text-primary">
-                <Info className="w-5 h-5" />
-                <h3 className="font-bold uppercase tracking-widest text-xs">About this board</h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                This is a private space for the coaching staff to discuss season goals, line combinations, and overall team progress.
-              </p>
-              <div className="pt-2 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <p className="text-[10px] uppercase font-black text-zinc-400">Realtime Updates</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <p className="text-[10px] uppercase font-black text-zinc-400">Private to Coaches</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <p className="text-[10px] uppercase font-black text-zinc-400">Persisted History</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-6 space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Locker Room Rules</h4>
-            <div className="space-y-3">
-              <div className="flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold">1</div>
-                <p className="text-[11px] text-zinc-500 leading-tight">What's said in the room, stays in the room.</p>
-              </div>
-              <div className="flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 text-blue-500 text-[10px] font-bold">2</div>
-                <p className="text-[11px] text-zinc-500 leading-tight">Focus on technical feedback and player growth.</p>
-              </div>
-              <div className="flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 text-amber-500 text-[10px] font-bold">3</div>
-                <p className="text-[11px] text-zinc-500 leading-tight">Use rich links to keep tactical plans centralized.</p>
-              </div>
+          <div className="bg-primary/5 rounded-[2rem] border border-primary/10 p-6 space-y-3 relative overflow-hidden">
+            <div className="absolute -top-4 -right-4 p-8 opacity-5 text-primary rotate-12">
+              <Brain size={100} />
             </div>
-          </div>
-
-          <div className="bg-primary/5 rounded-[2rem] border border-primary/10 p-6 space-y-3">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary italic">Pro Tip</h4>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Use the <strong>Draft Lines</strong> tool to quickly visualize new combinations without affecting your actual game rosters. Perfect for brainstorming.
-            </p>
+            <div className="relative z-10 space-y-3">
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary italic">Intelligence Engine</h4>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+                Strategic insights are updated in real-time based on game reviews and practice execution data. Use these talking points to align the staff before next session.
+              </p>
+            </div>
           </div>
         </div>
       </div>

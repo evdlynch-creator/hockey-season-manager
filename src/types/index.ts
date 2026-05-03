@@ -108,6 +108,7 @@ export interface GameReview {
   skatingRating?: number
   notes?: string
   opponentNotes?: string
+  summary?: string
   createdAt: string
   userId: string
 }

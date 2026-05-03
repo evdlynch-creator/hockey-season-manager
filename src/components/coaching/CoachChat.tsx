@@ -10,7 +10,7 @@ import {
   Skeleton,
   toast
 } from '@blinkdotnew/ui'
-import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause } from 'lucide-react'
+import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause, ClipboardList } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlayers } from '@/hooks/usePlayers'
@@ -22,6 +22,7 @@ import { PracticeLinkTool } from './tools/PracticeLinkTool'
 import { LineBuilderTool } from './tools/LineBuilderTool'
 import { PollTool } from './tools/PollTool'
 import { CoachVoiceMemoTool } from './tools/CoachVoiceMemoTool'
+import { ChatEventPrompt } from './ChatEventPrompt'
 import { Link, useNavigate } from '@tanstack/react-router'
 
 interface CoachChatProps {
@@ -187,6 +188,8 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
 
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         <div className="space-y-6">
+          {contextType === 'general' && <ChatEventPrompt />}
+          
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className={cn("flex items-start gap-3", i % 2 === 0 ? "flex-row" : "flex-row-reverse")}>
@@ -307,6 +310,38 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
 
                           if (meta.type === 'voice_memo') {
                             return <VoiceMemoCard audioUrl={meta.audioUrl} isOwn={isOwn} />
+                          }
+
+                          if (meta.type === 'post_game_report') {
+                            return (
+                              <button 
+                                onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                                className={cn(
+                                  "w-full p-4 rounded-xl border transition-all text-left space-y-3",
+                                  isOwn 
+                                    ? "bg-white/10 border-white/20 hover:bg-white/20" 
+                                    : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                                )}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-amber-500">
+                                    <ClipboardList className="w-4 h-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Tactical Briefing</span>
+                                  </div>
+                                  <Badge className="bg-amber-500/20 text-amber-500 border-none text-[8px] h-4 font-black rounded-full uppercase">Finalized</Badge>
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="font-bold text-sm">vs. {meta.opponent}</p>
+                                  <p className="text-[10px] opacity-60">Result: {meta.score}</p>
+                                </div>
+                                <p className="text-[11px] italic line-clamp-3 opacity-80 border-l-2 border-white/20 pl-3">
+                                  {meta.summary}
+                                </p>
+                                <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-amber-500/80 pt-1">
+                                  View Full Breakdown <ArrowRight className="w-3 h-3" />
+                                </div>
+                              </button>
+                            )
                           }
                         } catch (e) {
                           return null
