@@ -28,7 +28,7 @@ import {
   TabsTrigger,
   TabsContent
 } from '@blinkdotnew/ui'
-import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog, Plus, MoreVertical } from 'lucide-react'
+import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog, Plus, MoreVertical, LayoutGrid } from 'lucide-react'
 import { usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer } from '../hooks/usePlayers'
 import { useTeam } from '../hooks/useTeam'
 import { useTeamPreferences } from '../hooks/usePreferences'
