@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import type { Container, ISourceOptions } from "@tsparticles/engine";
+import type { ISourceOptions } from "@tsparticles/engine";
 
 export const IceParticles = () => {
   const [init, setInit] = useState(false);
@@ -16,22 +16,10 @@ export const IceParticles = () => {
 
   const options: ISourceOptions = useMemo(
     () => ({
-      fpsLimit: 60,
-      interactivity: {
-        events: {
-          onHover: {
-            enable: true,
-            mode: "bubble",
-          },
-        },
-        modes: {
-          bubble: {
-            distance: 200,
-            duration: 2,
-            opacity: 0.8,
-            size: 4,
-          },
-        },
+      fpsLimit: 120,
+      fullScreen: {
+        enable: true,
+        zIndex: -5,
       },
       particles: {
         color: {
@@ -44,28 +32,24 @@ export const IceParticles = () => {
             default: "out",
           },
           random: true,
-          speed: 0.6,
+          speed: 1,
           straight: false,
         },
         number: {
           density: {
             enable: true,
+            area: 800,
           },
-          value: 60,
+          value: 100,
         },
         opacity: {
-          value: { min: 0.1, max: 0.4 },
+          value: { min: 0.3, max: 0.8 },
         },
         shape: {
           type: "circle",
         },
         size: {
-          value: { min: 1, max: 2 },
-        },
-        wobble: {
-          enable: true,
-          distance: 5,
-          speed: 5,
+          value: { min: 1, max: 3 },
         },
       },
       detectRetina: true,
@@ -77,9 +61,9 @@ export const IceParticles = () => {
 
   return (
     <Particles
-      id="tsparticles"
+      id="ice-particles-rink"
       options={options}
-      className="fixed inset-0 -z-[5] pointer-events-none"
+      className="pointer-events-none"
     />
   );
 };
