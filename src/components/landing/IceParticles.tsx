@@ -7,9 +7,11 @@ export const IceParticles = () => {
   const [init, setInit] = useState(false);
 
   useEffect(() => {
+    console.log("Initializing particles...");
     initParticlesEngine(async (engine) => {
       await loadSlim(engine);
     }).then(() => {
+      console.log("Particles engine ready");
       setInit(true);
     });
   }, []);
@@ -17,13 +19,9 @@ export const IceParticles = () => {
   const options: ISourceOptions = useMemo(
     () => ({
       fpsLimit: 120,
-      fullScreen: {
-        enable: true,
-        zIndex: -5,
-      },
       particles: {
         color: {
-          value: "#ffffff",
+          value: "#00ffff", // Bright Cyan
         },
         move: {
           direction: "bottom-right",
@@ -32,7 +30,7 @@ export const IceParticles = () => {
             default: "out",
           },
           random: true,
-          speed: 1,
+          speed: 3, // Faster
           straight: false,
         },
         number: {
@@ -40,16 +38,21 @@ export const IceParticles = () => {
             enable: true,
             area: 800,
           },
-          value: 100,
+          value: 150, // More
         },
         opacity: {
-          value: { min: 0.3, max: 0.8 },
+          value: 1, // Full opacity
         },
         shape: {
           type: "circle",
         },
         size: {
-          value: { min: 1, max: 3 },
+          value: 10, // Huge
+        },
+        wobble: {
+          enable: true,
+          distance: 10,
+          speed: 10,
         },
       },
       detectRetina: true,
@@ -60,10 +63,11 @@ export const IceParticles = () => {
   if (!init) return null;
 
   return (
-    <Particles
-      id="ice-particles-rink"
-      options={options}
-      className="pointer-events-none"
-    />
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+      <Particles
+        id="ice-particles-rink"
+        options={options}
+      />
+    </div>
   );
 };
