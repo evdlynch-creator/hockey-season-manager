@@ -10,12 +10,16 @@ import {
   Skeleton,
   toast
 } from '@blinkdotnew/ui'
-import { Send, MessageSquare, Loader2 } from 'lucide-react'
+import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
 import { useAuth } from '@/hooks/useAuth'
+import { usePlayers } from '@/hooks/usePlayers'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import type { CoachMessageContext } from '@/types'
+import { PracticeLinkTool } from './tools/PracticeLinkTool'
+import { LineBuilderTool } from './tools/LineBuilderTool'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 interface CoachChatProps {
   contextType: CoachMessageContext
@@ -25,9 +29,13 @@ interface CoachChatProps {
 }
 
 export function CoachChat({ contextType, contextId = null, className, title }: CoachChatProps) {
+  const navigate = useNavigate()
   const { user } = useAuth()
+  const { data: players = [] } = usePlayers()
   const { messages, isLoading, isConnected, sendMessage, isSending } = useCoachMessages(contextType, contextId)
   const [content, setContent] = useState('')
+  const [practiceToolOpen, setPracticeToolOpen] = useState(false)
+  const [lineToolOpen, setLineToolOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const prevMessagesCount = useRef(messages.length)
 
@@ -36,6 +44,21 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     if (!content.trim() || isSending) return
     sendMessage(content.trim())
     setContent('')
+  }
+
+  const handleLinkPractice = (id: string, title: string) => {
+    sendMessage(`Check out this practice plan: ${title}`, JSON.stringify({
+      type: 'practice_link',
+      practiceId: id,
+      practiceTitle: title
+    }))
+  }
+
+  const handleShareLines = (lines: Record<string, string[]>, note: string) => {
+    sendMessage(note || 'Proposed new line combinations for brainstorming.', JSON.stringify({
+      type: 'line_proposal',
+      lines
+    }))
   }
 
   useEffect(() => {
@@ -117,12 +140,80 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                       </span>
                     </div>
                     <div className={cn(
-                      "p-3 rounded-2xl text-sm",
+                      "p-3 rounded-2xl text-sm space-y-3",
                       isOwn 
                         ? "bg-primary text-primary-foreground rounded-tr-none shadow-lg shadow-primary/20" 
                         : "bg-zinc-800/50 border border-white/5 text-foreground rounded-tl-none"
                     )}>
                       {msg.content}
+
+                      {msg.metadata && (() => {
+                        try {
+                          const meta = JSON.parse(msg.metadata)
+                          
+                          if (meta.type === 'practice_link') {
+                            return (
+                              <button 
+                                onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
+                                className={cn(
+                                  "w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left",
+                                  isOwn 
+                                    ? "bg-white/10 border-white/20 hover:bg-white/20" 
+                                    : "bg-primary/10 border-primary/20 hover:bg-primary/20"
+                                )}
+                              >
+                                <div className="min-w-0">
+                                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Linked Practice</p>
+                                  <p className="font-bold text-sm truncate">{meta.practiceTitle}</p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 shrink-0" />
+                              </button>
+                            )
+                          }
+
+                          if (meta.type === 'line_proposal') {
+                            return (
+                              <div className={cn(
+                                "rounded-xl border p-3 space-y-3",
+                                isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
+                              )}>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
+                                  <Users className="w-3 h-3" /> Line Combinations
+                                </p>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids]) => {
+                                    if (pids.length === 0) return null
+                                    return (
+                                      <div key={unit} className="flex items-start gap-2">
+                                        <span className="text-[9px] font-bold uppercase text-zinc-500 w-12 shrink-0 mt-0.5">{unit}</span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {pids.map(pid => {
+                                            const p = players.find(x => x.id === pid)
+                                            return (
+                                              <Badge 
+                                                key={pid} 
+                                                variant="outline" 
+                                                className={cn(
+                                                  "text-[9px] h-5 rounded-full px-1.5 font-bold",
+                                                  isOwn ? "border-white/20 text-white" : "border-primary/20 text-primary"
+                                                )}
+                                              >
+                                                {p?.name.split(' ').pop()}
+                                              </Badge>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )
+                          }
+                        } catch (e) {
+                          return null
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -132,7 +223,26 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
         </div>
       </ScrollArea>
 
-      <div className="p-6 bg-card/50 border-t border-border">
+      <div className="p-6 bg-card/50 border-t border-border space-y-4">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setPracticeToolOpen(true)}
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all"
+          >
+            <Calendar className="w-3 h-3" /> Link Practice
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setLineToolOpen(true)}
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all"
+          >
+            <Users className="w-3 h-3" /> Draft Lines
+          </Button>
+        </div>
+
         <form onSubmit={handleSend} className="flex items-center gap-3">
           <Input 
             value={content}
@@ -155,6 +265,18 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
           </Button>
         </form>
       </div>
+
+      <PracticeLinkTool 
+        open={practiceToolOpen} 
+        onClose={() => setPracticeToolOpen(false)} 
+        onSelect={handleLinkPractice}
+      />
+
+      <LineBuilderTool
+        open={lineToolOpen}
+        onClose={() => setLineToolOpen(false)}
+        onShare={handleShareLines}
+      />
     </Card>
   )
 }

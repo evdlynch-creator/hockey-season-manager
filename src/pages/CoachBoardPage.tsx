@@ -30,7 +30,7 @@ export default function CoachBoardPage() {
         <div>
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
             <MessageSquare className="w-8 h-8 text-primary" />
-            Coaches Messaging Board
+            Locker Room Talk
           </h1>
           <p className="text-muted-foreground mt-2 text-sm">
             Centralized strategic discussions and team-wide planning.
@@ -80,9 +80,27 @@ export default function CoachBoardPage() {
           </Card>
 
           <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-6 space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Chat Contexts</h4>
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
-              Messages posted here are general. You can also find contextual chat boards inside each Practice and Game detail page to discuss specific event planning.
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">Locker Room Rules</h4>
+            <div className="space-y-3">
+              <div className="flex gap-3 items-start">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold">1</div>
+                <p className="text-[11px] text-zinc-500 leading-tight">What's said in the room, stays in the room.</p>
+              </div>
+              <div className="flex gap-3 items-start">
+                <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/20 text-blue-500 text-[10px] font-bold">2</div>
+                <p className="text-[11px] text-zinc-500 leading-tight">Focus on technical feedback and player growth.</p>
+              </div>
+              <div className="flex gap-3 items-start">
+                <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 text-amber-500 text-[10px] font-bold">3</div>
+                <p className="text-[11px] text-zinc-500 leading-tight">Use rich links to keep tactical plans centralized.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-primary/5 rounded-[2rem] border border-primary/10 p-6 space-y-3">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary italic">Pro Tip</h4>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Use the <strong>Draft Lines</strong> tool to quickly visualize new combinations without affecting your actual game rosters. Perfect for brainstorming.
             </p>
           </div>
         </div>

@@ -178,5 +178,6 @@ export interface CoachMessage {
   contextType: CoachMessageContext
   contextId: string | null
   userDisplayName?: string
+  metadata?: string // JSON string for rich content like linked practices or line combinations
   createdAt: string
 }

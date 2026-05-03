@@ -19,7 +19,7 @@ export function NotificationsSettings({ teamId }: { teamId: string }) {
     { key: 'gameReminders', label: 'Game reminders', description: 'Email me before upcoming games.' },
     { key: 'rematchPrep', label: 'Rematch prep alerts', description: 'Notify me when an upcoming game is a rematch.' },
     { key: 'weeklySummary', label: 'Weekly summary', description: 'A short Monday recap of last week and the week ahead.' },
-    { key: 'coachMessages', label: 'Coaches Board alerts', description: 'Show browser notifications when a coach posts a message.' },
+    { key: 'coachMessages', label: 'Locker Room Talk alerts', description: 'Show browser notifications when a coach posts a message.' },
   ]
 
   return (

@@ -87,7 +87,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
               'Notification' in window &&
               Notification.permission === 'granted'
             ) {
-              const title = contextType === 'general' ? 'Coaches Board' : 
+              const title = contextType === 'general' ? 'Locker Room Talk' : 
                             contextType === 'practice' ? 'Practice Planning' : 'Game Strategy'
               
               new Notification(title, {
@@ -114,7 +114,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
 
   // Send message mutation
   const sendMessage = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, metadata }: { content: string, metadata?: string }) => {
       if (!user?.id || !teamId) throw new Error('Missing auth or team')
 
       const newMessage: CoachMessage = {
@@ -124,6 +124,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
         content,
         contextType,
         contextId,
+        metadata,
         userDisplayName: user.displayName || user.email,
         createdAt: new Date().toISOString()
       }
@@ -150,7 +151,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
     messages,
     isLoading,
     isConnected,
-    sendMessage: (content: string) => sendMessage.mutate(content),
+    sendMessage: (content: string, metadata?: string) => sendMessage.mutate({ content, metadata }),
     isSending: sendMessage.isPending
   }
 }
