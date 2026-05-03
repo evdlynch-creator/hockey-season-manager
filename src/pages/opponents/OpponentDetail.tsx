@@ -46,7 +46,7 @@ export function OpponentDetail({ stats, analytics }: OpponentDetailProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {stats.nextGame && (
+      {stats.nextGame && stats.lastPlayed && (
         <div className="rounded-[2rem] border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
             <Swords className="w-4 h-4 text-primary" />

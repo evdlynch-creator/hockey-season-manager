@@ -32,7 +32,7 @@ export function OpponentListItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <p className="font-semibold text-sm text-foreground truncate">{stats.name}</p>
-            {stats.nextGame && (
+            {stats.nextGame && stats.lastPlayed && (
               <Badge className="bg-primary/15 text-primary border-primary/25 border text-[9px] px-1.5 py-0 h-4 shrink-0 rounded-full">
                 Rematch
               </Badge>
