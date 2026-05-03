@@ -6,7 +6,15 @@ import { BlinkProvider, BlinkAuthProvider } from '@blinkdotnew/react'
 import App from './App'
 import './index.css'
 
+import { initParticlesEngine } from "@tsparticles/react"
+import { loadSlim } from "@tsparticles/slim"
+
 const queryClient = new QueryClient()
+
+// Initialize particles engine once
+initParticlesEngine(async (engine) => {
+  await loadSlim(engine)
+})
 
 const isInIframe = window.self !== window.top
 

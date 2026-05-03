@@ -117,7 +117,7 @@ export default function LandingPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden group/hero"
+        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden group/hero z-10"
       >
         {/* Spotlight Overlay */}
         <motion.div 
@@ -201,14 +201,16 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 1, duration: 1 }}
-            className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500"
+            className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500 z-10 relative"
           >
             <DashboardPreview onEnterDemo={enterDemo} />
           </motion.div>
         </div>
       </motion.section>
 
-      <SocialProofStrip />
+      <div className="relative z-10">
+        <SocialProofStrip />
+      </div>
 
       {/* ── Workflow Section ────────────────────────────── */}
       <motion.section 
@@ -216,7 +218,7 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]"
+        className="py-24 relative overflow-hidden border-t border-white/5 z-10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
@@ -301,7 +303,7 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="py-24 bg-[#08080a] relative overflow-hidden"
+        className="py-24 relative overflow-hidden z-10"
       >
         <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-float-3 -z-10" />
         <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-blue-500/5 blur-[80px] rounded-full animate-float-1 -z-10" />
@@ -369,7 +371,7 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="py-32 relative overflow-hidden"
+        className="py-32 relative overflow-hidden z-10"
       >
         <div className="absolute inset-0 bg-primary/5 -z-10" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 blur-[150px] rounded-full animate-pulse-soft -z-10" />
@@ -406,7 +408,7 @@ export default function LandingPage() {
       </motion.section>
 
       {/* ── Footer ────────────────────────────────────── */}
-      <footer className="py-12 border-t border-white/5 bg-[#0a0a0c]">
+      <footer className="py-12 border-t border-white/5 bg-[#0a0a0c] relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 opacity-50 grayscale">

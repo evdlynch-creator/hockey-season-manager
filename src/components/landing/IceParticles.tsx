@@ -1,26 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
+import { useMemo, useEffect, useState } from "react";
+import Particles from "@tsparticles/react";
 import type { ISourceOptions } from "@tsparticles/engine";
 
 export const IceParticles = () => {
   const [init, setInit] = useState(false);
 
+  // We still need to wait for the engine to be ready if it's async
+  // But since we initialized it in main.tsx, we can just check if it's already there
+  // Actually, @tsparticles/react documentation suggests using initParticlesEngine 
+  // even if called multiple times, it will only init once.
+  // To be safe, I'll keep the local init but it should be instantaneous now.
+  
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => {
-      setInit(true);
-    });
+    setInit(true);
   }, []);
 
   const options: ISourceOptions = useMemo(
     () => ({
-      fullScreen: {
-        enable: true,
-        zIndex: -5,
-      },
       fpsLimit: 120,
+      fullScreen: {
+        enable: false,
+      },
       particles: {
         color: {
           value: "#ffffff",
@@ -32,7 +32,7 @@ export const IceParticles = () => {
             default: "out",
           },
           random: true,
-          speed: 0.8,
+          speed: 1,
           straight: false,
         },
         number: {
@@ -40,21 +40,21 @@ export const IceParticles = () => {
             enable: true,
             area: 800,
           },
-          value: 80,
+          value: 100,
         },
         opacity: {
-          value: { min: 0.2, max: 0.5 },
+          value: { min: 0.4, max: 0.8 },
         },
         shape: {
           type: "circle",
         },
         size: {
-          value: { min: 1, max: 3 },
+          value: { min: 2, max: 4 },
         },
         wobble: {
           enable: true,
-          distance: 5,
-          speed: 5,
+          distance: 10,
+          speed: 10,
         },
       },
       detectRetina: true,
@@ -65,10 +65,12 @@ export const IceParticles = () => {
   if (!init) return null;
 
   return (
-    <Particles
-      id="ice-particles-rink"
-      options={options}
-      className="pointer-events-none"
-    />
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+      <Particles
+        id="ice-particles-rink"
+        options={options}
+        className="h-full w-full"
+      />
+    </div>
   );
 };

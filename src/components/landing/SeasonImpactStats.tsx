@@ -30,7 +30,7 @@ export function SeasonImpactStats() {
   ]
 
   return (
-    <section className="py-24 relative overflow-hidden bg-[#0a0a0c]">
+    <section className="py-24 relative overflow-hidden z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
