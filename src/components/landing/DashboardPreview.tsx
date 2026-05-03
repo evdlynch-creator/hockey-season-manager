@@ -36,11 +36,15 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
   return (
     <div className="relative group">
       {/* Background Glow for Preview */}
-      <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700" />
+      <div 
+        className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none" 
+        style={{ transform: "translateZ(0)", willChange: "opacity" }}
+      />
       
       {/* Dashboard Preview Container */}
       <div 
         className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-colors duration-500 group-hover:border-primary/20 cursor-pointer"
+        style={{ transform: "translateZ(0)", willChange: "border-color" }}
         onClick={onEnterDemo}
       >
         {/* Browser Shell Mock */}

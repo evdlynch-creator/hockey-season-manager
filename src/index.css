@@ -187,6 +187,8 @@
   -webkit-background-clip: text;
   animation: shimmer-text 3s linear infinite;
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  transform: translateZ(0);
+  will-change: background-position;
 }
 
 .text-shimmer-white-blue {
@@ -350,6 +352,8 @@
   background-size: 100% 4px;
   z-index: 10;
   opacity: 0.5;
+  transform: translateZ(0);
+  will-change: opacity;
 }
 
 .scanline-pulse {
