@@ -13,12 +13,12 @@ import {
 } from '@blinkdotnew/ui'
 import { Pin, Edit2, Sparkles, X } from 'lucide-react'
 import { usePinnedTopic } from '@/hooks/usePinnedTopic'
-import { usePermissions } from '@/hooks/usePermissions'
+import { useCanEdit } from '@/hooks/usePermissions'
 import { cn } from '@/lib/utils'
 
 export function PinnedTopic() {
   const { topic, isLoading, updateTopic } = usePinnedTopic()
-  const { isOwner } = usePermissions()
+  const canEdit = useCanEdit()
   const [isEditing, setIsEditing] = useState(false)
   const [content, setContent] = useState('')
 
@@ -52,7 +52,7 @@ export function PinnedTopic() {
               </div>
             </div>
 
-            {isOwner && (
+            {canEdit && (
               <Button 
                 variant="ghost" 
                 size="icon" 
