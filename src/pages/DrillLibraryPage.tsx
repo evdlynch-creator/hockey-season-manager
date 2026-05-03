@@ -33,6 +33,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
 import { CONCEPTS, SEGMENT_TYPES, Drill } from '../types'
+import { useNavigate } from '@tanstack/react-router'
 
 const drillSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -53,6 +54,7 @@ export default function DrillLibraryPage() {
   const createDrill = useCreateDrill()
   const updateDrill = useUpdateDrill()
   const deleteDrill = useDeleteDrill()
+  const navigate = useNavigate()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -116,7 +118,7 @@ export default function DrillLibraryPage() {
           icon={<Library className="w-12 h-12 text-muted-foreground/40" />}
           title="Drill Library Disabled"
           description="The Drill Library is currently disabled. You can enable it by turning on 'Player Participation Tracking' in team settings."
-          action={{ label: 'Go to Settings', onClick: () => window.location.hash = '#/settings' }}
+          action={{ label: 'Go to Settings', onClick: () => navigate({ to: '/settings' }) }}
         />
       </div>
     )

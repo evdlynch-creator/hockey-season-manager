@@ -30,6 +30,9 @@ import TeamMembersPage from './pages/TeamMembersPage'
 import SettingsPage from './pages/SettingsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 
+import RosterPage from './pages/RosterPage'
+import DrillLibraryPage from './pages/DrillLibraryPage'
+
 // --- Routes ---
 
 const rootRoute = createRootRoute({
@@ -124,6 +127,18 @@ const teamMembersRoute = createRoute({
   component: TeamMembersPage,
 })
 
+const rosterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/roster',
+  component: RosterPage,
+})
+
+const drillsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/drills',
+  component: DrillLibraryPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute, 
   onboardingRoute,
@@ -138,6 +153,8 @@ const routeTree = rootRoute.addChildren([
   trendsRoute,
   analyticsRoute,
   teamMembersRoute,
+  rosterRoute,
+  drillsRoute,
   settingsRoute
 ])
 const router = createRouter({ routeTree })

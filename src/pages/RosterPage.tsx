@@ -34,6 +34,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
 import type { Player } from '../types'
+import { useNavigate } from '@tanstack/react-router'
 
 const playerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -54,6 +55,7 @@ export default function RosterPage() {
   const updatePlayer = useUpdatePlayer()
   const deletePlayer = useDeletePlayer()
   const canEdit = useCanEdit()
+  const navigate = useNavigate()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -110,7 +112,7 @@ export default function RosterPage() {
           icon={<Users className="w-12 h-12 text-muted-foreground/40" />}
           title="Attendance Tracking Disabled"
           description="Roster management and attendance tracking are currently disabled. You can enable them in the team settings."
-          action={{ label: 'Go to Settings', onClick: () => window.location.hash = '#/settings' }}
+          action={{ label: 'Go to Settings', onClick: () => navigate({ to: '/settings' }) }}
         />
       </div>
     )
