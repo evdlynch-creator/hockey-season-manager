@@ -138,7 +138,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 font-avega italic"
           >
             <Trophy className="w-3 h-3" />
             Built for <span className="text-white">High-Performance</span> Coaching
@@ -148,7 +148,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]"
+            className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1]"
           >
             Master Your Season with <br />
             <span className="heading-premium">
@@ -160,7 +160,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10 animate-fade-in [animation-delay:400ms]"
+            className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10"
           >
             Blue Line IQ turns live game action into actionable coaching plans. 
             Track stats, dictate tactical notes, and generate practice plans in seconds.
@@ -170,7 +170,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <MagneticButton>
               <Button 
@@ -200,8 +200,14 @@ export default function LandingPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500 z-10 relative"
+            whileHover={{ y: -8, scale: 1.01 }}
+            transition={{ 
+              initial: { delay: 1, duration: 1 },
+              animate: { delay: 1, duration: 1 },
+              whileHover: { duration: 0.3, ease: "easeOut" }
+            }}
+            className="rounded-[2rem] p-1 mt-20 z-10 relative bg-white/[0.03] border border-white/5 hover:border-primary/30 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-shadow duration-300"
+            style={{ willChange: "transform" }}
           >
             <DashboardPreview onEnterDemo={enterDemo} />
           </motion.div>

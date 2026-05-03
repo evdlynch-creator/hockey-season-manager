@@ -17,7 +17,7 @@ export const IceParticles = () => {
 
   const options: ISourceOptions = useMemo(
     () => ({
-      fpsLimit: 120,
+      fpsLimit: 60,
       fullScreen: {
         enable: false,
       },

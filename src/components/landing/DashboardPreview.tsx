@@ -34,13 +34,13 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
   }, [])
 
   return (
-    <div className="mt-20 relative group">
+    <div className="relative group">
       {/* Background Glow for Preview */}
       <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-700" />
       
       {/* Dashboard Preview Container */}
       <div 
-        className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-all duration-500 group-hover:scale-[1.01] group-hover:border-primary/20 cursor-pointer"
+        className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-colors duration-500 group-hover:border-primary/20 cursor-pointer"
         onClick={onEnterDemo}
       >
         {/* Browser Shell Mock */}

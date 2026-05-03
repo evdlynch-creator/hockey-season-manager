@@ -59,7 +59,7 @@ export function SeasonImpactStats() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: cat.delay, duration: 0.6 }}
-              className="p-10 rounded-[3rem] border border-white/5 bg-zinc-900/30 backdrop-blur-sm relative group hover-glow overflow-hidden"
+              className="p-10 rounded-[3rem] border border-white/5 bg-zinc-900/30 backdrop-blur-sm relative group hover:border-primary/30 hover:bg-white/[0.05] hover:-translate-y-2 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5),0_0_20px_0_hsla(var(--primary)/0.1)] transition-all duration-300 overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                 <cat.icon size={120} className={cat.color} />
