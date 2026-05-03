@@ -8,7 +8,7 @@ export const IceParticles = () => {
   // We still need to wait for the engine to be ready if it's async
   // But since we initialized it in main.tsx, we can just check if it's already there
   // Actually, @tsparticles/react documentation suggests using initParticlesEngine 
-  // even if called multiple times, it will only init once.
+  // even if called multiples times, it will only init once.
   // To be safe, I'll keep the local init but it should be instantaneous now.
   
   useEffect(() => {
@@ -65,7 +65,7 @@ export const IceParticles = () => {
   if (!init) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 1, transform: "translateZ(0)", backfaceVisibility: "hidden" }}>
       <Particles
         id="ice-particles-rink"
         options={options}

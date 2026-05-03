@@ -133,10 +133,7 @@ export default function LandingPage() {
         {/* Scanline Pulse Overlay */}
         <div className="scanlines scanline-pulse" />
         
-        <div 
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20"
-          style={{ transform: "translateZ(0)", willChange: "transform", backfaceVisibility: "hidden" }}
-        >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,8 +148,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1]"
-            style={{ transform: "translateZ(0)", willChange: "transform, opacity", backfaceVisibility: "hidden" }}
+            className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] relative"
+            style={{ 
+              transform: "translateZ(0)", 
+              willChange: "transform, opacity", 
+              backfaceVisibility: "hidden",
+              isolation: "isolate",
+              contain: "layout"
+            }}
           >
             Master Your Season with <br />
             <span className="heading-premium">
@@ -210,10 +213,24 @@ export default function LandingPage() {
               animate: { delay: 1, duration: 1 },
               whileHover: { duration: 0.3, ease: "easeOut" }
             }}
-            className="rounded-[2rem] p-1 mt-20 relative bg-white/[0.03] border border-white/5 hover:border-primary/30 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-[border-color,box-shadow] duration-300"
-            style={{ transform: "translateZ(0)", willChange: "transform", backfaceVisibility: "hidden" }}
+            className="rounded-[2rem] p-1 mt-20 relative isolation-auto group/preview"
+            style={{ 
+              transform: "translateZ(0)", 
+              willChange: "transform", 
+              backfaceVisibility: "hidden",
+              isolation: "isolate",
+              contain: "layout"
+            }}
           >
-            <DashboardPreview onEnterDemo={enterDemo} />
+            {/* Stable Background Base */}
+            <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
+            
+            {/* Hover Glow Layer (Separated for GPU performance) */}
+            <div className="absolute -inset-4 rounded-[3rem] opacity-0 group-hover/preview:opacity-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-opacity duration-300 pointer-events-none" />
+
+            <div className="relative z-10">
+              <DashboardPreview onEnterDemo={enterDemo} />
+            </div>
           </motion.div>
         </div>
       </motion.section>

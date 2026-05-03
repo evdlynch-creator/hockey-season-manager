@@ -43,8 +43,8 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
       
       {/* Dashboard Preview Container */}
       <div 
-        className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden transition-colors duration-500 group-hover:border-primary/20 cursor-pointer"
-        style={{ transform: "translateZ(0)", willChange: "border-color" }}
+        className="relative rounded-[2rem] border border-white/10 bg-[#0c0c0e] shadow-2xl shadow-black/80 overflow-hidden cursor-pointer"
+        style={{ transform: "translateZ(0)", backfaceVisibility: "hidden" }}
         onClick={onEnterDemo}
       >
         {/* Browser Shell Mock */}
