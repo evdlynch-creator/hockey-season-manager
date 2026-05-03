@@ -166,3 +166,16 @@ export type SegmentType = typeof SEGMENT_TYPES[number]
 
 export const PRACTICE_STATUSES = ['draft', 'scheduled', 'completed', 'reviewed'] as const
 export const GAME_STATUSES = ['scheduled', 'completed', 'reviewed'] as const
+
+export type CoachMessageContext = 'general' | 'practice' | 'game'
+
+export interface CoachMessage {
+  id: string
+  teamId: string
+  userId: string
+  content: string
+  contextType: CoachMessageContext
+  contextId: string | null
+  userDisplayName?: string
+  createdAt: string
+}

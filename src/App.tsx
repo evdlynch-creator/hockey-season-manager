@@ -31,6 +31,7 @@ import AnalyticsPage from './pages/AnalyticsPage'
 
 import RosterPage from './pages/RosterPage'
 import DrillLibraryPage from './pages/DrillLibraryPage'
+import CoachBoardPage from './pages/CoachBoardPage'
 
 // --- Routes ---
 
@@ -132,6 +133,12 @@ const drillsRoute = createRoute({
   component: DrillLibraryPage,
 })
 
+const coachBoardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/coaches-board',
+  component: CoachBoardPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute, 
   onboardingRoute,
@@ -147,6 +154,7 @@ const routeTree = rootRoute.addChildren([
   analyticsRoute,
   rosterRoute,
   drillsRoute,
+  coachBoardRoute,
   settingsRoute
 ])
 const router = createRouter({ routeTree })

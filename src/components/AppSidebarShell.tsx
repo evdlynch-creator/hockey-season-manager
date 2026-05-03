@@ -127,6 +127,7 @@ export function AppSidebarShell() {
         { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
         { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
         { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
+        { to: '/coaches-board', icon: <MessageSquare className="h-4 w-4" />, label: 'Coaches Board' },
       ]
     },
     {

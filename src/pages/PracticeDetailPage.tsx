@@ -4,10 +4,10 @@ import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import {
   Button, Badge, Card, CardHeader, CardContent,
-  EmptyState, toast, Separator,
+  EmptyState, toast, Separator, Tabs, TabsList, TabsTrigger, TabsContent,
 } from '@blinkdotnew/ui'
 import {
-  ArrowLeft, Plus, Pencil, Trash2, CheckCircle, ClipboardList, BookOpen,
+  ArrowLeft, Plus, Pencil, Trash2, CheckCircle, ClipboardList, BookOpen, MessageSquare,
 } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { usePractice, usePracticeSegments } from '@/hooks/usePractices'
@@ -19,6 +19,7 @@ import type { SegmentFormData } from './SegmentDialog'
 import { SegmentCard } from '@/components/practices/SegmentCard'
 import { AttendanceTable } from '@/components/practices/AttendanceTable'
 import { DrillPicker } from '@/components/practices/DrillPicker'
+import { CoachChat } from '@/components/coaching/CoachChat'
 import { cn } from '@/lib/utils'
 import type { PracticeSegment } from '@/types'
 
@@ -38,6 +39,7 @@ export default function PracticeDetailPage() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PracticeSegment | null>(null)
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
+  const [activeTab, setActiveTab] = useState('plan')
 
   const { data: teamData } = useTeam()
   const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
@@ -197,58 +199,77 @@ export default function PracticeDetailPage() {
 
       <Separator />
 
-      {/* Attendance Section */}
-      {teamPrefs.enableAttendance && (
-        <AttendanceTable
-          players={players}
-          attendance={attendance}
-          onToggle={toggleAttendance}
-          className="print:hidden"
-        />
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="bg-secondary/10 p-1 rounded-full border border-white/5 mb-6">
+          <TabsTrigger value="plan" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <ClipboardList className="w-4 h-4" />
+            Practice Plan
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <MessageSquare className="w-4 h-4" />
+            Coaches Chat
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Segments */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-            Segments <span className="ml-1 text-foreground">{segments.length}</span>
-          </h2>
+        <TabsContent value="plan" className="space-y-6 mt-0">
+          {/* Attendance Section */}
           {teamPrefs.enableAttendance && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 rounded-full"
-              onClick={() => setPickerOpen(true)}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              Pick from Library
-            </Button>
-          )}
-        </div>
-
-        {segsLoading ? (
-          Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-[2rem] bg-card border border-border animate-pulse" />
-          ))
-        ) : segments.length === 0 ? (
-          <EmptyState
-            icon={<ClipboardList />}
-            title="No segments yet"
-            description="Break this practice into skating, skill, systems or small area segments."
-            action={{ label: 'Add First Segment', onClick: openAdd }}
-          />
-        ) : (
-          segments.map(s => (
-            <SegmentCard
-              key={s.id}
-              segment={s}
-              practiceId={practiceId}
-              onEdit={openEdit}
-              onDelete={id => deleteSegment.mutate(id)}
+            <AttendanceTable
+              players={players}
+              attendance={attendance}
+              onToggle={toggleAttendance}
+              className="print:hidden"
             />
-          ))
-        )}
-      </div>
+          )}
+
+          {/* Segments */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                Segments <span className="ml-1 text-foreground">{segments.length}</span>
+              </h2>
+              {teamPrefs.enableAttendance && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs text-primary hover:bg-primary/10 rounded-full"
+                  onClick={() => setPickerOpen(true)}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Pick from Library
+                </Button>
+              )}
+            </div>
+
+            {segsLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="h-28 rounded-[2rem] bg-card border border-border animate-pulse" />
+              ))
+            ) : segments.length === 0 ? (
+              <EmptyState
+                icon={<ClipboardList />}
+                title="No segments yet"
+                description="Break this practice into skating, skill, systems or small area segments."
+                action={{ label: 'Add First Segment', onClick: openAdd }}
+              />
+            ) : (
+              segments.map(s => (
+                <SegmentCard
+                  key={s.id}
+                  segment={s}
+                  practiceId={practiceId}
+                  onEdit={openEdit}
+                  onDelete={id => deleteSegment.mutate(id)}
+                />
+              ))
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-0">
+          <CoachChat contextType="practice" contextId={practiceId} className="h-[600px]" />
+        </TabsContent>
+      </Tabs>
 
       <SegmentDialog
         open={dialogOpen}

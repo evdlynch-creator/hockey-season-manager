@@ -9,7 +9,7 @@ import {
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
   Tabs, TabsList, TabsTrigger, TabsContent
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic, ClipboardList, LayoutList, Calendar } from 'lucide-react'
+import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic, ClipboardList, LayoutList, Calendar, MessageSquare } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -18,6 +18,7 @@ import type { GameType } from '@/hooks/usePreferences'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
 import { LineupPlanner } from './games/lineups/LineupPlanner'
+import { CoachChat } from '@/components/coaching/CoachChat'
 import { useUpdateLineup } from '@/hooks/useLineups'
 
 const CONCEPT_FIELDS: { key: string; label: string }[] = [
@@ -252,6 +253,10 @@ export default function GameDetailPage() {
               <LayoutList className="w-4 h-4" />
               Lineup
             </TabsTrigger>
+            <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <MessageSquare className="w-4 h-4" />
+              Coaches Chat
+            </TabsTrigger>
             <TabsTrigger value="review" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <CheckCircle className="w-4 h-4" />
               Game Review
@@ -418,6 +423,10 @@ export default function GameDetailPage() {
           <Card className="border-border bg-card rounded-[2rem] overflow-hidden p-6 md:p-10">
             <LineupPlanner gameId={gameId} />
           </Card>
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-0">
+          <CoachChat contextType="game" contextId={gameId} className="h-[600px]" />
         </TabsContent>
 
         <TabsContent value="review" className="space-y-6 mt-0">
