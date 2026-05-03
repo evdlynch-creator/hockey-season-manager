@@ -51,7 +51,7 @@ export const IceParticles = () => {
           density: {
             enable: true,
           },
-          value: 40,
+          value: 60,
         },
         opacity: {
           value: { min: 0.1, max: 0.4 },
@@ -79,7 +79,7 @@ export const IceParticles = () => {
     <Particles
       id="tsparticles"
       options={options}
-      className="absolute inset-0 z-0 pointer-events-none"
+      className="fixed inset-0 -z-[5] pointer-events-none"
     />
   );
 };
