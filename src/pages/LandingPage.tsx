@@ -133,7 +133,14 @@ export default function LandingPage() {
         {/* Scanline Pulse Overlay */}
         <div className="scanlines scanline-pulse" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
+        <div 
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20"
+          style={{ 
+            transform: "translate3d(0,0,0)", 
+            willChange: "transform",
+            backfaceVisibility: "hidden"
+          }}
+        >
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,11 +157,12 @@ export default function LandingPage() {
             transition={{ delay: 0.4 }}
             className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] relative"
             style={{ 
-              transform: "translateZ(0)", 
+              transform: "translate3d(0,0,0)", 
               willChange: "transform, opacity", 
               backfaceVisibility: "hidden",
               isolation: "isolate",
-              contain: "layout"
+              contain: "layout",
+              WebkitFontSmoothing: "antialiased"
             }}
           >
             Master Your Season with <br />
@@ -215,7 +223,7 @@ export default function LandingPage() {
             }}
             className="rounded-[2rem] p-1 mt-20 relative isolation-auto group/preview"
             style={{ 
-              transform: "translateZ(0)", 
+              transform: "translate3d(0,0,0)", 
               willChange: "transform", 
               backfaceVisibility: "hidden",
               isolation: "isolate",
