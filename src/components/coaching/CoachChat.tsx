@@ -10,7 +10,7 @@ import {
   Skeleton,
   toast
 } from '@blinkdotnew/ui'
-import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause, ClipboardList } from 'lucide-react'
+import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause, ClipboardList, Swords } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlayers } from '@/hooks/usePlayers'
@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import type { CoachMessageContext } from '@/types'
 import { PracticeLinkTool } from './tools/PracticeLinkTool'
 import { LineBuilderTool } from './tools/LineBuilderTool'
+import { GameLinkTool } from './tools/GameLinkTool'
 import { PollTool } from './tools/PollTool'
 import { CoachVoiceMemoTool } from './tools/CoachVoiceMemoTool'
 import { ChatEventPrompt } from './ChatEventPrompt'
@@ -39,6 +40,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   const { messages, isLoading, isConnected, sendMessage, isSending } = useCoachMessages(contextType, contextId)
   const [content, setContent] = useState('')
   const [practiceToolOpen, setPracticeToolOpen] = useState(false)
+  const [gameToolOpen, setGameToolOpen] = useState(false)
   const [lineToolOpen, setLineToolOpen] = useState(false)
   const [pollToolOpen, setPollToolOpen] = useState(false)
   const [voiceToolOpen, setVoiceToolOpen] = useState(false)
@@ -52,11 +54,25 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     setContent('')
   }
 
-  const handleLinkPractice = (id: string, title: string) => {
-    sendMessage(`Check out this practice plan: ${title}`, JSON.stringify({
+  const handleLinkPractice = (id: string, title: string, date: string, index: number) => {
+    const formattedDate = format(new Date(date + 'T00:00:00'), 'MMM do')
+    sendMessage(`Let's review Practice #${index} (${formattedDate}): ${title}`, JSON.stringify({
       type: 'practice_link',
       practiceId: id,
-      practiceTitle: title
+      practiceTitle: title,
+      practiceIndex: index,
+      practiceDate: formattedDate
+    }))
+  }
+
+  const handleLinkGame = (id: string, opponent: string, date: string, score?: string) => {
+    const formattedDate = format(new Date(date + 'T00:00:00'), 'MMM do')
+    sendMessage(`Debriefing game vs ${opponent} (${formattedDate})${score ? ` • Result: ${score}` : ''}`, JSON.stringify({
+      type: 'game_link',
+      gameId: id,
+      opponent,
+      gameDate: formattedDate,
+      score
     }))
   }
 
@@ -153,31 +169,31 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   }
 
   return (
-    <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-2xl", className)}>
-      <div className="p-6 border-b border-border bg-card/50 flex items-center justify-between">
+    <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-[20px] rounded-[2.5rem] overflow-hidden shadow-2xl", className)}>
+      <div className="p-6 border-b border-white/5 bg-zinc-900/40 flex items-center justify-between backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <MessageSquare className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner rotate-3">
+            <MessageSquare className="w-6 h-6 -rotate-3" />
           </div>
           <div>
-            <h3 className="text-lg font-black uppercase tracking-tighter italic italic-700">
+            <h3 className="text-xl font-black uppercase tracking-tighter italic italic-700 leading-none">
               {title || 'Coaches Chat'}
             </h3>
-            <div className="flex items-center gap-2">
-              <div className={cn("w-2 h-2 rounded-full", isConnected ? "bg-emerald-500 animate-pulse" : "bg-zinc-600")} />
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-                {isConnected ? 'Realtime Connected' : 'Connecting...'}
+            <div className="flex items-center gap-2 mt-1">
+              <div className={cn("w-1.5 h-1.5 rounded-full", isConnected ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" : "bg-zinc-600")} />
+              <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">
+                {isConnected ? 'Realtime Operational' : 'Offline'}
               </p>
             </div>
           </div>
         </div>
-        <Badge variant="outline" className="rounded-full text-[10px] font-bold border-primary/20 bg-primary/5 text-primary">
-          {messages.length} Messages
+        <Badge variant="outline" className="rounded-full text-[10px] font-black border-white/10 bg-white/5 text-zinc-400 px-3 py-1">
+          {messages.length} LITS
         </Badge>
       </div>
 
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-        <div className="space-y-6">
+        <div className="space-y-8">
           {contextType === 'general' && <ChatEventPrompt />}
           
           {isLoading ? (
@@ -202,24 +218,27 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
             messages.map((msg) => {
               const isOwn = msg.userId === user?.id
               return (
-                <div key={msg.id} className={cn("flex items-start gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/5 flex items-center justify-center text-[10px] font-black uppercase shrink-0 mt-1">
+                <div key={msg.id} className={cn("flex items-start gap-4", isOwn ? "flex-row-reverse" : "flex-row")}>
+                  <div className={cn(
+                    "w-10 h-10 rounded-2xl border flex items-center justify-center text-[10px] font-black uppercase shrink-0 shadow-lg",
+                    isOwn ? "bg-zinc-100 text-zinc-900 border-white" : "bg-zinc-800 border-white/10 text-zinc-400"
+                  )}>
                     {msg.userDisplayName?.slice(0, 2).toUpperCase() || '??'}
                   </div>
-                  <div className={cn("flex flex-col max-w-[80%]", isOwn ? "items-end" : "items-start")}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider italic">
+                  <div className={cn("flex flex-col max-w-[85%]", isOwn ? "items-end" : "items-start")}>
+                    <div className="flex items-center gap-2 mb-1.5 px-1">
+                      <span className={cn("text-[10px] font-black uppercase tracking-wider italic", isOwn ? "text-primary" : "text-zinc-500")}>
                         {isOwn ? 'You' : msg.userDisplayName}
                       </span>
-                      <span className="text-[9px] text-zinc-600">
+                      <span className="text-[9px] text-zinc-600 font-medium uppercase">
                         {format(new Date(msg.createdAt), 'h:mm a')}
                       </span>
                     </div>
                     <div className={cn(
-                      "p-3 rounded-2xl text-sm space-y-3",
+                      "p-4 rounded-[1.75rem] text-sm leading-relaxed shadow-xl",
                       isOwn 
-                        ? "bg-primary text-primary-foreground rounded-tr-none shadow-lg shadow-primary/20" 
-                        : "bg-zinc-800/50 border border-white/5 text-foreground rounded-tl-none"
+                        ? "bg-primary text-primary-foreground rounded-tr-none border border-primary/20" 
+                        : "bg-zinc-900/80 border border-white/5 text-zinc-100 rounded-tl-none"
                     )}>
                       {msg.content}
 
@@ -232,17 +251,48 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                               <button 
                                 onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
                                 className={cn(
-                                  "w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left",
+                                  "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn",
                                   isOwn 
                                     ? "bg-white/10 border-white/20 hover:bg-white/20" 
                                     : "bg-primary/10 border-primary/20 hover:bg-primary/20"
                                 )}
                               >
                                 <div className="min-w-0">
-                                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Linked Practice</p>
-                                  <p className="font-bold text-sm truncate">{meta.practiceTitle}</p>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-primary text-primary-foreground">#{meta.practiceIndex || '?'}</Badge>
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Linked Practice • {meta.practiceDate}</p>
+                                  </div>
+                                  <p className="font-bold text-base truncate group-hover/btn:translate-x-1 transition-transform">{meta.practiceTitle}</p>
                                 </div>
-                                <ArrowRight className="w-4 h-4 shrink-0" />
+                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
+                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                                </div>
+                              </button>
+                            )
+                          }
+
+                          if (meta.type === 'game_link') {
+                            return (
+                              <button 
+                                onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                                className={cn(
+                                  "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn",
+                                  isOwn 
+                                    ? "bg-white/10 border-white/20 hover:bg-white/20" 
+                                    : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                                )}
+                              >
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-amber-500 text-black">VS</Badge>
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-amber-500/80">Game Debrief • {meta.gameDate}</p>
+                                  </div>
+                                  <p className="font-bold text-base truncate group-hover/btn:translate-x-1 transition-transform">vs. {meta.opponent}</p>
+                                  {meta.score && <p className="text-[10px] font-black text-amber-500/60 uppercase mt-1 tracking-widest">Final Score: {meta.score}</p>}
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
+                                  <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-amber-500" />
+                                </div>
                               </button>
                             )
                           }
@@ -346,21 +396,29 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
         </div>
       </ScrollArea>
 
-      <div className="p-6 bg-card/50 border-t border-border space-y-4">
+      <div className="p-6 bg-zinc-950/40 border-t border-white/5 space-y-4 backdrop-blur-lg">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setPracticeToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Calendar className="w-3 h-3" /> Practice
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
+            onClick={() => setGameToolOpen(true)}
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-amber-500 hover:text-black transition-all shrink-0 px-4"
+          >
+            <Swords className="w-3 h-3" /> Game Link
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
             onClick={() => setLineToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Users className="w-3 h-3" /> Lines
           </Button>
@@ -368,7 +426,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
             variant="outline" 
             size="sm" 
             onClick={() => setPollToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <BarChart3 className="w-3 h-3" /> Poll
           </Button>
@@ -376,7 +434,7 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
             variant="outline" 
             size="sm" 
             onClick={() => setVoiceToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Mic className="w-3 h-3" /> Memo
           </Button>
@@ -387,14 +445,14 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Type your coaching note..."
-            className="flex-1 rounded-full bg-zinc-900 border-white/5 h-12 px-6 focus:ring-primary/20"
+            className="flex-1 rounded-full bg-zinc-900 border-white/10 h-12 px-6 focus:ring-primary/20 text-sm"
             disabled={isSending}
           />
           <Button 
             type="submit" 
             size="icon" 
             disabled={!content.trim() || isSending}
-            className="w-12 h-12 rounded-full shrink-0 shadow-lg shadow-primary/20"
+            className="w-12 h-12 rounded-full shrink-0 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform"
           >
             {isSending ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -409,6 +467,12 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
         open={practiceToolOpen} 
         onClose={() => setPracticeToolOpen(false)} 
         onSelect={handleLinkPractice}
+      />
+
+      <GameLinkTool
+        open={gameToolOpen}
+        onClose={() => setGameToolOpen(false)}
+        onSelect={handleLinkGame}
       />
 
       <LineBuilderTool

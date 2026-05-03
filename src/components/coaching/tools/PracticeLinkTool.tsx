@@ -17,16 +17,20 @@ import { format } from 'date-fns'
 interface PracticeLinkToolProps {
   open: boolean
   onClose: () => void
-  onSelect: (practiceId: string, title: string) => void
+  onSelect: (practiceId: string, title: string, date: string, index: number) => void
 }
 
 export function PracticeLinkTool({ open, onClose, onSelect }: PracticeLinkToolProps) {
   const { data: practices = [], isLoading } = usePractices()
   const [search, setSearch] = useState('')
 
-  const filtered = practices.filter(p => 
-    p.title.toLowerCase().includes(search.toLowerCase())
-  ).slice(0, 10)
+  // Sort practices by date to determine numbering
+  const sortedPractices = [...practices].sort((a, b) => a.date.localeCompare(b.date))
+
+  const filtered = sortedPractices.map((p, i) => ({ ...p, index: i + 1 }))
+    .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
+    .reverse() // Show latest first in the list
+    .slice(0, 10)
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
@@ -60,16 +64,21 @@ export function PracticeLinkTool({ open, onClose, onSelect }: PracticeLinkToolPr
                   <button
                     key={p.id}
                     onClick={() => {
-                      onSelect(p.id, p.title)
+                      onSelect(p.id, p.title, p.date, p.index)
                       onClose()
                     }}
                     className="w-full text-left p-3 rounded-2xl bg-card border border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">{p.title}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="h-4 px-1 text-[8px] border-primary/30 text-primary font-black uppercase rounded-full shrink-0">
+                            #{p.index}
+                          </Badge>
+                          <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">{p.title}</p>
+                        </div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
-                          {p.date ? format(new Date(p.date + 'T00:00:00'), 'MMM d, yyyy') : 'No date'}
+                          {p.date ? format(new Date(p.date + 'T00:00:00'), 'EEEE, MMM do') : 'No date'}
                         </p>
                       </div>
                       <LinkIcon className="w-4 h-4 text-zinc-500 group-hover:text-primary transition-colors shrink-0" />
