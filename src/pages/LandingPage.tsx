@@ -19,7 +19,11 @@ import {
 } from 'lucide-react'
 import { DashboardPreview } from '../components/landing/DashboardPreview'
 import { FeatureCard } from '../components/landing/FeatureCard'
+import { SocialProofStrip } from '../components/landing/SocialProofStrip'
+import { TestimonialSection } from '../components/landing/TestimonialSection'
+import { FAQSection } from '../components/landing/FAQSection'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 export default function LandingPage() {
   const { enterDemo } = useDemoMode()
@@ -85,27 +89,52 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero Section ────────────────────────────────── */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden"
+      >
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in font-avega italic"
+          >
             <Trophy className="w-3 h-3" />
             Built for <span className="text-white">High-Performance</span> Coaching
-          </div>
+          </motion.div>
           
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-5xl lg:text-7xl font-black tracking-tight mb-6 animate-fade-in [animation-delay:200ms] leading-[1.1]"
+          >
             Master Your Season with <br />
             <span className="heading-premium">
               Automated Intelligence
             </span>
-          </h1>
+          </motion.h1>
           
-          <p className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10 animate-fade-in [animation-delay:400ms]">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="max-w-2xl mx-auto text-lg lg:text-xl text-zinc-400 mb-10 animate-fade-in [animation-delay:400ms]"
+          >
             Blue Line IQ turns live game action into actionable coaching plans. 
             Track stats, dictate tactical notes, and generate practice plans in seconds.
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in [animation-delay:600ms]"
+          >
             <Button 
               size="lg"
               className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 btn-premium group rounded-full"
@@ -125,16 +154,29 @@ export default function LandingPage() {
                 Interactive Demo
               </span>
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="hover-glow rounded-[2rem] p-1 mt-20 transition-all duration-500"
+          >
             <DashboardPreview onEnterDemo={enterDemo} />
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
+
+      <SocialProofStrip />
 
       {/* ── Workflow Section ────────────────────────────── */}
-      <section className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]">
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+        className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 rounded-full uppercase tracking-widest text-[10px] font-black px-4 py-1 mb-4">
@@ -183,7 +225,14 @@ export default function LandingPage() {
                 border: "border-primary/20"
               }
             ].map((item, i) => (
-              <div key={i} className="relative z-10 space-y-6 group flex flex-col items-center text-center">
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="relative z-10 space-y-6 group flex flex-col items-center text-center"
+              >
                 <div className={cn(
                   "w-20 h-20 rounded-[2rem] flex items-center justify-center border shadow-2xl transition-all duration-500 group-hover:scale-110",
                   item.bg, item.border
@@ -199,14 +248,20 @@ export default function LandingPage() {
                     {item.desc}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── Features Grid ──────────────────────────────── */}
-      <section className="py-24 bg-[#08080a] relative overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+        className="py-24 bg-[#08080a] relative overflow-hidden"
+      >
         <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/5 blur-[100px] rounded-full animate-float-3 -z-10" />
         <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-blue-500/5 blur-[80px] rounded-full animate-float-1 -z-10" />
         
@@ -217,66 +272,94 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Swords className="text-primary" />}
-              title="Live Bench Mode"
-              description="Record goals, shots, and tactical execution in real-time with a high-contrast bench interface."
-            />
-            <FeatureCard 
-              icon={<Mic className="text-emerald-400" />}
-              title="AI Coach's Mic"
-              description="Dictate observations and scouting reports. AI refines and tags them to tactical concepts automatically."
-            />
-            <FeatureCard 
-              icon={<FileText className="text-amber-400" />}
-              title="Rematch Briefings"
-              description="Generate professional scouting reports for rematches, aggregating every note and pulse score."
-            />
-            <FeatureCard 
-              icon={<TrendingUp className="text-blue-400" />}
-              title="Tactical Pulse"
-              description="Visualize team performance across 6 core concepts. Watch trends evolve as you track more games."
-            />
-            <FeatureCard 
-              icon={<Users className="text-indigo-400" />}
-              title="Staff Intelligence"
-              description="Collaborate with your entire staff. Everyone sees the same live data and scouting intel."
-            />
-            <FeatureCard 
-              icon={<Target className="text-red-400" />}
-              title="Practice Architect"
-              description="Close the gap between identifying a problem and training the solution with AI practice generation."
-            />
+            {[
+              {
+                icon: <Swords className="text-primary" />,
+                title: "Live Bench Mode",
+                description: "Record goals, shots, and tactical execution in real-time with a high-contrast bench interface."
+              },
+              {
+                icon: <Mic className="text-emerald-400" />,
+                title: "AI Coach's Mic",
+                description: "Dictate observations and scouting reports. AI refines and tags them to tactical concepts automatically."
+              },
+              {
+                icon: <FileText className="text-amber-400" />,
+                title: "Rematch Briefings",
+                description: "Generate professional scouting reports for rematches, aggregating every note and pulse score."
+              },
+              {
+                icon: <TrendingUp className="text-blue-400" />,
+                title: "Tactical Pulse",
+                description: "Visualize team performance across 6 core concepts. Watch trends evolve as you track more games."
+              },
+              {
+                icon: <Users className="text-indigo-400" />,
+                title: "Staff Intelligence",
+                description: "Collaborate with your entire staff. Everyone sees the same live data and scouting intel."
+              },
+              {
+                icon: <Target className="text-red-400" />,
+                title: "Practice Architect",
+                description: "Close the gap between identifying a problem and training the solution with AI practice generation."
+              }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <FeatureCard {...feature} />
+              </motion.div>
+            ))}
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      <TestimonialSection />
+      <FAQSection />
 
       {/* ── CTA Section ────────────────────────────────── */}
-      <section className="py-24 relative overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="py-32 relative overflow-hidden"
+      >
         <div className="absolute inset-0 bg-primary/5 -z-10" />
-        <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full animate-float-1 -z-10 opacity-50" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full animate-float-3 -z-10 opacity-40" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 blur-[150px] rounded-full animate-pulse-soft -z-10" />
         
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-primary/20 bg-zinc-900/50 p-10 lg:p-16 text-center shadow-2xl relative overflow-hidden group hover-glow">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[80px] rounded-full animate-float-2 -z-10" />
-            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-primary/20 blur-[60px] rounded-full" />
-            
-            <h2 className="text-3xl lg:text-5xl mb-6 heading-premium">Ready to Level Up Your Coaching?</h2>
-            <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto group-hover:text-zinc-300 transition-colors">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter text-white uppercase leading-none">
+              Your next win starts <br />
+              <span className="text-primary">before the puck drops.</span>
+            </h2>
+            <p className="text-zinc-400 text-lg md:text-xl font-medium italic max-w-2xl mx-auto">
               Join the elite coaching staff using automated intelligence to drive player development.
             </p>
-            <Button 
-              size="lg"
-              className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 btn-premium group rounded-full"
-              onClick={handleLogin}
-            >
-              Start Free Season
-              <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
-            </Button>
+          </div>
+
+          <div className="max-w-md mx-auto relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000" />
+            <div className="relative flex p-1 bg-zinc-900 rounded-full border border-white/10 backdrop-blur-xl">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="flex-1 bg-transparent border-none focus:ring-0 px-6 text-sm text-white placeholder:text-zinc-600 font-medium"
+              />
+              <Button 
+                className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 rounded-full shrink-0"
+              >
+                Request Early Access
+              </Button>
+            </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── Footer ────────────────────────────────────── */}
       <footer className="py-12 border-t border-white/5 bg-[#0a0a0c]">
