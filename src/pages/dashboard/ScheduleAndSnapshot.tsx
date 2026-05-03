@@ -43,8 +43,8 @@ export const ScheduleAndSnapshot = ({
   onNavigateToTrends
 }: ScheduleAndSnapshotProps) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      <motion.div variants={staggerItem}>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 items-stretch">
+      <motion.div variants={staggerItem} className="h-full">
         <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30 h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -83,7 +83,7 @@ export const ScheduleAndSnapshot = ({
         </Card>
       </motion.div>
 
-      <motion.div variants={staggerItem} id="tour-snapshot">
+      <motion.div variants={staggerItem} id="tour-snapshot" className="h-full">
         <Card className="border-border/50 rounded-[2rem] shadow-xl shadow-black/30 h-full">
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
@@ -218,7 +218,7 @@ export const ScheduleAndSnapshot = ({
         </Card>
       </motion.div>
 
-      <motion.div variants={staggerItem}>
+      <motion.div variants={staggerItem} className="h-full">
         <ConceptRadarChart data={radarData} />
       </motion.div>
     </div>
