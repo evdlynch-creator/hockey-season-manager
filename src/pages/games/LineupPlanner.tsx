@@ -14,12 +14,35 @@ import {
   Save, 
   Users, 
   ChevronRight,
-  UserPlus
+  UserPlus,
+  GripVertical,
+  Download
 } from 'lucide-react'
 import { usePlayers } from '@/hooks/usePlayers'
 import { useLineups, useUpdateLineup } from '@/hooks/useLineups'
 import { cn } from '@/lib/utils'
 import type { Player } from '@/types'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
+  DragStartEvent,
+  DragOverEvent,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 const UNITS = [
   'Line 1', 'Line 2', 'Line 3', 'Line 4',
@@ -29,43 +52,241 @@ const UNITS = [
   'Goalies'
 ]
 
-interface LineupPlannerProps {
-  gameId: string
+interface DraggablePlayerProps {
+  player: Player
+  unitId?: string
+  isOverlay?: boolean
 }
 
-export function LineupPlanner({ gameId }: LineupPlannerProps) {
-  const { data: players = [], isLoading: playersLoading } = usePlayers()
+function DraggablePlayer({ player, unitId, isOverlay }: DraggablePlayerProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: player.id,
+    data: {
+      type: 'player',
+      player,
+      unitId
+    }
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center justify-between p-3 rounded-2xl border bg-white/5 border-white/5 transition-all group",
+        isOverlay && "shadow-2xl bg-zinc-900 border-primary/50 scale-105 z-50 cursor-grabbing",
+        !isOverlay && "cursor-grab active:cursor-grabbing"
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-[10px] shrink-0">
+          {player.number}
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-bold truncate">{player.name}</p>
+          <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter">
+            {player.position}
+          </p>
+        </div>
+      </div>
+      <GripVertical className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400" />
+    </div>
+  )
+}
+
+interface UnitContainerProps {
+  id: string
+  players: Player[]
+}
+
+function UnitContainer({ id, players }: UnitContainerProps) {
+  const { setNodeRef } = useSortable({
+    id,
+    data: {
+      type: 'unit',
+      unitId: id
+    }
+  })
+
+  return (
+    <div ref={setNodeRef} className="space-y-2 min-h-[100px] p-4 rounded-[2rem] bg-zinc-950/40 border border-white/5">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-primary/80 italic">
+          {id}
+        </h4>
+        <Badge variant="ghost" className="text-[10px] bg-primary/10 text-primary border-none rounded-full h-5 px-2">
+          {players.length}
+        </Badge>
+      </div>
+      
+      <SortableContext items={players.map(p => p.id)} strategy={verticalListSortingStrategy}>
+        <div className="space-y-2">
+          {players.length === 0 ? (
+            <div className="h-16 flex items-center justify-center border-2 border-dashed border-white/5 rounded-2xl">
+              <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest italic">
+                Drop players here
+              </p>
+            </div>
+          ) : (
+            players.map(player => (
+              <DraggablePlayer key={player.id} player={player} unitId={id} />
+            ))
+          )}
+        </div>
+      </SortableContext>
+    </div>
+  )
+}
+
+interface LineupPlannerProps {
+  gameId: string
+  onImportDefaults?: () => void
+}
+
+export function LineupPlanner({ gameId, onImportDefaults }: LineupPlannerProps) {
+  const { data: allPlayers = [], isLoading: playersLoading } = usePlayers()
   const { data: existingLineups = [], isLoading: lineupsLoading } = useLineups(gameId)
   const updateLineup = useUpdateLineup()
+  
+  const isDefaultMode = gameId === 'SEASON_DEFAULT'
 
-  const [selectedUnit, setSelectedUnit] = useState(UNITS[0])
   const [localLineups, setLocalLineups] = useState<Record<string, string[]>>({})
+  const [activePlayer, setActivePlayer] = useState<Player | null>(null)
 
-  // Initialize local state from DB
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   useEffect(() => {
     if (existingLineups.length > 0) {
       const grouped: Record<string, string[]> = {}
+      UNITS.forEach(u => grouped[u] = [])
       existingLineups.forEach(l => {
         if (!grouped[l.unit]) grouped[l.unit] = []
         grouped[l.unit].push(l.playerId)
       })
       setLocalLineups(grouped)
+    } else {
+      const initial: Record<string, string[]> = {}
+      UNITS.forEach(u => initial[u] = [])
+      setLocalLineups(initial)
     }
   }, [existingLineups])
 
-  const togglePlayerInUnit = (playerId: string) => {
+  const assignedPlayerIds = new Set(Object.values(localLineups).flat())
+  const unassignedPlayers = allPlayers.filter(p => !assignedPlayerIds.has(p.id))
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event
+    const data = active.data.current
+    if (data?.type === 'player') {
+      setActivePlayer(data.player)
+    }
+  }
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    const activeData = active.data.current
+    const overData = over.data.current
+
+    if (activeId === overId) return
+
+    const activeUnit = activeData?.unitId || 'roster'
+    let overUnit = overData?.unitId || (overData?.type === 'unit' ? overData.unitId : null)
+
+    // If hovering over a player in a unit, that's the overUnit
+    if (!overUnit && overData?.type === 'player' && overData.unitId) {
+      overUnit = overData.unitId
+    }
+
+    // If hovering over the roster container
+    if (!overUnit && overId === 'roster-container') {
+      overUnit = 'roster'
+    }
+
+    if (!overUnit) return
+    if (activeUnit === overUnit) return
+
     setLocalLineups(prev => {
-      const currentUnitPlayers = prev[selectedUnit] ?? []
-      const isAlreadyIn = currentUnitPlayers.includes(playerId)
-      
       const next = { ...prev }
-      if (isAlreadyIn) {
-        next[selectedUnit] = currentUnitPlayers.filter(id => id !== playerId)
-      } else {
-        next[selectedUnit] = [...currentUnitPlayers, playerId]
+      
+      // Remove from active unit
+      if (activeUnit !== 'roster') {
+        next[activeUnit] = next[activeUnit].filter(id => id !== activeId)
       }
+
+      // Add to over unit
+      if (overUnit !== 'roster') {
+        const overUnitPlayers = [...(next[overUnit as string] || [])]
+        const overIndex = overUnitPlayers.indexOf(overId)
+        if (overIndex >= 0) {
+          overUnitPlayers.splice(overIndex, 0, activeId)
+        } else {
+          overUnitPlayers.push(activeId)
+        }
+        next[overUnit as string] = overUnitPlayers
+      }
+
       return next
     })
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActivePlayer(null)
+
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    if (activeId === overId) return
+
+    const activeData = active.data.current
+    const overData = over.data.current
+
+    const activeUnit = activeData?.unitId || 'roster'
+    const overUnit = overData?.unitId || (overData?.type === 'unit' ? overData.unitId : 'roster')
+
+    if (activeUnit === overUnit && activeUnit !== 'roster') {
+      setLocalLineups(prev => {
+        const unitPlayers = prev[activeUnit]
+        const oldIndex = unitPlayers.indexOf(activeId)
+        const newIndex = unitPlayers.indexOf(overId)
+        
+        return {
+          ...prev,
+          [activeUnit]: arrayMove(unitPlayers, oldIndex, newIndex)
+        }
+      })
+    }
   }
 
   const handleSave = async () => {
@@ -84,6 +305,13 @@ export function LineupPlanner({ gameId }: LineupPlannerProps) {
     }
   }
 
+  const handleClearAll = () => {
+    const cleared: Record<string, string[]> = {}
+    UNITS.forEach(u => cleared[u] = [])
+    setLocalLineups(cleared)
+    toast.success('Lineup cleared')
+  }
+
   if (playersLoading || lineupsLoading) {
     return <div className="p-8 text-center animate-pulse">Loading lineup data...</div>
   }
@@ -94,162 +322,121 @@ export function LineupPlanner({ gameId }: LineupPlannerProps) {
         <div className="space-y-1">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            Game Lineup Planner
+            {isDefaultMode ? 'Season Default Lines' : 'Game Lineup Planner'}
           </h2>
           <p className="text-xs text-muted-foreground">
-            Organize your players into units for this game.
+            {isDefaultMode 
+              ? 'Set your base lines for the season. These can be imported into individual games.'
+              : 'Drag and drop players to create your game lines.'}
           </p>
         </div>
-        <Button 
-          onClick={handleSave} 
-          disabled={updateLineup.isPending}
-          className="rounded-full gap-2 shadow-lg shadow-primary/20"
-        >
-          <Save className="w-4 h-4" />
-          {updateLineup.isPending ? 'Saving...' : 'Save Lineup'}
-        </Button>
+        <div className="flex gap-2">
+          {!isDefaultMode && onImportDefaults && assignedPlayerIds.size === 0 && (
+            <Button 
+              variant="outline" 
+              onClick={onImportDefaults}
+              className="rounded-full gap-2 border-primary/20 text-primary hover:bg-primary/5"
+            >
+              <Download className="w-4 h-4" />
+              Import Defaults
+            </Button>
+          )}
+          <Button 
+            variant="ghost" 
+            onClick={handleClearAll}
+            className="rounded-full text-zinc-500 hover:text-red-400"
+          >
+            Clear All
+          </Button>
+          <Button 
+            onClick={handleSave} 
+            disabled={updateLineup.isPending}
+            className="rounded-full gap-2 shadow-lg shadow-primary/20"
+          >
+            <Save className="w-4 h-4" />
+            {updateLineup.isPending ? 'Saving...' : 'Save Lineup'}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[600px]">
-        {/* Left: Unit Selector */}
-        <div className="md:col-span-3 space-y-2 overflow-y-auto pr-2">
-          {UNITS.map(unit => {
-            const count = (localLineups[unit] ?? []).length
-            return (
-              <button
-                key={unit}
-                onClick={() => setSelectedUnit(unit)}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-sm font-bold italic uppercase tracking-tighter",
-                  selectedUnit === unit 
-                    ? "bg-primary text-primary-foreground border-primary shadow-md" 
-                    : "bg-card border-border hover:bg-secondary/50 text-muted-foreground"
-                )}
-              >
-                <span>{unit}</span>
-                {count > 0 && (
-                  <Badge className={cn(
-                    "rounded-full h-5 px-1.5 min-w-[20px] flex items-center justify-center",
-                    selectedUnit === unit ? "bg-white text-primary" : "bg-primary/10 text-primary"
-                  )}>
-                    {count}
-                  </Badge>
-                )}
-              </button>
-            )
-          })}
-        </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[700px]">
+          {/* Left: Roster Section */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-6 flex flex-col h-full shadow-inner">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                  <UserPlus className="w-3.5 h-3.5" /> Available Players
+                </h3>
+                <Badge variant="outline" className="rounded-full border-white/10 text-[10px] text-zinc-400 px-2 py-0.5">
+                  {unassignedPlayers.length}
+                </Badge>
+              </div>
 
-        {/* Middle: Player Roster */}
-        <div className="md:col-span-4 bg-zinc-950/40 rounded-[2rem] border border-white/5 p-4 flex flex-col min-h-0">
-          <div className="mb-4">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2 px-2">
-              <UserPlus className="w-3 h-3" /> Team Roster
-            </h3>
-          </div>
-          <ScrollArea className="flex-1 -mx-2 px-2">
-            <div className="space-y-2">
-              {players.map(player => {
-                const isSelected = (localLineups[selectedUnit] ?? []).includes(player.id)
-                // Find if player is in ANY other unit
-                const otherUnits = Object.entries(localLineups)
-                  .filter(([u, ids]) => u !== selectedUnit && ids.includes(player.id))
-                  .map(([u]) => u)
-
-                return (
-                  <button
-                    key={player.id}
-                    onClick={() => togglePlayerInUnit(player.id)}
-                    className={cn(
-                      "w-full flex items-center justify-between p-2 rounded-xl border transition-all active:scale-[0.98] text-left",
-                      isSelected 
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                        : "bg-secondary/10 border-white/5 hover:border-white/10"
+              <ScrollArea id="roster-container" className="flex-1 -mx-2 px-2">
+                <SortableContext items={unassignedPlayers.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                  <div className="grid grid-cols-1 gap-2.5 pb-10">
+                    {unassignedPlayers.length === 0 ? (
+                      <div className="h-40 flex flex-col items-center justify-center text-center space-y-2 border-2 border-dashed border-white/5 rounded-[2rem]">
+                        <Users className="w-8 h-8 text-zinc-800" />
+                        <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest italic">
+                          All Players Assigned
+                        </p>
+                      </div>
+                    ) : (
+                      unassignedPlayers.map(player => (
+                        <DraggablePlayer key={player.id} player={player} />
+                      ))
                     )}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-[10px] shrink-0">
-                        {player.number}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold truncate">{player.name}</p>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          {otherUnits.map(u => (
-                            <span key={u} className="text-[8px] uppercase font-black text-zinc-500 bg-white/5 px-1 rounded">
-                              {u}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    {isSelected && <ChevronRight className="w-4 h-4 text-emerald-500 shrink-0" />}
-                  </button>
-                )
-              })}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Right: Active Unit View */}
-        <div className="md:col-span-5 bg-card rounded-[2rem] border border-border p-6 flex flex-col min-h-0 shadow-xl">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-primary">
-                {selectedUnit}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {(localLineups[selectedUnit] ?? []).length} Players Assigned
-              </p>
+                  </div>
+                </SortableContext>
+              </ScrollArea>
             </div>
           </div>
-          
-          <ScrollArea className="flex-1 -mx-2 px-2">
-            <div className="grid grid-cols-1 gap-3">
-              {(localLineups[selectedUnit] ?? []).length === 0 ? (
-                <div className="h-40 flex flex-col items-center justify-center text-center space-y-2 border-2 border-dashed border-white/5 rounded-[2rem]">
-                  <Users className="w-8 h-8 text-zinc-800" />
-                  <p className="text-xs text-zinc-600 font-bold uppercase tracking-widest italic">
-                    Unit is Empty
-                  </p>
-                </div>
-              ) : (
-                (localLineups[selectedUnit] ?? []).map(pid => {
-                  const player = players.find(p => p.id === pid)
-                  if (!player) return null
+
+          {/* Right: Units Grid */}
+          <div className="lg:col-span-8">
+            <ScrollArea className="h-[700px] -mx-4 px-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
+                {UNITS.map(unit => {
+                  const unitPlayerIds = localLineups[unit] || []
+                  const unitPlayers = unitPlayerIds
+                    .map(id => allPlayers.find(p => p.id === id))
+                    .filter((p): p is Player => p !== undefined)
+                  
                   return (
-                    <div 
-                      key={pid} 
-                      className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 border-2 border-zinc-800">
-                          <div className="bg-zinc-800 w-full h-full flex items-center justify-center font-bold text-zinc-500">
-                            {player.number}
-                          </div>
-                        </Avatar>
-                        <div>
-                          <p className="font-bold text-sm text-white">{player.name}</p>
-                          <p className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter">
-                            {player.position}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => togglePlayerInUnit(pid)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-full"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <UnitContainer 
+                      key={unit} 
+                      id={unit} 
+                      players={unitPlayers} 
+                    />
                   )
-                })
-              )}
-            </div>
-          </ScrollArea>
+                })}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
-      </div>
+
+        <DragOverlay dropAnimation={{
+          sideEffects: defaultDropAnimationSideEffects({
+            styles: {
+              active: {
+                opacity: '0.5',
+              },
+            },
+          }),
+        }}>
+          {activePlayer ? (
+            <DraggablePlayer player={activePlayer} isOverlay />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 }

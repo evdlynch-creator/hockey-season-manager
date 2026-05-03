@@ -141,9 +141,8 @@ export function AppSidebarShell() {
     {
       label: 'Management',
       items: [
-        ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
+        { to: '/roster', icon: <Users className="h-4 w-4" />, label: 'Team Management' },
         ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
-        { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
         { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
       ]
     }
