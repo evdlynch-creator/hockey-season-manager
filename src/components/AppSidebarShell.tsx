@@ -170,44 +170,26 @@ export function AppSidebarShell() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div onClick={exitDemo} className={cn("cursor-pointer flex items-center justify-center", isDemo && "text-amber-500")}>
-                  {currentTeam?.logoUrl ? (
-                    <img
-                      src={currentTeam.logoUrl}
-                      alt={currentTeam.name}
-                      className="h-8 w-8 mx-auto object-contain select-none"
-                      draggable={false}
-                    />
-                  ) : (
-                    <img
-                      src={iqPlusLogoUrl}
-                      alt="Blue Line IQ"
-                      className="h-7 w-7 mx-auto object-contain select-none"
-                      draggable={false}
-                    />
-                  )}
+                  <img
+                    src={iqPlusLogoUrl}
+                    alt="Blue Line IQ"
+                    className="h-7 w-7 mx-auto object-contain select-none"
+                    draggable={false}
+                  />
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right">{isDemo ? 'Exit Demo Mode' : (currentTeam?.name ?? 'Blue Line IQ')}</TooltipContent>
+              <TooltipContent side="right">{isDemo ? 'Exit Demo Mode' : 'Blue Line IQ'}</TooltipContent>
             </Tooltip>
           ) : (
             <>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5 justify-center -ml-2">
                 <div className="flex items-center gap-3 px-2">
-                  {currentTeam?.logoUrl ? (
-                    <img
-                      src={currentTeam.logoUrl}
-                      alt={currentTeam.name}
-                      className="h-8 w-auto object-contain select-none max-w-[100px]"
-                      draggable={false}
-                    />
-                  ) : (
-                    <img
-                      src={logoUrl}
-                      alt="Blue Line IQ"
-                      className="h-7 w-auto object-contain select-none scale-110"
-                      draggable={false}
-                    />
-                  )}
+                  <img
+                    src={logoUrl}
+                    alt="Blue Line IQ"
+                    className="h-7 w-auto object-contain select-none scale-110"
+                    draggable={false}
+                  />
                 </div>
                 {isDemo && (
                   <button
@@ -242,8 +224,12 @@ export function AppSidebarShell() {
               <DropdownMenuTrigger asChild>
                 <button className="w-full flex items-center justify-between gap-2 p-2.5 rounded-full bg-secondary/30 hover:bg-secondary/50 border border-sidebar-border transition-all duration-300 group shadow-sm active:scale-95">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
-                      <Users className="w-4.5 h-4.5 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner overflow-hidden">
+                      {currentTeam?.logoUrl ? (
+                        <img src={currentTeam.logoUrl} alt={currentTeam.name} className="w-full h-full object-contain" />
+                      ) : (
+                        <Users className="w-4.5 h-4.5 text-primary" />
+                      )}
                     </div>
                     <div className="flex flex-col text-left min-w-0">
                       <span className="text-xs font-bold text-foreground truncate">{currentTeam?.name ?? 'Select Team'}</span>
@@ -268,7 +254,13 @@ export function AppSidebarShell() {
                     )}
                     onClick={() => switchTeam(t.id)}
                   >
-                    <Users className="w-3.5 h-3.5" />
+                    {t.logoUrl ? (
+                      <div className="w-4 h-4 rounded-full overflow-hidden shrink-0 border border-border/50">
+                        <img src={t.logoUrl} alt={t.name} className="w-full h-full object-contain" />
+                      </div>
+                    ) : (
+                      <Users className="w-3.5 h-3.5" />
+                    )}
                     <span className="flex-1 truncate">{t.name}</span>
                     {t.id === currentTeam?.id && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                   </DropdownMenuItem>
