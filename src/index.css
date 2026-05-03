@@ -128,7 +128,19 @@
 }
 
 .heading-premium {
-  @apply font-avega italic text-shimmer font-black;
+  @apply font-avega italic text-shimmer font-black relative inline-block;
+}
+
+.heading-glow-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: #38bdf8;
+  opacity: 0.3;
+  filter: blur(25px);
+  pointer-events: none;
+  user-select: none;
+  -webkit-text-fill-color: initial;
 }
 
 /* Dark-mode overrides */
@@ -188,14 +200,10 @@
   background-clip: text;
   -webkit-background-clip: text;
   animation: shimmer-text 3s linear infinite;
-  transform: translateZ(0);
-  will-change: background-position;
-  /* Removed text-shadow from here as it causes blackout with background-clip: text */
+  /* Removed transform and will-change as they can conflict with parent layers */
 }
 
-.text-glow {
-  filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.3));
-}
+/* Removed text-glow filter as it causes blackout with background-clip: text */
 
 .text-shimmer-white-blue {
   background: linear-gradient(

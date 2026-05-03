@@ -124,7 +124,10 @@ export default function LandingPage() {
           </motion.div>
           
           {/* Stable Heading Container */}
-          <div className="min-h-[140px] lg:min-h-[180px] flex flex-col items-center justify-center">
+          <div 
+            className="min-h-[140px] lg:min-h-[180px] flex flex-col items-center justify-center overflow-visible"
+            style={{ contain: "paint" }}
+          >
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -142,6 +145,9 @@ export default function LandingPage() {
               Master Your Season with <br />
               <span className="heading-premium">
                 Automated Intelligence
+                <span className="heading-glow-backdrop" aria-hidden="true">
+                  Automated Intelligence
+                </span>
               </span>
             </motion.h1>
           </div>
@@ -180,28 +186,32 @@ export default function LandingPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            whileHover={{ y: -8, scale: 1.01 }}
             onHoverStart={() => setIsDashboardHovered(true)}
             onHoverEnd={() => setIsDashboardHovered(false)}
             transition={{ 
               initial: { delay: 1, duration: 1 },
-              animate: { delay: 1, duration: 1 },
-              whileHover: { duration: 0.3, ease: "easeOut" }
+              animate: { delay: 1, duration: 1 }
             }}
             className="rounded-[2rem] p-1 mt-20 relative isolation-auto group/preview"
             style={{ 
               transform: "translate3d(0,0,0)", 
-              willChange: "transform", 
               backfaceVisibility: "hidden",
               isolation: "isolate",
               contain: "layout"
             }}
           >
-            <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
-            <div className="absolute -inset-4 rounded-[3rem] opacity-0 group-hover/preview:opacity-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-opacity duration-300 pointer-events-none" />
-            <div className="relative z-10">
-              <DashboardPreview onEnterDemo={enterDemo} />
-            </div>
+            {/* Inner hover effect wrapper to prevent layout shift */}
+            <motion.div
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="relative w-full h-full"
+            >
+              <div className="absolute inset-0 rounded-[2rem] bg-white/[0.03] border border-white/5 transition-colors duration-300 group-hover/preview:border-primary/30" />
+              <div className="absolute -inset-4 rounded-[3rem] opacity-0 group-hover/preview:opacity-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5),0_0_30px_0_hsla(var(--primary)/0.2)] transition-opacity duration-300 pointer-events-none" />
+              <div className="relative z-10">
+                <DashboardPreview onEnterDemo={enterDemo} />
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </motion.section>
