@@ -112,19 +112,6 @@ export default function RosterPage() {
 
   if (isLoading) return <div className="p-8">Loading roster...</div>
 
-  if (!teamPrefs.enableAttendance) {
-    return (
-      <div className="p-4 md:p-8 max-w-4xl mx-auto">
-        <EmptyState
-          icon={<Users className="w-12 h-12 text-muted-foreground/40" />}
-          title="Attendance Tracking Disabled"
-          description="Roster management and attendance tracking are currently disabled. You can enable them in the team settings."
-          action={{ label: 'Go to Settings', onClick: () => navigate({ to: '/settings' }) }}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
