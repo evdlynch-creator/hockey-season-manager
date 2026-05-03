@@ -82,6 +82,20 @@ export default function BenchModePage() {
     })
   }
   
+  const toggleUnit = (playerIds: string[]) => {
+    setOnIcePlayers(prev => {
+      const next = new Set(prev)
+      const allOn = playerIds.every(id => prev.has(id))
+      
+      if (allOn) {
+        playerIds.forEach(id => next.delete(id))
+      } else {
+        playerIds.forEach(id => next.add(id))
+      }
+      return next
+    })
+  }
+  
   // Tactical Pulse state
   const [tacticalPulse, setTacticalPulse] = useState<Record<string, { plus: number, minus: number }>>(() => {
     const initial: any = {}
@@ -373,6 +387,7 @@ export default function BenchModePage() {
               onIcePlayers={onIcePlayers}
               playerStats={playerStats}
               onToggleOnIce={toggleOnIce}
+              onToggleUnit={toggleUnit}
             />
           )}
         </div>

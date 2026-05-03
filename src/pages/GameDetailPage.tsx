@@ -7,8 +7,9 @@ import {
   Input, Textarea, Field, FieldLabel,
   EmptyState, toast, Separator,
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
+  Tabs, TabsList, TabsTrigger, TabsContent
 } from '@blinkdotnew/ui'
-import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic } from 'lucide-react'
+import { ArrowLeft, Swords, CheckCircle, Save, MapPin, Tag, Clock, Mic, ClipboardList, LayoutList, Calendar } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -16,6 +17,7 @@ import { useGameTypes } from '@/hooks/usePreferences'
 import type { GameType } from '@/hooks/usePreferences'
 import { cn } from '@/lib/utils'
 import { CoachsMic } from '@/components/dashboard/CoachsMic'
+import { LineupPlanner } from './games/LineupPlanner'
 
 const CONCEPT_FIELDS: { key: string; label: string }[] = [
   { key: 'breakoutsRating', label: 'Breakouts' },
@@ -64,6 +66,8 @@ export default function GameDetailPage() {
   const { getType, getTournamentName, setType } = useGameTypes(teamData?.team?.id)
   const gameType: GameType = getType(gameId)
   const tournamentName = getTournamentName(gameId)
+
+  const [activeTab, setActiveTab] = useState('summary')
 
   // Score form state
   const [goalsFor, setGoalsFor] = useState<string>('')
@@ -117,6 +121,7 @@ export default function GameDetailPage() {
           }
         })
         setRatings(newRatings)
+        setActiveTab('review')
         toast.info('Ratings pre-populated from Bench Mode')
       } catch (e) {
         console.error('Failed to parse auto-scores', e)
@@ -209,177 +214,256 @@ export default function GameDetailPage() {
     : null
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back to Games
-        </Link>
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
-          onClick={() => navigate({ to: '/games/$gameId/bench', params: { gameId } })}
-        >
-          <Swords className="w-4 h-4" />
-          Enter Bench Mode
-        </Button>
-      </div>
-
-      <CoachsMic onApplyNote={handleApplyMicNote} gameId={gameId} />
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1 flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge className="bg-primary/10 text-primary border-primary/20 border rounded-full">{game.status}</Badge>
-            {gameType === 'tournament' && (
-              <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 border rounded-full">Tournament</Badge>
-            )}
-            {gameType === 'tournament' && tournamentName && (
-              <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20 border rounded-full">{tournamentName}</Badge>
-            )}
-            {gameType === 'exhibition' && (
-              <Badge className="bg-violet-500/15 text-violet-300 border-violet-500/30 border rounded-full">Exhibition</Badge>
-            )}
-            {gameType === 'league' && (
-              <Badge variant="outline" className="text-muted-foreground border-border rounded-full">League</Badge>
-            )}
-            <span className="text-xs text-muted-foreground">{dateStr}</span>
-            {game.gameTime && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="w-3 h-3" />{formatTime(game.gameTime)}
-              </span>
-            )}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {game.location === 'home' ? 'Home' : 'Away'}
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight truncate">vs. {game.opponent}</h1>
-          {resultLabel && (
-            <p className={cn(
-              'text-sm font-semibold',
-              resultLabel === 'Win' && 'text-emerald-400',
-              resultLabel === 'Loss' && 'text-red-400',
-              resultLabel === 'Tie' && 'text-muted-foreground',
-            )}>
-              {resultLabel} — {gf}-{ga}
-            </p>
-          )}
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link to="/games" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Games
+          </Link>
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          <h1 className="text-xl font-bold tracking-tight truncate hidden sm:block">vs. {game.opponent}</h1>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <CoachsMic onApplyNote={handleApplyMicNote} gameId={gameId} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => navigate({ to: '/games/$gameId/bench', params: { gameId } })}
+          >
+            <Swords className="w-4 h-4" />
+            Enter Bench Mode
+          </Button>
         </div>
       </div>
 
-      <Separator />
-
-      {/* Game Type Selector */}
-      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-        <CardContent className="p-4 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2 text-sm">
-            <Tag className="w-4 h-4 text-muted-foreground" />
-            <span className="font-medium text-foreground">Game Type</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              · used to filter dashboards & analytics
-            </span>
-          </div>
-          <Select
-            value={gameType}
-            disabled={!teamData?.team?.id}
-            onValueChange={(v) => {
-              if (!teamData?.team?.id) return
-              setType(gameId, v as GameType)
-              toast.success(`Tagged as ${v}`)
-            }}
-          >
-            <SelectTrigger className="w-44 rounded-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="league">League</SelectItem>
-              <SelectItem value="tournament">Tournament</SelectItem>
-              <SelectItem value="exhibition">Exhibition</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-
-      {/* Score Panel */}
-      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-base">Game Score</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>Goals For</FieldLabel>
-              <Input type="number" min="0" value={goalsFor} onChange={e => setGoalsFor(e.target.value)} placeholder="0" className="rounded-full" />
-            </Field>
-            <Field>
-              <FieldLabel>Goals Against</FieldLabel>
-              <Input type="number" min="0" value={goalsAgainst} onChange={e => setGoalsAgainst(e.target.value)} placeholder="0" className="rounded-full" />
-            </Field>
-            <Field>
-              <FieldLabel>Shots For</FieldLabel>
-              <Input type="number" min="0" value={shotsFor} onChange={e => setShotsFor(e.target.value)} placeholder="0" className="rounded-full" />
-            </Field>
-            <Field>
-              <FieldLabel>Shots Against</FieldLabel>
-              <Input type="number" min="0" value={shotsAgainst} onChange={e => setShotsAgainst(e.target.value)} placeholder="0" className="rounded-full" />
-            </Field>
-          </div>
-          <Field>
-            <FieldLabel>Penalties <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
-            <Input value={penalties} onChange={e => setPenalties(e.target.value)} placeholder="e.g. 4 minor · 2 major" className="rounded-full" />
-          </Field>
-          <div className="flex justify-end">
-            <Button onClick={() => saveScore.mutate()} disabled={saveScore.isPending} className="gap-2 rounded-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+          <TabsList className="bg-secondary/10 p-1 rounded-full border border-white/5">
+            <TabsTrigger value="summary" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ClipboardList className="w-4 h-4" />
+              Summary
+            </TabsTrigger>
+            <TabsTrigger value="lineup" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <LayoutList className="w-4 h-4" />
+              Lineup
+            </TabsTrigger>
+            <TabsTrigger value="review" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <CheckCircle className="w-4 h-4" />
-              {saveScore.isPending ? 'Saving…' : 'Save Score'}
-            </Button>
+              Game Review
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex items-center gap-2">
+            <Badge className="bg-primary/10 text-primary border-primary/20 border rounded-full">{game.status}</Badge>
+            <span className="text-xs text-muted-foreground">{dateStr}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Review Panel */}
-      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-base">Concept Review</CardTitle>
-          <p className="text-xs text-muted-foreground">Rate how each core concept performed during the game (1 = poor, 5 = excellent).</p>
-        </CardHeader>
-        <CardContent className="space-y-1 divide-y divide-border">
-          {CONCEPT_FIELDS.map(({ key, label }) => (
-            <RatingRow
-              key={key}
-              label={label}
-              value={ratings[key]}
-              onChange={v => setRatings(prev => ({ ...prev, [key]: v }))}
-            />
-          ))}
-        </CardContent>
-      </Card>
+        <TabsContent value="summary" className="space-y-6 mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Header Info */}
+              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <Swords className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold tracking-tight italic uppercase tracking-tighter">vs. {game.opponent}</h2>
+                        {resultLabel && (
+                          <p className={cn(
+                            'text-sm font-semibold',
+                            resultLabel === 'Win' && 'text-emerald-400',
+                            resultLabel === 'Loss' && 'text-red-400',
+                            resultLabel === 'Tie' && 'text-muted-foreground',
+                          )}>
+                            {resultLabel} — {gf}-{ga}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-      {/* Notes Panel */}
-      <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-base">Notes</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field>
-            <FieldLabel>Team Notes</FieldLabel>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="What worked? What needs work?" rows={3} className="rounded-[2rem]" />
-          </Field>
-          <Field>
-            <FieldLabel>Opponent Notes <span className="text-muted-foreground text-xs">(for rematch prep)</span></FieldLabel>
-            <Textarea value={opponentNotes} onChange={e => setOpponentNotes(e.target.value)} placeholder="Their tendencies, key players, strategies..." rows={3} className="rounded-[2rem]" />
-          </Field>
-          <div className="flex justify-end">
-            <Button onClick={() => saveReview.mutate()} disabled={saveReview.isPending} className="gap-2 shadow-lg shadow-primary/20 rounded-full">
-              <Save className="w-4 h-4" />
-              {saveReview.isPending ? 'Saving…' : 'Save Review'}
-            </Button>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {dateStr}
+                      </div>
+                      {game.gameTime && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatTime(game.gameTime)}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {game.location === 'home' ? 'Home Ice' : 'On the Road'}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Tag className="w-3.5 h-3.5" />
+                        {gameType.charAt(0).toUpperCase() + gameType.slice(1)}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Score Panel */}
+              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Game Result</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                    <Field>
+                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Goals For</FieldLabel>
+                      <Input type="number" min="0" value={goalsFor} onChange={e => setGoalsFor(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
+                    </Field>
+                    <Field>
+                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Goals Against</FieldLabel>
+                      <Input type="number" min="0" value={goalsAgainst} onChange={e => setGoalsAgainst(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
+                    </Field>
+                    <Field>
+                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Shots For</FieldLabel>
+                      <Input type="number" min="0" value={shotsFor} onChange={e => setShotsFor(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
+                    </Field>
+                    <Field>
+                      <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Shots Against</FieldLabel>
+                      <Input type="number" min="0" value={shotsAgainst} onChange={e => setShotsAgainst(e.target.value)} placeholder="0" className="rounded-2xl h-12 text-xl font-black italic" />
+                    </Field>
+                  </div>
+                  
+                  <Field>
+                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Penalties / Discipline</FieldLabel>
+                    <Input value={penalties} onChange={e => setPenalties(e.target.value)} placeholder="e.g. 4 minor · 2 major" className="rounded-2xl" />
+                  </Field>
+
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={() => saveScore.mutate()} disabled={saveScore.isPending} className="gap-2 rounded-full px-8 shadow-lg shadow-primary/20 font-bold uppercase italic tracking-tighter">
+                      <CheckCircle className="w-4 h-4" />
+                      {saveScore.isPending ? 'Saving…' : 'Save Scoreboard'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              {/* Game Settings */}
+              <Card className="border-border bg-sidebar/20 rounded-[2rem] overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Game Configuration</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Field>
+                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Match Type</FieldLabel>
+                    <Select
+                      value={gameType}
+                      disabled={!teamData?.team?.id}
+                      onValueChange={(v) => {
+                        if (!teamData?.team?.id) return
+                        setType(gameId, v as GameType)
+                        toast.success(`Tagged as ${v}`)
+                      }}
+                    >
+                      <SelectTrigger className="rounded-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="league">League</SelectItem>
+                        <SelectItem value="tournament">Tournament</SelectItem>
+                        <SelectItem value="exhibition">Exhibition</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  {gameType === 'tournament' && (
+                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 space-y-2">
+                      <p className="text-[10px] font-black uppercase text-amber-500/80">Tournament View Active</p>
+                      <p className="text-xs text-muted-foreground">This game will contribute to tournament-specific analytics.</p>
+                    </div>
+                  )}
+
+                  <div className="pt-4 flex flex-col gap-2">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start rounded-full gap-2 text-zinc-500 hover:text-white"
+                      onClick={() => setActiveTab('lineup')}
+                    >
+                      <LayoutList className="w-4 h-4" />
+                      Plan Game Lineup
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start rounded-full gap-2 text-zinc-500 hover:text-white"
+                      onClick={() => setActiveTab('review')}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Post-Game Review
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
+        <TabsContent value="lineup" className="mt-0">
+          <Card className="border-border bg-card rounded-[2rem] overflow-hidden p-6 md:p-10">
+            <LineupPlanner gameId={gameId} />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="review" className="space-y-6 mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <Card className="border-border bg-card rounded-[2rem] overflow-hidden h-full">
+                <CardHeader>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Tactical Assessment</CardTitle>
+                  <p className="text-xs text-muted-foreground">Rate performance across core concepts.</p>
+                </CardHeader>
+                <CardContent className="space-y-1 divide-y divide-border">
+                  {CONCEPT_FIELDS.map(({ key, label }) => (
+                    <RatingRow
+                      key={key}
+                      label={label}
+                      value={ratings[key]}
+                      onChange={v => setRatings(prev => ({ ...prev, [key]: v }))}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="border-border bg-card rounded-[2rem] overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-zinc-500">Coaching Journal</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <Field>
+                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Our Performance</FieldLabel>
+                    <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="What worked? What needs work?" rows={5} className="rounded-[1.5rem] bg-white/[0.02] italic" />
+                  </Field>
+                  <Field>
+                    <FieldLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1.5">Opponent Intel <span className="text-muted-foreground lowercase font-normal italic">(for rematch prep)</span></FieldLabel>
+                    <Textarea value={opponentNotes} onChange={e => setOpponentNotes(e.target.value)} placeholder="Their tendencies, key players, strategies..." rows={5} className="rounded-[1.5rem] bg-white/[0.02] italic" />
+                  </Field>
+                  <div className="flex justify-end">
+                    <Button onClick={() => saveReview.mutate()} disabled={saveReview.isPending} className="gap-2 shadow-lg shadow-primary/20 rounded-full px-8 font-black uppercase italic tracking-tighter">
+                      <Save className="w-4 h-4" />
+                      {saveReview.isPending ? 'Saving…' : 'Finalize Review'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

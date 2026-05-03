@@ -119,19 +119,34 @@ export function AppSidebarShell() {
   const teams = teamData?.teams ?? []
   const currentTeam = teamData?.team
 
-  const navItems = [
-    { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', id: 'tour-dashboard' },
-    { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar', id: 'tour-calendar' },
-    { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices', id: 'tour-practice' },
-    { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games', id: 'tour-games' },
-    ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
-    ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
-    { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents', id: 'tour-opponents' },
-    { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
-    { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
-    { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
-    { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
-    { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
+  const navGroups = [
+    {
+      label: 'Intelligence',
+      items: [
+        { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', id: 'tour-dashboard' },
+        { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
+        { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
+        { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
+      ]
+    },
+    {
+      label: 'Operations',
+      items: [
+        { to: '/calendar', icon: <Calendar className="h-4 w-4" />, label: 'Calendar', id: 'tour-calendar' },
+        { to: '/practices', icon: <FileText className="h-4 w-4" />, label: 'Practices', id: 'tour-practice' },
+        { to: '/games', icon: <Trophy className="h-4 w-4" />, label: 'Games', id: 'tour-games' },
+        { to: '/opponents', icon: <Users className="h-4 w-4" />, label: 'Opponents', id: 'tour-opponents' },
+      ]
+    },
+    {
+      label: 'Management',
+      items: [
+        ...(teamPrefs.enableAttendance ? [{ to: '/roster', icon: <Contact className="h-4 w-4" />, label: 'Roster' }] : []),
+        ...(teamPrefs.enableAttendance ? [{ to: '/drills', icon: <Library className="h-4 w-4" />, label: 'Drill Library' }] : []),
+        { to: '/team', icon: <UserCog className="h-4 w-4" />, label: 'Coaching Staff' },
+        { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
+      ]
+    }
   ]
 
   return (
@@ -273,13 +288,21 @@ export function AppSidebarShell() {
           <div className="pb-3">
             <ViewModeSwitcher collapsed={collapsed} />
           </div>
-          {!collapsed && (
-            <p className="px-3 pt-2 pb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
-              Navigation
-            </p>
-          )}
-          {navItems.map(item => (
-            <NavItem key={item.to} item={item} collapsed={collapsed} />
+          
+          {navGroups.map((group, idx) => (
+            <div key={group.label} className="space-y-1">
+              {!collapsed && (
+                <p className={cn(
+                  "px-4 pt-6 pb-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50",
+                  idx === 0 && "pt-2"
+                )}>
+                  {group.label}
+                </p>
+              )}
+              {group.items.map(item => (
+                <NavItem key={item.to} item={item} collapsed={collapsed} />
+              ))}
+            </div>
           ))}
         </div>
 
