@@ -7,7 +7,7 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent,
   EmptyState, toast, Separator,
 } from '@blinkdotnew/ui'
-import { Plus, Swords, Trophy } from 'lucide-react'
+import { Plus, Swords, Trophy, FileUp } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { useGames } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
@@ -18,12 +18,14 @@ import type { Game } from '@/types'
 import { GameCard } from './games/GameCard'
 import { CreateGameDialog } from './games/CreateGameDialog'
 import { EditGameDialog } from './games/EditGameDialog'
+import { ImportScheduleDialog } from './games/ImportScheduleDialog'
 
 const TABS = ['all', 'scheduled', 'completed', 'reviewed'] as const
 type TabValue = typeof TABS[number]
 
 export default function GamesPage() {
   const [createOpen, setCreateOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editGame, setEditGame] = useState<Game | null>(null)
   const [deleteGame, setDeleteGame] = useState<Game | null>(null)
   const [tab, setTab] = useState<TabValue>('all')
@@ -69,9 +71,23 @@ export default function GamesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Games</h1>
           <p className="text-muted-foreground text-sm mt-1">{teamData?.season?.name ?? ''}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!seasonId} className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto rounded-full">
-          <Plus className="w-4 h-4" /> New Game
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => setImportOpen(true)}
+            disabled={!seasonId}
+            className="gap-2 border-primary/20 text-primary hover:bg-primary/5 rounded-full"
+          >
+            <FileUp className="w-4 h-4" /> Import CSV
+          </Button>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            disabled={!seasonId}
+            className="gap-2 shadow-lg shadow-primary/20 rounded-full"
+          >
+            <Plus className="w-4 h-4" /> New Game
+          </Button>
+        </div>
       </div>
 
       {/* Record strip */}
@@ -132,6 +148,14 @@ export default function GamesPage() {
       <CreateGameDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
+        seasonId={seasonId}
+        onSetType={setType}
+      />
+
+      {/* Import */}
+      <ImportScheduleDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
         seasonId={seasonId}
         onSetType={setType}
       />
