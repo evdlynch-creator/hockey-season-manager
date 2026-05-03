@@ -7,19 +7,27 @@ import { MagneticButton, staggerItem } from '../../components/Interactivity'
 interface DashboardHeaderProps {
   teamName: string
   seasonName: string
+  logoUrl?: string
   onPracticeClick: () => void
   onGameClick: () => void
 }
 
-export const DashboardHeader = ({ teamName, seasonName, onPracticeClick, onGameClick }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ teamName, seasonName, logoUrl, onPracticeClick, onGameClick }: DashboardHeaderProps) => {
   return (
-    <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-      <div>
-        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{teamName}</h1>
-        <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full">
-            {seasonName}
-          </Badge>
+    <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+      <div className="flex items-center gap-4">
+        {logoUrl && (
+          <div className="w-16 h-16 rounded-2xl bg-secondary/10 border border-border/50 p-2 flex items-center justify-center shrink-0">
+            <img src={logoUrl} alt={teamName} className="w-full h-full object-contain" />
+          </div>
+        )}
+        <div>
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{teamName}</h1>
+          <div className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full">
+              {seasonName}
+            </Badge>
+          </div>
         </div>
       </div>
       <div className="flex gap-2">

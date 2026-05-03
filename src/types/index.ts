@@ -2,6 +2,7 @@ export interface Team {
   id: string
   name: string
   userId: string
+  logoUrl?: string
   createdAt: string
 }
 

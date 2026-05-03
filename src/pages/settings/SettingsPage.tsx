@@ -85,7 +85,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="account" className="mt-6">
-          <AccountSettings email={(user as any)?.email ?? ''} />
+          <AccountSettings user={user} />
         </TabsContent>
 
         <TabsContent value="danger" className="mt-6">

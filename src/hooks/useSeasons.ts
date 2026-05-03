@@ -165,3 +165,19 @@ export function useUpdateTeamName() {
     },
   })
 }
+
+export function useUpdateTeamLogo() {
+  const queryClient = useQueryClient()
+  const { data: teamData } = useTeam()
+
+  return useMutation({
+    mutationFn: async (logoUrl: string | null) => {
+      const id = teamData?.team?.id
+      if (!id) throw new Error('No team')
+      await blink.db.teams.update(id, { logoUrl })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team'] })
+    },
+  })
+}

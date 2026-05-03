@@ -160,6 +160,7 @@ export default function DashboardPage() {
         <DashboardHeader
           teamName={teamData.team.name}
           seasonName={teamData.season?.name ?? ''}
+          logoUrl={teamData.team.logoUrl}
           onPracticeClick={() => navigate({ to: '/practices' })}
           onGameClick={() => navigate({ to: '/games' })}
         />

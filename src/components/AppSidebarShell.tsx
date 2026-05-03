@@ -170,25 +170,45 @@ export function AppSidebarShell() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div onClick={exitDemo} className={cn("cursor-pointer flex items-center justify-center", isDemo && "text-amber-500")}>
-                  <img
-                    src={iqPlusLogoUrl}
-                    alt="Blue Line IQ"
-                    className="h-7 w-7 mx-auto object-contain select-none"
-                    draggable={false}
-                  />
+                  {currentTeam?.logoUrl ? (
+                    <img
+                      src={currentTeam.logoUrl}
+                      alt={currentTeam.name}
+                      className="h-8 w-8 mx-auto object-contain select-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <img
+                      src={iqPlusLogoUrl}
+                      alt="Blue Line IQ"
+                      className="h-7 w-7 mx-auto object-contain select-none"
+                      draggable={false}
+                    />
+                  )}
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right">{isDemo ? 'Exit Demo Mode' : 'Blue Line IQ'}</TooltipContent>
+              <TooltipContent side="right">{isDemo ? 'Exit Demo Mode' : (currentTeam?.name ?? 'Blue Line IQ')}</TooltipContent>
             </Tooltip>
           ) : (
             <>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5 justify-center -ml-2">
-                <img
-                  src={logoUrl}
-                  alt="Blue Line IQ"
-                  className="h-7 w-auto object-contain select-none scale-110"
-                  draggable={false}
-                />
+                <div className="flex items-center gap-3 px-2">
+                  {currentTeam?.logoUrl ? (
+                    <img
+                      src={currentTeam.logoUrl}
+                      alt={currentTeam.name}
+                      className="h-8 w-auto object-contain select-none max-w-[100px]"
+                      draggable={false}
+                    />
+                  ) : (
+                    <img
+                      src={logoUrl}
+                      alt="Blue Line IQ"
+                      className="h-7 w-auto object-contain select-none scale-110"
+                      draggable={false}
+                    />
+                  )}
+                </div>
                 {isDemo && (
                   <button
                     onClick={exitDemo}
@@ -322,6 +342,7 @@ export function AppSidebarShell() {
                   isDemo ? "ring-amber-500/40 hover:ring-amber-500/60" : "ring-primary/20 hover:ring-primary/40"
                 )}>
                   <Avatar className="h-full w-full">
+                    {user?.avatarUrl && <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />}
                     <AvatarFallback className={cn(
                       "text-[10px] font-bold",
                       isDemo ? "bg-amber-500/10 text-amber-500" : "bg-primary/10 text-primary"
@@ -347,6 +368,7 @@ export function AppSidebarShell() {
                 "h-8 w-8 ring-2",
                 isDemo ? "ring-amber-500/20" : "ring-primary/20"
               )}>
+                {user?.avatarUrl && <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />}
                 <AvatarFallback className={cn(
                   "text-xs font-bold",
                   isDemo ? "bg-amber-500/10 text-amber-500" : "bg-primary/10 text-primary"
