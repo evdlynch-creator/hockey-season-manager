@@ -85,7 +85,7 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
             </div>
           </div>
 
-          <div className="relative aspect-[16/10] bg-zinc-950 flex">
+          <div className="relative aspect-[4/3] md:aspect-[16/10] bg-zinc-950 flex">
             {/* Mock Sidebar */}
             <div className="hidden md:flex w-56 border-r border-white/5 bg-white/[0.01] p-6 flex-col gap-8 shrink-0">
               <div className="flex items-center gap-3">

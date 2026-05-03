@@ -64,10 +64,10 @@ export default function LandingPage() {
       <IceParticles />
       
       {/* ── Navigation ──────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-md pt-[var(--safe-area-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="Blue Line IQ" className="h-8 w-auto" />
+            <img src={logoUrl} alt="Blue Line IQ" className="h-8 w-auto" loading="eager" />
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-white/5 transition-colors btn-premium rounded-full" onClick={handleLogin}>
@@ -114,14 +114,14 @@ export default function LandingPage() {
           
           {/* Pixel-Locked Heading Container */}
           <div 
-            className="min-h-[140px] lg:min-h-[200px] flex flex-col items-center justify-center relative z-30"
+            className="min-h-[clamp(140px,25vh,200px)] flex flex-col items-center justify-center relative z-30"
             style={{ isolation: "isolate", contain: "strict" }}
           >
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[60px] lg:leading-[80px] relative"
+              className="text-[clamp(2.5rem,8vw,4.5rem)] font-black tracking-tight mb-6 leading-[clamp(3rem,9vw,5rem)] relative"
             >
               Master Your Season with <br />
               <span className="relative inline-block">
@@ -291,8 +291,8 @@ export default function LandingPage() {
       </motion.section>
 
       <footer className="py-12 border-t border-white/5 bg-[#0a0a0c] relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 opacity-50 grayscale"><img src={logoUrl} alt="Blue Line IQ" className="h-6 w-auto" /></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6 pb-[var(--safe-area-bottom)]">
+          <div className="flex items-center gap-2 opacity-50 grayscale"><img src={logoUrl} alt="Blue Line IQ" className="h-6 w-auto" loading="lazy" /></div>
           <p className="text-zinc-500 text-sm">&copy; {new Date().getFullYear()} Blue Line IQ. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="text-zinc-500 hover:text-white text-sm transition-colors">Privacy Policy</a>

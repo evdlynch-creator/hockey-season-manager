@@ -36,9 +36,9 @@ export function Shell({ sidebar, appName = 'App', children }: ShellProps) {
       </AppShellSidebar>
 
       {/* Main content */}
-      <AppShellMain>
+      <AppShellMain className="pb-[var(--safe-area-bottom)]">
         {/* Mobile header — hamburger + app name, only shown below md breakpoint */}
-        <div className="md:hidden flex items-center gap-3 px-4 h-14 border-b border-border bg-background sticky top-0 z-30">
+        <div className="md:hidden flex items-center gap-3 px-4 h-14 border-b border-border bg-background sticky top-0 z-30 pt-[var(--safe-area-top)] h-[calc(3.5rem+var(--safe-area-top))]">
           <MobileSidebarTrigger />
           <span className="font-semibold text-sm">{appName}</span>
         </div>

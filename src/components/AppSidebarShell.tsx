@@ -72,7 +72,7 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
       id={item.id}
       className={cn(
         'flex items-center gap-2.5 text-sm transition-all duration-300 cursor-pointer',
-        collapsed ? 'justify-center w-10 h-10 mx-auto rounded-full' : 'px-4 py-2.5 w-full rounded-full',
+        collapsed ? 'justify-center w-11 h-11 mx-auto rounded-full' : 'px-4 py-3 w-full rounded-full',
         active
           ? 'bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20'
           : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
@@ -309,7 +309,7 @@ export function AppSidebarShell() {
         {/* ── Footer (always pinned to bottom) ──────────── */}
         <div
           className={cn(
-            'shrink-0 border-t border-sidebar-border bg-sidebar/50 backdrop-blur-sm',
+            'shrink-0 border-t border-sidebar-border bg-sidebar/50 backdrop-blur-sm pb-[var(--safe-area-bottom)]',
             collapsed ? 'flex flex-col items-center gap-2 p-3' : 'p-4 space-y-3'
           )}
         >
