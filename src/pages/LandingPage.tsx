@@ -22,6 +22,7 @@ import { FeatureCard } from '../components/landing/FeatureCard'
 import { SocialProofStrip } from '../components/landing/SocialProofStrip'
 import { TestimonialSection } from '../components/landing/TestimonialSection'
 import { FAQSection } from '../components/landing/FAQSection'
+import { SeasonImpactStats } from '../components/landing/SeasonImpactStats'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
@@ -318,6 +319,7 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
+      <SeasonImpactStats />
       <TestimonialSection />
       <FAQSection />
 
