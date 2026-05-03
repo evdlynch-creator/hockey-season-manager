@@ -32,7 +32,7 @@ export const IceParticles = () => {
             default: "out",
           },
           random: true,
-          speed: 1,
+          speed: 0.6,
           straight: false,
         },
         number: {
@@ -40,16 +40,16 @@ export const IceParticles = () => {
             enable: true,
             area: 800,
           },
-          value: 100,
+          value: 60,
         },
         opacity: {
-          value: { min: 0.4, max: 0.8 },
+          value: { min: 0.1, max: 0.4 },
         },
         shape: {
           type: "circle",
         },
         size: {
-          value: { min: 2, max: 4 },
+          value: { min: 0.5, max: 1.5 },
         },
         wobble: {
           enable: true,
