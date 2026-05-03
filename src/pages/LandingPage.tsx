@@ -25,7 +25,6 @@ import { FAQSection } from '../components/landing/FAQSection'
 import { SeasonImpactStats } from '../components/landing/SeasonImpactStats'
 import { IceParticles } from '../components/landing/IceParticles'
 import { MagneticButton } from '../components/landing/MagneticButton'
-import { HorizontalFeatures } from '../components/landing/HorizontalFeatures'
 import { cn } from '@/lib/utils'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useRef } from 'react'
@@ -211,8 +210,90 @@ export default function LandingPage() {
 
       <SocialProofStrip />
 
-      {/* ── Workflow Section (Horizontal Scroll) ────────── */}
-      <HorizontalFeatures />
+      {/* ── Workflow Section ────────────────────────────── */}
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8 }}
+        className="py-24 relative overflow-hidden border-t border-white/5 bg-[#0a0a0c]"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 rounded-full uppercase tracking-widest text-[10px] font-black px-4 py-1 mb-4">
+              Automated Workflow
+            </Badge>
+            <h2 className="text-4xl lg:text-6xl font-black italic uppercase tracking-tighter text-white leading-none mb-6">
+              From Bench to <span className="text-primary">Practice Plan</span>
+            </h2>
+            <p className="text-zinc-500 max-w-2xl mx-auto font-medium italic">
+              Blue Line IQ eliminates manual data entry. Our "Tactical Pulse" system automates your post-game reviews so you can focus on winning.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            {/* Connecting lines for desktop */}
+            <div className="hidden md:block absolute top-[40px] left-[16.6%] right-[16.6%] h-[2px] bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 -translate-y-1/2 z-0">
+              <div className="absolute inset-0 bg-primary/20 blur-[2px]" />
+            </div>
+            
+            {[
+              { 
+                step: "01", 
+                title: "Live Bench Mode", 
+                desc: "Tap tactical +/- during the game. Dictate tactical notes via AI Mic between shifts.",
+                icon: Swords,
+                color: "text-blue-400",
+                bg: "bg-blue-400/5",
+                border: "border-blue-400/20"
+              },
+              { 
+                step: "02", 
+                title: "Auto-Scoring", 
+                desc: "Exit the bench and see your scores already calculated. One click to save the review.",
+                icon: Zap,
+                color: "text-emerald-400",
+                bg: "bg-emerald-400/5",
+                border: "border-emerald-400/20"
+              },
+              { 
+                step: "03", 
+                title: "Practice Architect", 
+                desc: "AI identifies your weakest concepts and generates a practice plan targeting those exact gaps.",
+                icon: Brain,
+                color: "text-primary",
+                bg: "bg-primary/5",
+                border: "border-primary/20"
+              }
+            ].map((item, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="relative z-10 space-y-6 group flex flex-col items-center text-center"
+              >
+                <div className={cn(
+                  "w-20 h-20 rounded-[2rem] flex items-center justify-center border shadow-2xl transition-all duration-500 group-hover:scale-110",
+                  item.bg, item.border
+                )}>
+                  <item.icon className={cn("w-10 h-10", item.color)} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className={cn("text-[10px] font-black italic", item.color)}>{item.step}</span>
+                    <h3 className="text-xl font-bold italic uppercase tracking-tight text-white">{item.title}</h3>
+                  </div>
+                  <p className="text-sm text-zinc-500 leading-relaxed font-medium italic max-w-[240px]">
+                    {item.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
 
       {/* ── Features Grid ──────────────────────────────── */}
       <motion.section 
