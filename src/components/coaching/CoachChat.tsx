@@ -10,15 +10,18 @@ import {
   Skeleton,
   toast
 } from '@blinkdotnew/ui'
-import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight } from 'lucide-react'
+import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlayers } from '@/hooks/usePlayers'
+import { usePollVotes } from '@/hooks/usePollVotes'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import type { CoachMessageContext } from '@/types'
 import { PracticeLinkTool } from './tools/PracticeLinkTool'
 import { LineBuilderTool } from './tools/LineBuilderTool'
+import { PollTool } from './tools/PollTool'
+import { CoachVoiceMemoTool } from './tools/CoachVoiceMemoTool'
 import { Link, useNavigate } from '@tanstack/react-router'
 
 interface CoachChatProps {
@@ -36,6 +39,8 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   const [content, setContent] = useState('')
   const [practiceToolOpen, setPracticeToolOpen] = useState(false)
   const [lineToolOpen, setLineToolOpen] = useState(false)
+  const [pollToolOpen, setPollToolOpen] = useState(false)
+  const [voiceToolOpen, setVoiceToolOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const prevMessagesCount = useRef(messages.length)
 
@@ -54,10 +59,25 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     }))
   }
 
-  const handleShareLines = (lines: Record<string, string[]>, note: string) => {
+  const handleShareLines = (lines: Record<string, string[]>, note: string, pushToGameId?: string) => {
     sendMessage(note || 'Proposed new line combinations for brainstorming.', JSON.stringify({
       type: 'line_proposal',
-      lines
+      lines,
+      pushedToGameId: pushToGameId
+    }))
+  }
+
+  const handleSharePoll = (question: string, options: string[]) => {
+    sendMessage(question, JSON.stringify({
+      type: 'strategic_poll',
+      options
+    }))
+  }
+
+  const handleShareVoice = (text: string, audioUrl: string) => {
+    sendMessage(text, JSON.stringify({
+      type: 'voice_memo',
+      audioUrl
     }))
   }
 
@@ -77,6 +97,69 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     }
     prevMessagesCount.current = messages.length
   }, [messages, user?.id, isLoading])
+
+  function PollCard({ messageId, options, isOwn }: { messageId: string, options: string[], isOwn: boolean }) {
+    const { results, userVote, castVote, votes } = usePollVotes(messageId)
+    const totalVotes = votes.length
+
+    return (
+      <div className={cn(
+        "rounded-xl border p-3 space-y-3",
+        isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
+      )}>
+        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
+          <BarChart3 className="w-3 h-3" /> Strategic Poll
+        </p>
+        <div className="space-y-2">
+          {options.map((opt, i) => {
+            const voteCount = results[i] || 0
+            const percent = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0
+            const isSelected = userVote?.optionIndex === i
+
+            return (
+              <button
+                key={i}
+                onClick={() => castVote(i)}
+                className="w-full relative h-9 rounded-lg overflow-hidden border border-white/5 bg-white/5 hover:bg-white/10 transition-all group"
+              >
+                <div 
+                  className={cn(
+                    "absolute inset-y-0 left-0 transition-all duration-500",
+                    isSelected ? "bg-primary/30" : "bg-white/5"
+                  )}
+                  style={{ width: `${percent}%` }}
+                />
+                <div className="absolute inset-0 px-3 flex items-center justify-between text-xs">
+                  <span className={cn("font-bold truncate pr-4", isSelected && "text-primary")}>{opt}</span>
+                  <span className="opacity-50 tabular-nums">{voteCount}</span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[9px] text-center text-zinc-500 uppercase font-black tracking-widest">
+          {totalVotes} total votes
+        </p>
+      </div>
+    )
+  }
+
+  function VoiceMemoCard({ audioUrl, isOwn }: { audioUrl: string, isOwn: boolean }) {
+    return (
+      <div className={cn(
+        "rounded-xl border p-2 flex items-center gap-3",
+        isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
+      )}>
+        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+          <Mic className="w-4 h-4 text-primary" />
+        </div>
+        <audio src={audioUrl} controls className={cn(
+          "h-8 flex-1",
+          isOwn ? "invert brightness-200" : ""
+        )} />
+      </div>
+    )
+  }
 
   return (
     <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-2xl", className)}>
@@ -177,9 +260,16 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                                 "rounded-xl border p-3 space-y-3",
                                 isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
                               )}>
-                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
-                                  <Users className="w-3 h-3" /> Line Combinations
-                                </p>
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
+                                    <Users className="w-3 h-3" /> Line Combinations
+                                  </p>
+                                  {meta.pushedToGameId && (
+                                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[8px] h-4 uppercase font-black rounded-full">
+                                      Deployed
+                                    </Badge>
+                                  )}
+                                </div>
                                 <div className="grid grid-cols-1 gap-2">
                                   {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids]) => {
                                     if (pids.length === 0) return null
@@ -210,6 +300,14 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
                               </div>
                             )
                           }
+
+                          if (meta.type === 'strategic_poll') {
+                            return <PollCard messageId={msg.id} options={meta.options} isOwn={isOwn} />
+                          }
+
+                          if (meta.type === 'voice_memo') {
+                            return <VoiceMemoCard audioUrl={meta.audioUrl} isOwn={isOwn} />
+                          }
                         } catch (e) {
                           return null
                         }
@@ -224,22 +322,38 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
       </ScrollArea>
 
       <div className="p-6 bg-card/50 border-t border-border space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setPracticeToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
           >
-            <Calendar className="w-3 h-3" /> Link Practice
+            <Calendar className="w-3 h-3" /> Practice
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setLineToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
           >
-            <Users className="w-3 h-3" /> Draft Lines
+            <Users className="w-3 h-3" /> Lines
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setPollToolOpen(true)}
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+          >
+            <BarChart3 className="w-3 h-3" /> Poll
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setVoiceToolOpen(true)}
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary transition-all shrink-0"
+          >
+            <Mic className="w-3 h-3" /> Memo
           </Button>
         </div>
 
@@ -276,6 +390,18 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
         open={lineToolOpen}
         onClose={() => setLineToolOpen(false)}
         onShare={handleShareLines}
+      />
+
+      <PollTool 
+        open={pollToolOpen}
+        onClose={() => setPollToolOpen(false)}
+        onShare={handleSharePoll}
+      />
+
+      <CoachVoiceMemoTool
+        open={voiceToolOpen}
+        onClose={() => setVoiceToolOpen(false)}
+        onShare={handleShareVoice}
       />
     </Card>
   )

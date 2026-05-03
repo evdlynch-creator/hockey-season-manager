@@ -10,27 +10,37 @@ import {
   Badge,
   Input
 } from '@blinkdotnew/ui'
-import { Users, Save, X, Plus, UserPlus } from 'lucide-react'
+import { Users, Save, X, Plus, UserPlus, Rocket } from 'lucide-react'
 import { usePlayers } from '@/hooks/usePlayers'
+import { useGames } from '@/hooks/useGames'
+import { useUpdateLineup } from '@/hooks/useLineups'
 import { cn } from '@/lib/utils'
 import type { Player } from '@/types'
+import { toast } from 'sonner'
 
 interface LineBuilderToolProps {
   open: boolean
   onClose: () => void
-  onShare: (lines: Record<string, string[]>, note: string) => void
+  onShare: (lines: Record<string, string[]>, note: string, pushToGameId?: string) => void
 }
 
 const BRAINSTORM_UNITS = ['Line 1', 'Line 2', 'Line 3', 'D-Pair 1', 'D-Pair 2', 'PP1', 'PK1']
 
 export function LineBuilderTool({ open, onClose, onShare }: LineBuilderToolProps) {
   const { data: players = [], isLoading } = usePlayers()
+  const { data: games = [] } = useGames()
+  const updateLineup = useUpdateLineup()
   const [localLines, setLocalLines] = useState<Record<string, string[]>>(() => {
     const initial: Record<string, string[]> = {}
     BRAINSTORM_UNITS.forEach(u => initial[u] = [])
     return initial
   })
   const [note, setNote] = useState('')
+  const [pushToNextGame, setPushToNextGame] = useState(false)
+
+  const nextGame = games
+    .filter(g => g.status === 'scheduled')
+    .sort((a, b) => a.date.localeCompare(b.date))[0]
 
   const assignedPlayerIds = new Set(Object.values(localLines).flat())
   const availablePlayers = players.filter(p => !assignedPlayerIds.has(p.id))
@@ -49,14 +59,32 @@ export function LineBuilderTool({ open, onClose, onShare }: LineBuilderToolProps
     }))
   }
 
-  const handleShare = () => {
-    onShare(localLines, note)
+  const handleShare = async () => {
+    let targetGameId: string | undefined
+    
+    if (pushToNextGame && nextGame) {
+      targetGameId = nextGame.id
+      const flatAssignments: { playerId: string, unit: string }[] = []
+      Object.entries(localLines).forEach(([unit, playerIds]) => {
+        playerIds.forEach(playerId => flatAssignments.push({ playerId, unit }))
+      })
+      
+      try {
+        await updateLineup.mutateAsync({ gameId: nextGame.id, playerLineups: flatAssignments })
+        toast.success(`Lines pushed to game vs ${nextGame.opponent}`)
+      } catch (err) {
+        toast.error('Failed to push lines to game roster')
+      }
+    }
+
+    onShare(localLines, note, targetGameId)
     setLocalLines(() => {
       const initial: Record<string, string[]> = {}
       BRAINSTORM_UNITS.forEach(u => initial[u] = [])
       return initial
     })
     setNote('')
+    setPushToNextGame(false)
     onClose()
   }
 
@@ -151,14 +179,39 @@ export function LineBuilderTool({ open, onClose, onShare }: LineBuilderToolProps
               ))}
             </div>
 
-            <div className="pt-2">
-              <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500 mb-2">Proposal Note</p>
-              <Input 
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="What's the thinking behind these lines?"
-                className="rounded-full bg-secondary/10 border-white/5"
-              />
+            <div className="pt-2 space-y-4">
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500">Proposal Note</p>
+                <Input 
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="What's the thinking behind these lines?"
+                  className="rounded-full bg-secondary/10 border-white/5"
+                />
+              </div>
+
+              {nextGame && (
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Rocket className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary">Deploy to Roster</p>
+                    <p className="text-[11px] text-muted-foreground">Official lines for next game vs <strong>{nextGame.opponent}</strong></p>
+                  </div>
+                  <Button 
+                    variant={pushToNextGame ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPushToNextGame(!pushToNextGame)}
+                    className={cn(
+                      "rounded-full h-8 px-4 text-[10px] font-bold uppercase tracking-widest",
+                      pushToNextGame && "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    )}
+                  >
+                    {pushToNextGame ? "Active" : "Deploy"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

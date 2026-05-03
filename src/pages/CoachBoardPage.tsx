@@ -1,5 +1,9 @@
 import { CoachChat } from '@/components/coaching/CoachChat'
-import { MessageSquare, Info, Bell } from 'lucide-react'
+import { PinnedTopic } from '@/components/coaching/PinnedTopic'
+import { NextEventBanner } from '@/components/coaching/NextEventBanner'
+import { TalkingPointsSidebar } from '@/components/coaching/TalkingPointsSidebar'
+import { RematchBriefingSidebar } from '@/components/coaching/RematchBriefingSidebar'
+import { MessageSquare, Info, Bell, Sparkles } from 'lucide-react'
 import { Card, CardContent, Button, toast } from '@blinkdotnew/ui'
 import { useState, useEffect } from 'react'
 
@@ -25,7 +29,7 @@ export default function CoachBoardPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto animate-fade-in space-y-8">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
@@ -48,11 +52,17 @@ export default function CoachBoardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+      <NextEventBanner />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-6">
+          <PinnedTopic />
           <CoachChat contextType="general" title="Strategic Discussion" className="h-[700px]" />
         </div>
-        <div className="space-y-6">
+        <div className="lg:col-span-4 space-y-6">
+          <RematchBriefingSidebar />
+          <TalkingPointsSidebar />
+          
           <Card className="border-primary/20 bg-primary/5 rounded-[2rem] overflow-hidden">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-3 text-primary">
