@@ -49,7 +49,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
     let mounted = true
     let channel: any = null
 
-    const channelName = `coach-messages:${teamId}:${contextType}:${contextId || 'general'}`
+    const channelName = `coach-messages-${teamId}-${contextType}-${contextId || 'general'}`
 
     const connect = async () => {
       try {
