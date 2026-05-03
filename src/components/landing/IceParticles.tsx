@@ -16,6 +16,10 @@ export const IceParticles = () => {
 
   const options: ISourceOptions = useMemo(
     () => ({
+      fullScreen: {
+        enable: true,
+        zIndex: -5,
+      },
       fpsLimit: 120,
       particles: {
         color: {
@@ -61,11 +65,10 @@ export const IceParticles = () => {
   if (!init) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 30 }}>
-      <Particles
-        id="ice-particles-rink"
-        options={options}
-      />
-    </div>
+    <Particles
+      id="ice-particles-rink"
+      options={options}
+      className="pointer-events-none"
+    />
   );
 };
