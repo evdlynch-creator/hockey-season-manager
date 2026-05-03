@@ -4,6 +4,7 @@ import { NextEventBanner } from '@/components/coaching/NextEventBanner'
 import { TalkingPointsSidebar } from '@/components/coaching/TalkingPointsSidebar'
 import { RematchBriefingSidebar } from '@/components/coaching/RematchBriefingSidebar'
 import { TrendingAnalyticsSidebar } from '@/components/coaching/TrendingAnalyticsSidebar'
+import { MiniScheduleSidebar } from '@/components/coaching/MiniScheduleSidebar'
 import { MessageSquare, Info, Bell, Sparkles, Brain } from 'lucide-react'
 import { Card, CardContent, Button, toast, Badge } from '@blinkdotnew/ui'
 import { useState, useEffect } from 'react'
@@ -61,6 +62,7 @@ export default function CoachBoardPage() {
           <CoachChat contextType="general" title="Strategic Discussion" className="h-[750px]" />
         </div>
         <div className="lg:col-span-4 space-y-6">
+          <MiniScheduleSidebar />
           <RematchBriefingSidebar />
           <TrendingAnalyticsSidebar />
           <TalkingPointsSidebar />

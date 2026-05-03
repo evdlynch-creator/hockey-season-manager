@@ -2,13 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { 
   Button, 
   Card, 
-  CardContent, 
-  Avatar, 
-  Input,
-  ScrollArea,
   Badge,
   Skeleton,
-  toast
+  Input,
+  ScrollArea
 } from '@blinkdotnew/ui'
 import { Send, MessageSquare, Loader2, Plus, Calendar, Users, ArrowRight, BarChart3, Mic, Play, Pause, ClipboardList, Swords } from 'lucide-react'
 import { useCoachMessages } from '@/hooks/useCoachMessages'
@@ -24,7 +21,7 @@ import { GameLinkTool } from './tools/GameLinkTool'
 import { PollTool } from './tools/PollTool'
 import { CoachVoiceMemoTool } from './tools/CoachVoiceMemoTool'
 import { ChatEventPrompt } from './ChatEventPrompt'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 
 interface CoachChatProps {
   contextType: CoachMessageContext
@@ -398,46 +395,36 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
 
       <div className="p-6 bg-zinc-950/40 border-t border-white/5 space-y-4 backdrop-blur-lg">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <button 
             onClick={() => setPracticeToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Calendar className="w-3 h-3" /> Practice
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          </button>
+          <button 
             onClick={() => setGameToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-amber-500 hover:text-black transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-amber-500 hover:text-black transition-all shrink-0 px-4"
           >
             <Swords className="w-3 h-3" /> Game Link
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          </button>
+          <button 
             onClick={() => setLineToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Users className="w-3 h-3" /> Lines
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          </button>
+          <button 
             onClick={() => setPollToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <BarChart3 className="w-3 h-3" /> Poll
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          </button>
+          <button 
             onClick={() => setVoiceToolOpen(true)}
-            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest gap-1.5 border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
+            className="rounded-full h-8 text-[10px] uppercase font-black tracking-widest flex items-center gap-1.5 border border-white/5 bg-zinc-900/50 hover:bg-primary hover:text-primary-foreground transition-all shrink-0 px-4"
           >
             <Mic className="w-3 h-3" /> Memo
-          </Button>
+          </button>
         </div>
 
         <form onSubmit={handleSend} className="flex items-center gap-3">

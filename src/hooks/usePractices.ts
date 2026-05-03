@@ -15,7 +15,7 @@ export function usePractices() {
       if (!seasonId) return []
       return await blink.db.practices.list({
         where: { seasonId },
-        orderBy: { date: 'asc' },
+        orderBy: { date: 'asc' }, // Sort by date ascending for numbering
       }) as Practice[]
     },
     enabled: !!seasonId || isDemoMode(),
