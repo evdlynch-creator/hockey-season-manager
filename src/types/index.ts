@@ -57,6 +57,7 @@ export interface Practice {
   id: string
   seasonId: string
   date: string
+  practiceTime?: string
   title: string
   notes?: string
   status: 'draft' | 'scheduled' | 'completed' | 'reviewed'

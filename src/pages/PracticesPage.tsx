@@ -4,7 +4,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { format } from 'date-fns'
+import { format, addDays, isBefore, isSameDay, parseISO } from 'date-fns'
 import {
   Button, Badge, Card, CardContent,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -13,22 +13,45 @@ import {
   Field, FieldLabel, FieldError,
   Tabs, TabsList, TabsTrigger, TabsContent,
   EmptyState, toast, Separator,
+  Checkbox,
 } from '@blinkdotnew/ui'
-import { Plus, Copy, Eye, Calendar, ClipboardList } from 'lucide-react'
+import { Plus, Copy, Eye, Calendar, ClipboardList, Repeat, Clock } from 'lucide-react'
 import { blink } from '@/blink/client'
 import { usePractices, usePracticeSegments } from '@/hooks/usePractices'
 import { useTeam } from '@/hooks/useTeam'
 import { cn } from '@/lib/utils'
 import type { Practice } from '@/types'
+import { formatEventTime } from './CalendarPage'
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 const createSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   date: z.string().min(1, 'Date is required'),
+  time: z.string().optional(),
   notes: z.string().optional(),
   status: z.enum(['draft', 'scheduled', 'completed', 'reviewed']),
+  isRecurring: z.boolean().default(false),
+  recurringEndDate: z.string().optional(),
+  daysOfWeek: z.array(z.number()).optional(),
+}).refine(data => {
+  if (data.isRecurring && !data.recurringEndDate) return false
+  if (data.isRecurring && (!data.daysOfWeek || data.daysOfWeek.length === 0)) return false
+  return true
+}, {
+  message: "End date and at least one day are required for recurring practices",
+  path: ["recurringEndDate"]
 })
 type CreateForm = z.infer<typeof createSchema>
+
+const DAYS = [
+  { label: 'M', value: 1 },
+  { label: 'T', value: 2 },
+  { label: 'W', value: 3 },
+  { label: 'T', value: 4 },
+  { label: 'F', value: 5 },
+  { label: 'S', value: 6 },
+  { label: 'S', value: 0 },
+]
 
 // ── Status helpers ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: Practice['status'] }) {
@@ -58,6 +81,7 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
   const dateStr = practice.date
     ? format(new Date(practice.date + 'T00:00:00'), 'MMM d, yyyy')
     : '—'
+  const timeStr = practice.practiceTime ? formatEventTime(practice.practiceTime) : null
 
   return (
     <Card
@@ -69,9 +93,16 @@ function PracticeCard({ practice, onDuplicate }: { practice: Practice; onDuplica
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <StatusBadge status={practice.status} />
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Calendar className="w-3 h-3" />{dateStr}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />{dateStr}
+                </span>
+                {timeStr && (
+                  <span className="text-[10px] uppercase font-black tracking-widest text-primary flex items-center gap-1">
+                    <Clock className="w-3 h-3" />{timeStr}
+                  </span>
+                )}
+              </div>
             </div>
             <h3 className="font-semibold text-sm text-foreground truncate leading-snug">
               {practice.title}
@@ -120,30 +151,53 @@ function CreatePracticeDialog({
   const queryClient = useQueryClient()
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CreateForm>({
     resolver: zodResolver(createSchema),
-    defaultValues: { status: 'scheduled', title: '', date: '', notes: '' },
+    defaultValues: { status: 'scheduled', title: '', date: '', time: '', notes: '', isRecurring: false, daysOfWeek: [] },
   })
 
   const statusVal = watch('status')
+  const isRecurring = watch('isRecurring')
+  const selectedDays = watch('daysOfWeek') || []
 
   const mutation = useMutation({
     mutationFn: async (data: CreateForm) => {
       const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
-      await blink.db.practices.create({
-        id: crypto.randomUUID(),
-        seasonId,
-        userId: user.id,
-        title: data.title,
-        date: data.date,
-        notes: data.notes ?? '',
-        status: data.status,
-        createdAt: new Date().toISOString(),
-      })
+      const createPractice = async (date: string) => {
+        await blink.db.practices.create({
+          id: crypto.randomUUID(),
+          seasonId,
+          userId: user.id,
+          title: data.title,
+          date,
+          practiceTime: data.time ?? '',
+          notes: data.notes ?? '',
+          status: data.status,
+          createdAt: new Date().toISOString(),
+        })
+      }
+
+      // Create base practice
+      await createPractice(data.date)
+
+      // Handle recurrence
+      if (data.isRecurring && data.recurringEndDate) {
+        const start = parseISO(data.date)
+        const end = parseISO(data.recurringEndDate)
+        let current = addDays(start, 1)
+
+        while (isBefore(current, end) || isSameDay(current, end)) {
+          if (data.daysOfWeek?.includes(current.getDay())) {
+            await createPractice(format(current, 'yyyy-MM-dd'))
+          }
+          current = addDays(current, 1)
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['practices'] })
-      toast.success('Practice created')
+      queryClient.invalidateQueries({ queryKey: ['calendar'] })
+      toast.success('Practice(s) created')
       reset()
       onClose()
     },
@@ -162,11 +216,74 @@ function CreatePracticeDialog({
             <Input {...register('title')} placeholder="e.g. Thursday Ice Session" className="rounded-full" />
             {errors.title && <FieldError>{errors.title.message}</FieldError>}
           </Field>
-          <Field>
-            <FieldLabel>Date</FieldLabel>
-            <Input type="date" {...register('date')} className="rounded-full" />
-            {errors.date && <FieldError>{errors.date.message}</FieldError>}
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Date</FieldLabel>
+              <Input type="date" {...register('date')} className="rounded-full" />
+              {errors.date && <FieldError>{errors.date.message}</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel>Time <span className="text-muted-foreground text-xs">(optional)</span></FieldLabel>
+              <Input type="time" {...register('time')} className="rounded-full" />
+            </Field>
+          </div>
+
+          <Separator className="opacity-50" />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Repeat className="w-4 h-4 text-primary" />
+                <span className="text-sm font-bold uppercase tracking-widest italic">Recurring</span>
+              </div>
+              <Checkbox
+                checked={isRecurring}
+                onCheckedChange={(v) => setValue('isRecurring', !!v)}
+              />
+            </div>
+
+            {isRecurring && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
+                <div className="flex flex-col gap-2">
+                  <FieldLabel className="text-[10px] uppercase font-black tracking-widest text-zinc-500">Days of Week</FieldLabel>
+                  <div className="flex justify-between items-center bg-secondary/20 p-2 rounded-full border border-white/5">
+                    {DAYS.map(day => {
+                      const isSelected = selectedDays.includes(day.value)
+                      return (
+                        <button
+                          key={day.value}
+                          type="button"
+                          onClick={() => {
+                            const next = isSelected
+                              ? selectedDays.filter(v => v !== day.value)
+                              : [...selectedDays, day.value]
+                            setValue('daysOfWeek', next)
+                          }}
+                          className={cn(
+                            "w-8 h-8 rounded-full text-[10px] font-black transition-all flex items-center justify-center",
+                            isSelected
+                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110"
+                              : "text-zinc-500 hover:bg-white/5"
+                          )}
+                        >
+                          {day.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <Field>
+                  <FieldLabel className="text-[10px] uppercase font-black tracking-widest text-zinc-500">Until Date</FieldLabel>
+                  <Input type="date" {...register('recurringEndDate')} className="rounded-full h-9" />
+                  {errors.recurringEndDate && <FieldError>{errors.recurringEndDate.message}</FieldError>}
+                </Field>
+              </div>
+            )}
+          </div>
+
+          <Separator className="opacity-50" />
+
           <Field>
             <FieldLabel>Status</FieldLabel>
             <Select value={statusVal} onValueChange={v => setValue('status', v as CreateForm['status'])}>
@@ -186,7 +303,7 @@ function CreatePracticeDialog({
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => { reset(); onClose() }} className="rounded-full">Cancel</Button>
             <Button type="submit" disabled={mutation.isPending} className="rounded-full">
-              {mutation.isPending ? 'Creating…' : 'Create Practice'}
+              {mutation.isPending ? 'Creating…' : (isRecurring ? 'Create Practices' : 'Create Practice')}
             </Button>
           </DialogFooter>
         </form>

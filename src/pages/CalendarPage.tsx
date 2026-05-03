@@ -25,7 +25,7 @@ function eventDotClass(ev: CalendarEvent) {
   return ev.kind === 'practice' ? 'text-amber-500' : 'text-blue-500'
 }
 
-function formatGameTime(t: string): string {
+export function formatEventTime(t: string): string {
   const [h, m] = t.split(':').map(Number)
   const period = h >= 12 ? 'PM' : 'AM'
   const hour = h % 12 || 12
@@ -189,7 +189,10 @@ function MiniMonth({
 // ── Event row ─────────────────────────────────────────────────────────────────
 
 function EventRow({ ev, onOpen }: { ev: CalendarEvent; onOpen: (ev: CalendarEvent) => void }) {
-  const timeStr = ev.kind === 'game' && ev.data.gameTime ? formatGameTime(ev.data.gameTime) : null
+  const timeStr = ev.kind === 'game' && ev.data.gameTime
+    ? formatEventTime(ev.data.gameTime)
+    : (ev.kind === 'practice' && ev.data.practiceTime ? formatEventTime(ev.data.practiceTime) : null)
+
   return (
     <button
       onClick={() => onOpen(ev)}
@@ -199,7 +202,7 @@ function EventRow({ ev, onOpen }: { ev: CalendarEvent; onOpen: (ev: CalendarEven
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-white/50 truncate">
           {ev.kind === 'practice'
-            ? 'Practice'
+            ? `Practice${timeStr ? ` · ${timeStr}` : ''}`
             : `Game · ${ev.data.location === 'home' ? 'Home' : 'Away'}${timeStr ? ` · ${timeStr}` : ''}`}
         </p>
         <p className="text-base font-semibold text-white/95 truncate">{eventTitle(ev)}</p>
