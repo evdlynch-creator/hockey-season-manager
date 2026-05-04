@@ -118,6 +118,49 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
                     </div>
                   ))}
                 </div>
+
+                {/* Tactical Intelligence Log (Moved to Sidebar) */}
+                <div className="mt-auto pt-4 space-y-3 hidden lg:block">
+                  <div className="px-2 flex items-center justify-between">
+                    <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Intelligence Feed</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[7px] font-mono text-primary/60 uppercase">Live</span>
+                    </div>
+                  </div>
+                  <div className="bg-black/40 rounded-xl border border-white/5 p-2.5 h-24 overflow-hidden relative group/feed transition-colors hover:bg-black/60">
+                    <div className="space-y-1.5 animate-[terminal-scroll_15s_linear_infinite] hover:[animation-play-state:paused]">
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Analyzing zone entry trends...
+                      </div>
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Mapping breakout sequences...
+                      </div>
+                      <div className="text-[7px] font-mono text-primary/80 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Tactical gap detected: RD shift
+                      </div>
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Syncing practice data...
+                      </div>
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Optimizing powerplay concepts...
+                      </div>
+                      <div className="text-[7px] font-mono text-primary/80 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> AI Insight: Concept retention up 12%
+                      </div>
+                      {/* Repeat for smooth scroll */}
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Analyzing zone entry trends...
+                      </div>
+                      <div className="text-[7px] font-mono text-zinc-500 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Mapping breakout sequences...
+                      </div>
+                      <div className="text-[7px] font-mono text-primary/80 leading-tight flex gap-1">
+                        <span className="text-primary/40 shrink-0">{">"}</span> Tactical gap detected: RD shift
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -131,29 +174,6 @@ export function DashboardPreview({ onEnterDemo }: DashboardPreviewProps) {
               {/* AI Intelligence Scan Sweep */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-primary/5 to-transparent skew-x-12 animate-[scan-sweep_4s_ease-in-out_infinite]" />
-              </div>
-
-              {/* Tactical Intelligence Log (Bottom Left) */}
-              <div className="absolute bottom-4 left-4 w-48 h-16 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 p-2 overflow-hidden pointer-events-none hidden lg:block">
-                <div className="text-[8px] font-mono text-primary/60 uppercase mb-1 flex justify-between">
-                  <span>Intelligence Feed</span>
-                  <span className="animate-pulse">● Live</span>
-                </div>
-                <div className="space-y-1 animate-[terminal-scroll_10s_linear_infinite]">
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Analyzing zone entry trends...</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Mapping breakout sequences...</div>
-                  <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} Tactical gap detected: RD shift</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Syncing practice data...</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Optimizing powerplay concepts...</div>
-                  <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} AI Insight: Concept retention up 12%</div>
-                  {/* Repeat for smooth scroll */}
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Analyzing zone entry trends...</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Mapping breakout sequences...</div>
-                  <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} Tactical gap detected: RD shift</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Syncing practice data...</div>
-                  <div className="text-[7px] font-mono text-zinc-500 leading-tight">{">"} Optimizing powerplay concepts...</div>
-                  <div className="text-[7px] font-mono text-primary/80 leading-tight">{">"} AI Insight: Concept retention up 12%</div>
-                </div>
               </div>
             </div>
           </div>
