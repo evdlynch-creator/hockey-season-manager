@@ -74,8 +74,11 @@ export function useGlobalCoachNotifications() {
             }
           }
         })
-      } catch (err) {
-        console.error('Failed to connect to global notifications:', err)
+      } catch (err: any) {
+        // Suppress transient WebSocket errors — non-critical notification channel
+        if (mounted) {
+          console.warn('Global notifications connection unavailable:', err?.message || err)
+        }
       }
     }
 
@@ -83,7 +86,9 @@ export function useGlobalCoachNotifications() {
 
     return () => {
       mounted = false
-      if (channel) channel.unsubscribe()
+      if (channel) {
+        try { channel.unsubscribe() } catch (_) { /* ignore cleanup errors */ }
+      }
     }
   }, [user?.id, teamId, currentPath, notifPrefs.coachMessages])
 }

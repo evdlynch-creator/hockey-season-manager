@@ -81,8 +81,11 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
             })
           }
         })
-      } catch (err) {
-        console.error('Failed to connect to coach chat:', err)
+      } catch (err: any) {
+        // Suppress transient WebSocket errors after unmount or on navigation
+        if (mounted) {
+          console.warn('Coach chat connection unavailable — will retry on next mount:', err?.message || err)
+        }
       }
     }
 
@@ -90,9 +93,12 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
 
     return () => {
       mounted = false
-      if (channel) channel.unsubscribe()
       channelRef.current = null
       setIsConnected(false)
+      // Unsubscribe after clearing mounted flag so any pending errors are suppressed
+      if (channel) {
+        try { channel.unsubscribe() } catch (_) { /* ignore cleanup errors */ }
+      }
     }
   }, [user?.id, teamId, contextType, contextId])
 
