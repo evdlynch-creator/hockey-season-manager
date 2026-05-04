@@ -161,27 +161,27 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
 
       <PracticeLinkTool 
         open={practiceToolOpen} 
-        onOpenChange={setPracticeToolOpen} 
-        onLink={handleLinkPractice} 
+        onClose={() => setPracticeToolOpen(false)} 
+        onSelect={handleLinkPractice} 
       />
       <GameLinkTool 
         open={gameToolOpen} 
-        onOpenChange={setGameToolOpen} 
-        onLink={handleLinkGame} 
+        onClose={() => setGameToolOpen(false)} 
+        onSelect={handleLinkGame} 
       />
       <LineBuilderTool 
         open={lineToolOpen} 
-        onOpenChange={setLineToolOpen} 
+        onClose={() => setLineToolOpen(false)} 
         onShare={handleShareLines} 
       />
       <PollTool 
         open={pollToolOpen} 
-        onOpenChange={setPollToolOpen} 
+        onClose={() => setPollToolOpen(false)} 
         onShare={handleSharePoll} 
       />
       <CoachVoiceMemoTool 
         open={voiceToolOpen} 
-        onOpenChange={setVoiceToolOpen} 
+        onClose={() => setVoiceToolOpen(false)} 
         onShare={handleShareVoice} 
       />
     </Card>
