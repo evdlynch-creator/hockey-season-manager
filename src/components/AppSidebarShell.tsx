@@ -52,6 +52,8 @@ import { useTeamPreferences } from '@/hooks/usePreferences'
 import { useDemoMode } from '@/hooks/useDemoData'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
+import { useFilteredAnalytics, buildInsights } from '@/hooks/useAnalytics'
+import { insightIcon, renderHighlighted } from './InsightsStrip'
 
 const SIDEBAR_KEY = 'sidebar_collapsed'
 
@@ -114,6 +116,9 @@ export function AppSidebarShell() {
       return next
     })
   }, [])
+
+  const { data: analytics } = useFilteredAnalytics()
+  const topInsights = analytics ? buildInsights(analytics).slice(0, 2) : []
 
   const userInitial = isDemo ? 'D' : (user?.email?.charAt(0).toUpperCase() || 'U')
   const teams = teamData?.teams ?? []
@@ -316,6 +321,33 @@ export function AppSidebarShell() {
               ))}
             </div>
           ))}
+
+          {/* ── Intelligence Feed ─────────────────────── */}
+          {!collapsed && topInsights.length > 0 && (
+            <div className="pt-6 pb-2">
+              <div className="flex items-center justify-between px-4 mb-2">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
+                  Intelligence
+                </p>
+                <Link
+                  to="/analytics"
+                  className="text-[10px] text-primary hover:underline opacity-70 hover:opacity-100 transition-opacity"
+                >
+                  See all
+                </Link>
+              </div>
+              <div className="mx-1 rounded-2xl border border-border/40 bg-sidebar-accent/20 p-3 space-y-2">
+                {topInsights.map(insight => (
+                  <div key={insight.id} className="flex items-start gap-2">
+                    <div className="mt-0.5 shrink-0 scale-90">{insightIcon(insight)}</div>
+                    <p className="text-[11px] text-foreground leading-snug">
+                      {renderHighlighted(insight.headline)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Footer (always pinned to bottom) ──────────── */}

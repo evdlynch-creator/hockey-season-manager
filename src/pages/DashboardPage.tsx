@@ -2,10 +2,10 @@ import { useAuth } from '../hooks/useAuth'
 import { useTeam } from '../hooks/useTeam'
 import { usePractices } from '../hooks/usePractices'
 import { useGames } from '../hooks/useGames'
-import { useFilteredAnalytics, filterGamesByMode, buildInsights } from '../hooks/useAnalytics'
+import { useFilteredAnalytics, filterGamesByMode } from '../hooks/useAnalytics'
 import { useGameTypes, useViewMode } from '../hooks/usePreferences'
 import { isDemoMode } from '../hooks/useDemoData'
-import { InsightsStrip } from '../components/InsightsStrip'
+
 import { parseISO, format, isAfter } from 'date-fns'
 import { LoadingOverlay } from '@blinkdotnew/ui'
 import { useNavigate } from '@tanstack/react-router'
@@ -107,7 +107,6 @@ export default function DashboardPage() {
   const avgGA = recentCompleted.length ? snapshotGA / recentCompleted.length : 0
 
   const { working, hurting, hurtNarrative } = getConceptInsights(recentCompleted, reviewsByGameId, snapshotGA)
-  const topInsights = analytics ? buildInsights(analytics).slice(0, 3) : []
 
   const handleApplyDashboardNote = async (text: string, type: 'team' | 'opponent') => {
     const latestGame = recentCompleted[0]
@@ -173,12 +172,6 @@ export default function DashboardPage() {
           completedGamesCount={completedGames.length}
           upcomingCount={upcomingPractices.length + upcomingGames.length}
         />
-
-        {topInsights.length > 0 && (
-          <div className="mb-6">
-            <InsightsStrip insights={topInsights} limit={3} onViewAll={() => navigate({ to: '/analytics' })} />
-          </div>
-        )}
 
         <ActivitySummary
           upcomingGames={upcomingGames}
