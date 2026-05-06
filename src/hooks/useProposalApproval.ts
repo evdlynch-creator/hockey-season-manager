@@ -13,7 +13,7 @@ export function useProposalApproval(messageId: string, meta?: any) {
     queryKey: ['proposal-approval', messageId],
     queryFn: async () => {
       return await blink.db.pollVotes.list({
-        where: { messageId }
+        where: { messageId: { equals: messageId } }
       })
     },
     enabled: !!messageId
@@ -26,7 +26,10 @@ export function useProposalApproval(messageId: string, meta?: any) {
       const optionIndex = requestedStatus === 'approve' ? 0 : requestedStatus === 'request_changes' ? 1 : 2
       
       const existing = await blink.db.pollVotes.list({
-        where: { messageId, userId: user.id }
+        where: { 
+          messageId: { equals: messageId }, 
+          userId: { equals: user.id } 
+        }
       })
 
       if (existing.length > 0) {
@@ -58,7 +61,7 @@ export function useProposalApproval(messageId: string, meta?: any) {
 
         if (flatAssignments.length > 0) {
           // Clear existing lineups for this game
-          const existingLineups = await blink.db.lineups.list({ where: { gameId } })
+          const existingLineups = await blink.db.lineups.list({ where: { gameId: { equals: gameId } } })
           if (existingLineups.length > 0) {
             // Note: deleteMany by ID list is often more reliable
             const ids = existingLineups.map((l: any) => l.id)
@@ -114,9 +117,9 @@ export function useProposalApproval(messageId: string, meta?: any) {
       })
 
       try {
-        const existingLineups = await blink.db.lineups.list({ where: { gameId } })
+        const existingLineups = await blink.db.lineups.list({ where: { gameId: { equals: gameId } } })
         if (existingLineups.length > 0) {
-          await blink.db.lineups.deleteMany({ where: { gameId } })
+          await blink.db.lineups.deleteMany({ where: { gameId: { equals: gameId } } })
         }
 
         await blink.db.lineups.createMany(
