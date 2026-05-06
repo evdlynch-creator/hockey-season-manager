@@ -169,6 +169,14 @@ export default function App() {
   const { user, isLoading } = useAuth()
   const demoActive = isDemoMode()
 
+  // Refined loading logic: Always wait for auth check to finish.
+  // Additionally, ensure we don't flash the landing page if a token is present in the URL 
+  // and being processed by the SDK.
+  const hasTokenInUrl = typeof window !== 'undefined' && (
+    window.location.hash.includes('access_token=') || 
+    window.location.search.includes('access_token=')
+  )
+
   useEffect(() => {
     if (!user && !demoActive) return
     
@@ -181,7 +189,7 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [user, demoActive])
 
-  if (isLoading && !demoActive) return <LoadingOverlay show />
+  if ((isLoading || hasTokenInUrl) && !demoActive) return <LoadingOverlay show />
 
   if (!user && !demoActive) {
     return (
