@@ -5,7 +5,7 @@ import {
 } from '@blinkdotnew/ui'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import { isDemoMode } from './hooks/useDemoData'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { startTour } from './tour'
 import {
   createRouter,
@@ -170,12 +170,29 @@ export default function App() {
   const demoActive = isDemoMode()
 
   // Refined loading logic: Always wait for auth check to finish.
-  // Additionally, ensure we don't flash the landing page if a token is present in the URL 
+  // Additionally, ensure we don't flash the landing page if an auth param is present in the URL 
   // and being processed by the SDK.
-  const hasTokenInUrl = typeof window !== 'undefined' && (
+  const hasAuthParamsInUrl = typeof window !== 'undefined' && (
     window.location.hash.includes('access_token=') || 
-    window.location.search.includes('access_token=')
+    window.location.hash.includes('id_token=') ||
+    window.location.hash.includes('error=') ||
+    window.location.search.includes('access_token=') ||
+    window.location.search.includes('id_token=') ||
+    window.location.search.includes('code=') ||
+    window.location.search.includes('error=')
   )
+
+  // Force a minimum loading period if auth params are present to prevent flickering
+  const [isProcessingToken, setIsProcessingToken] = useState(hasAuthParamsInUrl)
+
+  useEffect(() => {
+    if (hasAuthParamsInUrl) {
+      const timer = setTimeout(() => setIsProcessingToken(false), 2000)
+      return () => clearTimeout(timer)
+    } else {
+      setIsProcessingToken(false)
+    }
+  }, [hasAuthParamsInUrl])
 
   useEffect(() => {
     if (!user && !demoActive) return
@@ -189,7 +206,7 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [user, demoActive])
 
-  if ((isLoading || hasTokenInUrl) && !demoActive) return <LoadingOverlay show />
+  if ((isLoading || isProcessingToken) && !demoActive) return <LoadingOverlay show />
 
   if (!user && !demoActive) {
     return (

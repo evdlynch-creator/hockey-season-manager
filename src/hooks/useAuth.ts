@@ -8,6 +8,17 @@ import { blink } from '../blink/client'
  */
 export function useAuth() {
   const { user, isLoading, isAuthenticated } = useBlinkAuth()
+  
+  // Diagnostic logging for auth state transitions
+  if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+    console.debug('[Auth] State Update:', { 
+      isLoading, 
+      isAuthenticated, 
+      userId: user?.id,
+      url: window.location.href 
+    })
+  }
+
   return { user, isLoading, isAuthenticated }
 }
 
