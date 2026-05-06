@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react'
 import { 
-  Button, 
-  Badge, 
   toast,
-  ScrollArea
 } from '@blinkdotnew/ui'
-import { 
-  Save, 
-  Users, 
-  UserPlus,
-  Library
-} from 'lucide-react'
 import { blink } from '@/blink/client'
 import { usePlayers } from '@/hooks/usePlayers'
 import { useLineups, useUpdateLineup } from '@/hooks/useLineups'
@@ -19,9 +10,8 @@ import {
   useFormationAssignments, 
   useUpdateFormationAssignments 
 } from '@/hooks/useFormations'
-import {
+import { 
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -34,14 +24,14 @@ import {
 } from '@dnd-kit/core'
 import {
   arrayMove,
-  SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { UNITS } from './constants'
-import { DraggablePlayer } from './DraggablePlayer'
-import { UnitContainer } from './UnitContainer'
-import { FormationLibrary } from './FormationLibrary'
+import { PlayerCard } from './DraggablePlayer'
+import { LineupHeader } from './components/LineupHeader'
+import { TacticalCanvas } from './components/TacticalCanvas'
+import { RosterDrawer } from './components/RosterDrawer'
+import { customCollisionDetectionStrategy } from './utils/collisionDetection'
 import type { Player, FormationAssignment, Formation } from '@/types'
 
 interface LineupPlannerProps {
@@ -66,16 +56,17 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
   const existingAssignments = mode === 'formation' ? formationAssignments : gameLineups
   const isLoading = playersLoading || (mode === 'formation' ? formationAssignmentsLoading : lineupsLoading)
   
-  const isDefaultMode = gameId === 'SEASON_DEFAULT'
-
   const [localLineups, setLocalLineups] = useState<Record<string, string[]>>({})
   const [activePlayer, setActivePlayer] = useState<Player | null>(null)
-  const [libraryOpen, setLibraryOpen] = useState(false)
+  const [rosterOpen, setRosterOpen] = useState(false)
+  const [isRosterHovered, setIsRosterHovered] = useState(false)
+  const [rosterTabY, setRosterTabY] = useState(50) // Percentage from top
+  const [rosterFilter, setRosterFilter] = useState<'all' | 'forward' | 'defense' | 'goalie'>('all')
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -99,8 +90,25 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
     }
   }, [existingAssignments])
 
-  const assignedPlayerIds = new Set(Object.values(localLineups).flat())
-  const unassignedPlayers = allPlayers.filter(p => !assignedPlayerIds.has(p.id))
+  // Players in BASE unit (Line 1-4, D-Pair 1-3, Goalies)
+  const baseUnits = ['Line 1', 'Line 2', 'Line 3', 'Line 4', 'D-Pair 1', 'D-Pair 2', 'D-Pair 3', 'Goalies']
+  const baseAssignedIds = new Set(
+    baseUnits.flatMap(u => localLineups[u] || [])
+  )
+
+  // Filter available players:
+  const filteredPlayers = allPlayers
+    .filter(p => {
+      // Position filter
+      if (rosterFilter === 'forward') return p.position?.toLowerCase().includes('forward') || p.position?.toLowerCase().includes('center') || p.position?.toLowerCase().includes('wing')
+      if (rosterFilter === 'defense') return p.position?.toLowerCase().includes('defense')
+      if (rosterFilter === 'goalie') return p.position?.toLowerCase().includes('goalie')
+      return true
+    })
+
+  // Group players for the sidebar
+  const unassignedPlayers = filteredPlayers.filter(p => !baseAssignedIds.has(p.id))
+  const reusablePlayers = filteredPlayers.filter(p => baseAssignedIds.has(p.id))
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
@@ -123,14 +131,17 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
     if (activeId === overId) return
 
     const activeUnit = activeData?.unitId || 'roster'
-    let overUnit = overData?.unitId || (overData?.type === 'unit' ? overData.unitId : null)
-
-    if (!overUnit && overData?.type === 'player' && overData.unitId) {
+    
+    let overUnit: string | null = null
+    
+    if (overData?.type === 'unit') {
       overUnit = overData.unitId
-    }
-
-    if (!overUnit && overId === 'roster-container') {
+    } 
+    else if (overData?.type === 'roster' || overId === 'roster') {
       overUnit = 'roster'
+    } 
+    else if (overData?.type === 'player') {
+      overUnit = overData.unitId || 'roster'
     }
 
     if (!overUnit) return
@@ -138,14 +149,14 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
 
     setLocalLineups(prev => {
       const next = { ...prev }
-      
       if (activeUnit !== 'roster') {
-        next[activeUnit] = next[activeUnit].filter(id => id !== activeId)
+        next[activeUnit] = (next[activeUnit] || []).filter(id => id !== activeId)
       }
 
       if (overUnit !== 'roster') {
         const overUnitPlayers = [...(next[overUnit as string] || [])]
-        const overIndex = overUnitPlayers.indexOf(overId)
+        const overIndex = overData?.type === 'player' ? overUnitPlayers.indexOf(overId) : -1
+        
         if (overIndex >= 0) {
           overUnitPlayers.splice(overIndex, 0, activeId)
         } else {
@@ -153,7 +164,6 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
         }
         next[overUnit as string] = overUnitPlayers
       }
-
       return next
     })
   }
@@ -173,7 +183,7 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
     const overData = over.data.current
 
     const activeUnit = activeData?.unitId || 'roster'
-    const overUnit = overData?.unitId || (overData?.type === 'unit' ? overData.unitId : 'roster')
+    const overUnit = overData?.unitId || (overData?.type === 'unit' ? overData.unitId : (overData?.type === 'roster' ? 'roster' : 'roster'))
 
     if (activeUnit === overUnit && activeUnit !== 'roster') {
       setLocalLineups(prev => {
@@ -209,37 +219,37 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
     }
   }
 
+  const handleSaveGroup = async (units: string[], groupLabel: string) => {
+    const groupAssignments: { playerId: string, unit: string }[] = []
+    units.forEach(unit => {
+      const playerIds = localLineups[unit] || []
+      playerIds.forEach(playerId => {
+        groupAssignments.push({ playerId, unit })
+      })
+    })
+
+    const mergedAssignments = [
+      ...existingAssignments.filter(a => !units.includes(a.unit)),
+      ...groupAssignments
+    ]
+
+    try {
+      if (mode === 'formation') {
+        await updateFormationAssignments.mutateAsync({ formationId: targetId, assignments: mergedAssignments })
+      } else {
+        await updateLineup.mutateAsync({ gameId: targetId, playerLineups: mergedAssignments })
+      }
+      toast.success(`${groupLabel} saved successfully`)
+    } catch (err: any) {
+      toast.error(`Failed to save ${groupLabel}`, { description: err.message })
+    }
+  }
+
   const handleClearAll = () => {
     const cleared: Record<string, string[]> = {}
     UNITS.forEach(u => cleared[u] = [])
     setLocalLineups(cleared)
     toast.success('Lines cleared')
-  }
-
-  const handleApplyFormation = async (formation: Formation) => {
-    try {
-      const assignments = await blink.db.formationAssignments.list({
-        where: { formationId: formation.id }
-      }) as FormationAssignment[]
-
-      if (assignments.length === 0) {
-        toast.error('This formation is empty')
-        return
-      }
-
-      const grouped: Record<string, string[]> = {}
-      UNITS.forEach(u => grouped[u] = [])
-      assignments.forEach(a => {
-        if (!grouped[a.unit]) grouped[a.unit] = []
-        grouped[a.unit].push(a.playerId)
-      })
-
-      setLocalLineups(grouped)
-      setLibraryOpen(false)
-      toast.success(`Applied formation: ${formation.name}`)
-    } catch (err: any) {
-      toast.error('Failed to load formation')
-    }
   }
 
   if (isLoading) {
@@ -249,112 +259,44 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
   const isPending = mode === 'formation' ? updateFormationAssignments.isPending : updateLineup.isPending
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            {mode === 'formation' ? 'Formation Template' : (isDefaultMode ? 'Season Default Lines' : 'Game Lineup Planner')}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            {mode === 'formation' 
-              ? 'Define a reusable lineup template. Drag and drop players to create your units.'
-              : (isDefaultMode 
-                ? 'Set your base lines for the season. These can be imported into individual games.'
-                : 'Drag and drop players to create your game lines.')}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {mode === 'game' && (
-            <Button 
-              variant="outline" 
-              onClick={() => setLibraryOpen(true)}
-              className="rounded-full gap-2 border-primary/20 text-primary hover:bg-primary/5"
-            >
-              <Library className="w-4 h-4" />
-              Formation Library
-            </Button>
-          )}
-          <Button 
-            variant="ghost" 
-            onClick={handleClearAll}
-            className="rounded-full text-zinc-500 hover:text-red-400"
-          >
-            Clear All
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={isPending}
-            className="rounded-full gap-2 shadow-lg shadow-primary/20"
-          >
-            <Save className="w-4 h-4" />
-            {isPending ? 'Saving...' : (mode === 'formation' ? 'Save Formation' : 'Save Lineup')}
-          </Button>
-        </div>
-      </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={customCollisionDetectionStrategy}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex flex-col h-full bg-zinc-950 overflow-hidden relative">
+        <LineupHeader 
+          mode={mode}
+          handleClearAll={handleClearAll}
+          handleSave={handleSave}
+          isPending={isPending}
+          rosterOpen={rosterOpen}
+          isRosterHovered={isRosterHovered}
+          setRosterOpen={setRosterOpen}
+        />
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[700px]">
-          {/* Left: Roster Section */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-6 flex flex-col h-full shadow-inner">
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
-                  <UserPlus className="w-3.5 h-3.5" /> Available Players
-                </h3>
-                <Badge variant="outline" className="rounded-full border-white/10 text-[10px] text-zinc-400 px-2 py-0.5">
-                  {unassignedPlayers.length}
-                </Badge>
-              </div>
+        <div className="flex-1 relative flex overflow-hidden min-h-0">
+          <TacticalCanvas 
+            localLineups={localLineups}
+            allPlayers={allPlayers}
+            handleSaveGroup={handleSaveGroup}
+          />
 
-              <ScrollArea id="roster-container" className="flex-1 -mx-2 px-2">
-                <SortableContext items={unassignedPlayers.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                  <div className="grid grid-cols-1 gap-2.5 pb-10">
-                    {unassignedPlayers.length === 0 ? (
-                      <div className="h-40 flex flex-col items-center justify-center text-center space-y-2 border-2 border-dashed border-white/5 rounded-[2rem]">
-                        <Users className="w-8 h-8 text-zinc-800" />
-                        <p className="text-[10px] text-zinc-600 font-black uppercase tracking-widest italic">
-                          All Players Assigned
-                        </p>
-                      </div>
-                    ) : (
-                      unassignedPlayers.map(player => (
-                        <DraggablePlayer key={player.id} player={player} />
-                      ))
-                    )}
-                  </div>
-                </SortableContext>
-              </ScrollArea>
-            </div>
-          </div>
-
-          {/* Right: Units Grid */}
-          <div className="lg:col-span-8">
-            <ScrollArea className="h-[700px] -mx-4 px-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-12">
-                {UNITS.map(unit => {
-                  const unitPlayerIds = localLineups[unit] || []
-                  const unitPlayers = unitPlayerIds
-                    .map(id => allPlayers.find(p => p.id === id))
-                    .filter((p): p is Player => p !== undefined)
-                  
-                  return (
-                    <UnitContainer 
-                      key={unit} 
-                      id={unit} 
-                      players={unitPlayers} 
-                    />
-                  )
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+          <RosterDrawer 
+            rosterOpen={rosterOpen}
+            isRosterHovered={isRosterHovered}
+            setIsRosterHovered={setIsRosterHovered}
+            setRosterOpen={setRosterOpen}
+            activePlayer={activePlayer}
+            unassignedPlayers={unassignedPlayers}
+            reusablePlayers={reusablePlayers}
+            rosterFilter={rosterFilter}
+            setRosterFilter={setRosterFilter}
+            tabY={rosterTabY}
+            setTabY={setRosterTabY}
+          />
         </div>
 
         <DragOverlay dropAnimation={{
@@ -365,19 +307,14 @@ export function LineupPlanner({ gameId, formationId, onImportDefaults }: LineupP
               },
             },
           }),
+          duration: 250,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
         }}>
           {activePlayer ? (
-            <DraggablePlayer player={activePlayer} isOverlay />
+            <PlayerCard player={activePlayer} isOverlay />
           ) : null}
         </DragOverlay>
-      </DndContext>
-
-      <FormationLibrary 
-        open={libraryOpen}
-        onOpenChange={setLibraryOpen}
-        formations={formations}
-        onApply={handleApplyFormation}
-      />
-    </div>
+      </div>
+    </DndContext>
   )
 }

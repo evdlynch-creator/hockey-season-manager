@@ -4,6 +4,7 @@ import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import { useTeam } from './useTeam'
 import { useNotificationPreferences } from './usePreferences'
+import { useUnreadCoachMessages } from './useUnreadCoachMessages'
 import type { CoachMessage, CoachMessageContext } from '../types'
 
 export function useCoachMessages(contextType: CoachMessageContext, contextId: string | null = null) {
@@ -11,6 +12,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
   const { data: teamData } = useTeam()
   const teamId = teamData?.team?.id
   const [notifPrefs] = useNotificationPreferences(teamId)
+  const { markSeen } = useUnreadCoachMessages()
   const queryClient = useQueryClient()
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [isConnected, setIsConnected] = useState(false)
@@ -46,10 +48,13 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
   useEffect(() => {
     if (!user?.id || !teamId) return
 
+    // Mark as seen whenever this hook is active (user is looking at messages)
+    markSeen()
+
     let mounted = true
     let channel: any = null
 
-    const channelName = `coach-messages-${teamId}-${contextType}-${contextId || 'general'}`
+    const channelName = `coach-${teamId.slice(-8)}-${contextType.slice(0, 4)}-${contextId ? contextId.slice(-8) : 'gen'}`
 
     const connect = async () => {
       try {

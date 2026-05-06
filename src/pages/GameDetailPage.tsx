@@ -13,6 +13,14 @@ import { useGame, useGameReview } from '@/hooks/useGames'
 import { useTeam } from '@/hooks/useTeam'
 import { useGameTypes } from '@/hooks/usePreferences'
 import type { GameType } from '@/hooks/usePreferences'
+import { usePlayers } from '@/hooks/usePlayers'
+import { useLineups, useUpdateLineup } from '@/hooks/useLineups'
+import { 
+  useFormations, 
+  useFormationAssignments, 
+  useUpdateFormationAssignments 
+} from '@/hooks/useFormations'
+import { useUnreadCoachMessages } from '@/hooks/useUnreadCoachMessages'
 import { LineupPlanner } from './games/lineups/LineupPlanner'
 import { CoachChat } from '@/components/coaching/CoachChat'
 import { GameSummaryHeader } from './games/components/GameSummaryHeader'
@@ -26,9 +34,10 @@ export default function GameDetailPage() {
   const search: any = useSearch({ from: '/games/$gameId' })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { hasUnread, markSeen } = useUnreadCoachMessages()
 
   const { data: game, isLoading: gameLoading } = useGame(gameId)
-  const { data: review } = useGameReview(gameId)
+  const { myReview, consensus, reviews, isLoading: reviewsLoading } = useGameReview(gameId)
   const { data: teamData } = useTeam()
   const { getType, setType } = useGameTypes(teamData?.team?.id)
   const gameType: GameType = getType(gameId)
@@ -66,17 +75,19 @@ export default function GameDetailPage() {
   }, [game])
 
   useEffect(() => {
-    if (review) {
+    if (myReview) {
       setRatings({
-        breakoutsRating: review.breakoutsRating,
-        forecheckRating: review.forecheckRating,
-        defensiveZoneRating: review.defensiveZoneRating,
-        transitionRating: review.transitionRating,
-        passingRating: review.passingRating,
-        skatingRating: review.skatingRating,
+        breakoutsRating: myReview.breakoutsRating,
+        forecheckRating: myReview.forecheckRating,
+        defensiveZoneRating: myReview.defensiveZoneRating,
+        transitionRating: myReview.transitionRating,
+        passingRating: myReview.passingRating,
+        skatingRating: myReview.skatingRating,
+        zoneEntryRating: myReview.zoneEntryRating,
+        offensiveZoneRating: myReview.offensiveZoneRating,
       })
-      setNotes(review.notes ?? '')
-      setOpponentNotes(review.opponentNotes ?? '')
+      setNotes(myReview.notes ?? '')
+      setOpponentNotes(myReview.opponentNotes ?? '')
     } else if (search.autoScores) {
       try {
         const scores = JSON.parse(search.autoScores)
@@ -93,7 +104,13 @@ export default function GameDetailPage() {
         console.error('Failed to parse auto-scores', e)
       }
     }
-  }, [review, search.autoScores])
+  }, [myReview, search.autoScores])
+
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      markSeen()
+    }
+  }, [activeTab, markSeen])
 
   const dateStr = game?.date ? format(new Date(game.date + 'T00:00:00'), 'EEEE, MMMM d, yyyy') : '—'
 
@@ -125,8 +142,8 @@ export default function GameDetailPage() {
 
   const saveReport = useMutation({
     mutationFn: async (summary: string) => {
-      if (review) {
-        await blink.db.gameReviews.update(review.id, { summary })
+      if (myReview) {
+        await blink.db.gameReviews.update(myReview.id, { summary })
       } else {
         const user = await blink.auth.me()
         if (!user) throw new Error('Not authenticated')
@@ -150,21 +167,22 @@ export default function GameDetailPage() {
 
   const saveReview = useMutation({
     mutationFn: async () => {
+      const user = await blink.auth.me()
+      if (!user) throw new Error('Not authenticated')
+
       const payload = {
         ...ratings,
         notes,
         opponentNotes,
+        userId: user.id,
+        gameId
       }
-      if (review) {
-        await blink.db.gameReviews.update(review.id, payload)
+      
+      if (myReview) {
+        await blink.db.gameReviews.update(myReview.id, payload)
       } else {
-        const user = await blink.auth.me()
-        if (!user) throw new Error('Not authenticated')
-
         await blink.db.gameReviews.create({
           id: crypto.randomUUID(),
-          gameId,
-          userId: user.id,
           ...payload,
           createdAt: new Date().toISOString(),
         })
@@ -180,7 +198,7 @@ export default function GameDetailPage() {
     onError: (e: Error) => toast.error('Failed to save review', { description: e.message }),
   })
 
-  if (gameLoading) {
+  if (gameLoading || reviewsLoading) {
     return (
       <div className="p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
         <div className="h-8 w-48 bg-card rounded-full" />
@@ -229,9 +247,12 @@ export default function GameDetailPage() {
               <LayoutList className="w-4 h-4" />
               Lineup
             </TabsTrigger>
-            <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground relative">
               <MessageSquare className="w-4 h-4" />
-              Coaches Chat
+              Locker Room Talk
+              {hasUnread && activeTab !== 'chat' && (
+                <span className="absolute top-1 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+              )}
             </TabsTrigger>
             <TabsTrigger value="review" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <CheckCircle className="w-4 h-4" />
@@ -282,7 +303,9 @@ export default function GameDetailPage() {
         <TabsContent value="review" className="space-y-6 mt-0">
           <GameReviewPanel 
             game={game} 
-            review={review} 
+            review={myReview} 
+            consensus={consensus}
+            allReviews={reviews}
             ratings={ratings} 
             onRatingChange={(key, val) => setRatings(prev => ({ ...prev, [key]: val }))}
             notes={notes} 

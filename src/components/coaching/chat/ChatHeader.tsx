@@ -31,7 +31,7 @@ export function ChatHeader({ title, isConnected, messageCount }: ChatHeaderProps
         </div>
       </div>
       <Badge variant="outline" className="rounded-full text-[10px] font-black border-white/10 bg-white/5 text-zinc-400 px-3 py-1">
-        {messageCount} LITS
+        {messageCount} MSGS
       </Badge>
     </div>
   )

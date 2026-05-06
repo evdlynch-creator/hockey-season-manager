@@ -39,7 +39,9 @@ export default function GamesPage() {
 
   const seasonId = teamData?.season?.id ?? ''
 
-  const games = filterGamesByMode(rawGames, gameTypes, mode)
+  // Management pages should typically show all games regardless of global view mode filter
+  // to avoid confusion when scheduling or importing new games.
+  const games = rawGames
   const filtered = tab === 'all' ? games : games.filter(g => g.status === tab)
 
   // Stats

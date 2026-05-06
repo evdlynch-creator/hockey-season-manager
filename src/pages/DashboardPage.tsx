@@ -13,6 +13,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { staggerContainer } from '../components/Interactivity'
 import { DashboardHeader } from './dashboard/DashboardHeader'
+import { NextEventBanner } from '../components/coaching/NextEventBanner'
 import { QuickStats } from './dashboard/QuickStats'
 import { ActivitySummary } from './dashboard/ActivitySummary'
 import { ScheduleAndSnapshot } from './dashboard/ScheduleAndSnapshot'
@@ -42,7 +43,12 @@ export default function DashboardPage() {
   const teamId = teamData?.team?.id
   const { types: gameTypes } = useGameTypes(teamId)
   const { mode: viewMode } = useViewMode(teamId)
-  const games = filterGamesByMode(rawGames, gameTypes, viewMode)
+  
+  // Use all games for the schedule and progress ribbon to avoid missing upcoming events
+  const games = rawGames
+  // Use filtered games for the win/loss records and snapshots if a specific mode is active
+  const statsGames = filterGamesByMode(rawGames, gameTypes, viewMode)
+  
   const { data: analytics } = useFilteredAnalytics()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -88,7 +94,7 @@ export default function DashboardPage() {
 
   const nextEvent = getNextEvent(upcomingPractices, upcomingGames)
   
-  const completedGames = games.filter(g => g.goalsFor != null && g.goalsAgainst != null)
+  const completedGames = statsGames.filter(g => g.goalsFor != null && g.goalsAgainst != null)
   const wins = completedGames.filter(g => Number(g.goalsFor) > Number(g.goalsAgainst)).length
   const losses = completedGames.filter(g => Number(g.goalsFor) < Number(g.goalsAgainst)).length
   const ties = completedGames.filter(g => Number(g.goalsFor) === Number(g.goalsAgainst)).length
@@ -165,6 +171,10 @@ export default function DashboardPage() {
           onGameClick={() => navigate({ to: '/games' })}
         />
 
+        <div className="mb-8">
+          <NextEventBanner />
+        </div>
+
         <QuickStats
           wins={wins}
           losses={losses}
@@ -172,6 +182,7 @@ export default function DashboardPage() {
           completedPractices={completedPractices}
           completedGamesCount={completedGames.length}
           upcomingCount={upcomingPractices.length + upcomingGames.length}
+          consensusCount={(analytics?.reviews?.length || 0) + (analytics?.practiceRatings?.length || 0)}
         />
 
         {topInsights.length > 0 && (

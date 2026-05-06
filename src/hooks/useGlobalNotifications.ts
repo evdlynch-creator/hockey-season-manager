@@ -3,8 +3,8 @@ import { blink } from '../blink/client'
 import { useAuth } from './useAuth'
 import { useTeam } from './useTeam'
 import { useNotificationPreferences } from './usePreferences'
-import { toast } from '@blinkdotnew/ui'
 import { useRouterState } from '@tanstack/react-router'
+import { useUnreadCoachMessages } from './useUnreadCoachMessages'
 import type { CoachMessage } from '../types'
 
 export function useGlobalCoachNotifications() {
@@ -14,16 +14,49 @@ export function useGlobalCoachNotifications() {
   const [notifPrefs] = useNotificationPreferences(teamId)
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
+  const { setUnread, markSeen } = useUnreadCoachMessages()
 
   useEffect(() => {
     if (!user?.id || !teamId) return
 
+    // 0. Reset unread if we are already on the board and tab is active
+    // We can't easily check activeTab here, so we'll let the page handle it.
+    // REMOVED: Auto-reset on path check. Pages with tabs will handle markSeen().
+    
     let mounted = true
     let channel: any = null
 
     const channelName = `coach-messages-${teamId}-global`
 
+    const checkHistoricalUnread = async () => {
+      try {
+        const lastSeen = localStorage.getItem('last_seen_coach_message_at')
+        if (!lastSeen) return
+
+        const newMessages = await blink.db.coachMessages.list({
+          where: {
+            teamId,
+            createdAt: { gt: lastSeen }
+          },
+          limit: 1
+        })
+
+        if (mounted && newMessages.length > 0 && currentPath !== '/coaches-board') {
+          // Check if any of these messages are NOT ours
+          const hasOthers = newMessages.some(m => m.userId !== user.id)
+          if (hasOthers) {
+            setUnread(true)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check historical unread messages:', err)
+      }
+    }
+
     const connect = async () => {
+      // First check if there's anything new since we last looked
+      checkHistoricalUnread()
+
       try {
         channel = blink.realtime.channel(channelName)
 
@@ -41,23 +74,13 @@ export function useGlobalCoachNotifications() {
             // 1. Don't notify for our own messages
             if (messageData.userId === user.id) return
 
-            // 2. Determine context path
-            let messagePath = '/coaches-board'
-            if (messageData.contextType === 'game') {
-              messagePath = `/games/${messageData.contextId}`
-            } else if (messageData.contextType === 'practice') {
-              messagePath = `/practices/${messageData.contextId}`
-            }
+            // 2. Mark as unread
+            // Note: We always set unread to true. If the user is currently 
+            // looking at the chat (activeTab === 'chat'), the page will 
+            // immediately call markSeen() and clear it.
+            setUnread(true)
 
-            // 3. Show In-App Toast ONLY if NOT on the exact same page
-            if (currentPath !== messagePath) {
-              toast.info(`Message from ${messageData.userDisplayName}`, {
-                description: messageData.content.slice(0, 50) + (messageData.content.length > 50 ? '...' : ''),
-              })
-            }
-
-            // 4. Show System Notification ONLY if enabled and tab is hidden
-            // This works regardless of the page we are on
+            // 3. Show System Notification ONLY if enabled and tab is hidden
             if (
               notifPrefs.coachMessages &&
               'Notification' in window &&
@@ -90,5 +113,5 @@ export function useGlobalCoachNotifications() {
         try { channel.unsubscribe() } catch (_) { /* ignore cleanup errors */ }
       }
     }
-  }, [user?.id, teamId, currentPath, notifPrefs.coachMessages])
+  }, [user?.id, teamId, currentPath, notifPrefs.coachMessages, setUnread, markSeen])
 }

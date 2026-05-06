@@ -37,6 +37,12 @@ export interface SeasonAnalytics {
   practices: Practice[]
   segments: PracticeSegment[]
   reviews: GameReview[]
+  practiceRatings: PracticeRating[]
+  totalGoalsFor: number
+  totalGoalsAgainst: number
+  wins: number
+  losses: number
+  ties: number
 }
 
 export function buildByConcept(
@@ -44,6 +50,7 @@ export function buildByConcept(
   practices: Practice[],
   segments: PracticeSegment[],
   reviews: GameReview[],
+  practiceRatings: PracticeRating[] = [],
 ): Record<ConceptKey, ConceptSummary> {
   const gameById = new Map(games.map(g => [g.id, g]))
   const practiceById = new Map(practices.map(p => [p.id, p]))
@@ -55,10 +62,25 @@ export function buildByConcept(
       if (s.primaryConcept !== concept && s.secondaryConcept !== concept) continue
       const practice = practiceById.get(s.practiceId)
       if (!practice?.date) continue
+
+      // Aggregate all ratings for this segment
+      const relevantRatings = practiceRatings.filter(r => r.segmentId === s.id)
+      
       const vals: number[] = []
-      if (s.understandingRating) vals.push(Number(s.understandingRating))
-      if (s.executionRating) vals.push(Number(s.executionRating))
-      if (s.transferRating) vals.push(Number(s.transferRating))
+      
+      if (relevantRatings.length > 0) {
+        relevantRatings.forEach(r => {
+          if (r.understandingRating) vals.push(Number(r.understandingRating))
+          if (r.executionRating) vals.push(Number(r.executionRating))
+          if (r.transferRating) vals.push(Number(r.transferRating))
+        })
+      } else {
+        // Fallback to legacy segment ratings
+        if (s.understandingRating) vals.push(Number(s.understandingRating))
+        if (s.executionRating) vals.push(Number(s.executionRating))
+        if (s.transferRating) vals.push(Number(s.transferRating))
+      }
+      
       if (!vals.length) continue
       const avg = vals.reduce((a, b) => a + b, 0) / vals.length
       const arr = segmentsByDate.get(practice.date) ?? []
@@ -66,14 +88,17 @@ export function buildByConcept(
       segmentsByDate.set(practice.date, arr)
     }
 
-    const gameByDate = new Map<string, number>()
+    const gameByDate = new Map<string, number[]>()
     const reviewField = GAME_REVIEW_FIELDS[concept]
     for (const r of reviews) {
       const game = gameById.get(r.gameId)
       if (!game?.date) continue
       const raw = r[reviewField]
       if (raw == null) continue
-      gameByDate.set(game.date, Number(raw))
+      
+      const arr = gameByDate.get(game.date) ?? []
+      arr.push(Number(raw))
+      gameByDate.set(game.date, arr)
     }
 
     const allDates = new Set<string>([...segmentsByDate.keys(), ...gameByDate.keys()])
@@ -84,7 +109,12 @@ export function buildByConcept(
         const practiceAvg = pracRatings && pracRatings.length
           ? pracRatings.reduce((a, b) => a + b, 0) / pracRatings.length
           : null
-        const gameRating = gameByDate.get(date) ?? null
+        
+        const gameRatings = gameByDate.get(date)
+        const gameRating = gameRatings && gameRatings.length
+          ? gameRatings.reduce((a, b) => a + b, 0) / gameRatings.length
+          : null
+          
         return { date, label: formatShort(date), practiceAvg, gameRating }
       })
 
@@ -130,7 +160,7 @@ export function applyViewModeFilter(
   const games = filterGamesByMode(analytics.games, types, mode)
   const allowed = new Set(games.map(g => g.id))
   const reviews = analytics.reviews.filter(r => allowed.has(r.gameId))
-  const byConcept = buildByConcept(games, analytics.practices, analytics.segments, reviews)
+  const byConcept = buildByConcept(games, analytics.practices, analytics.segments, reviews, analytics.practiceRatings)
   return { ...analytics, games, reviews, byConcept }
 }
 

@@ -98,6 +98,10 @@ export function GoalCaptureDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md bg-zinc-950 border-white/10 rounded-[2.5rem] p-0 overflow-hidden">
+        <div className="sr-only">
+          <DialogTitle>Goal Attribution</DialogTitle>
+          <DialogDescription>Select the scorer and any assists for this goal.</DialogDescription>
+        </div>
         <DialogHeader className="p-6 pb-0">
           <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-4">
             <Trophy className="w-6 h-6 text-emerald-500" />

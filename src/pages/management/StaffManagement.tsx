@@ -216,6 +216,10 @@ export function StaffManagement() {
 
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent className="max-w-md rounded-[2rem] border-white/10 bg-zinc-950 p-8">
+          <div className="sr-only">
+            <DialogTitle>Invite a Coach</DialogTitle>
+            <DialogDescription>Enter the email address of the coach you'd like to invite to this season.</DialogDescription>
+          </div>
           <DialogHeader>
             <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Invite a Coach</DialogTitle>
             <DialogDescription className="text-zinc-500">

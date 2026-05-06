@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -14,6 +14,7 @@ import { usePractice, usePracticeSegments } from '@/hooks/usePractices'
 import { usePlayers } from '@/hooks/usePlayers'
 import { useTeam } from '@/hooks/useTeam'
 import { useTeamPreferences } from '@/hooks/usePreferences'
+import { useUnreadCoachMessages } from '@/hooks/useUnreadCoachMessages'
 import { SegmentDialog } from './SegmentDialog'
 import type { SegmentFormData } from './SegmentDialog'
 import { SegmentCard } from '@/components/practices/SegmentCard'
@@ -40,6 +41,7 @@ export default function PracticeDetailPage() {
   const [editTarget, setEditTarget] = useState<PracticeSegment | null>(null)
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
   const [activeTab, setActiveTab] = useState('plan')
+  const { hasUnread, markSeen } = useUnreadCoachMessages()
 
   const { data: teamData } = useTeam()
   const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
@@ -128,6 +130,12 @@ export default function PracticeDetailPage() {
     setAttendance(prev => ({ ...prev, [playerId]: !prev[playerId] }))
   }
 
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      markSeen()
+    }
+  }, [activeTab, markSeen])
+
   if (practiceLoading) {
     return (
       <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 animate-pulse">
@@ -205,9 +213,12 @@ export default function PracticeDetailPage() {
             <ClipboardList className="w-4 h-4" />
             Practice Plan
           </TabsTrigger>
-          <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="chat" className="rounded-full gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground relative">
             <MessageSquare className="w-4 h-4" />
-            Coaches Chat
+            Locker Room Talk
+            {hasUnread && activeTab !== 'chat' && (
+              <span className="absolute top-1 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+            )}
           </TabsTrigger>
         </TabsList>
 

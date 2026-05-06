@@ -132,7 +132,7 @@ export function NextEventBanner() {
             className="rounded-full gap-2 px-6 shadow-xl active:scale-95 transition-all"
           >
             <MessageSquare className="w-4 h-4" />
-            Enter {nextEvent.type === 'game' ? 'Game' : 'Practice'} Chat
+            Enter {nextEvent.type === 'game' ? 'Game' : 'Practice'} Hub
             <ArrowRight className="w-4 h-4" />
           </Button>
         </CardContent>

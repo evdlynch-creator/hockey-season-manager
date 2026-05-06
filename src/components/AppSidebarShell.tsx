@@ -50,6 +50,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTeam } from '@/hooks/useTeam'
 import { useTeamPreferences } from '@/hooks/usePreferences'
 import { useDemoMode } from '@/hooks/useDemoData'
+import { useUnreadCoachMessages } from '@/hooks/useUnreadCoachMessages'
 import { blink } from '@/blink/client'
 import { ViewModeSwitcher } from './ViewModeSwitcher'
 
@@ -60,6 +61,7 @@ interface NavItemDef {
   icon: ReactNode
   label: string
   id?: string
+  hasBadge?: boolean
 }
 
 function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) {
@@ -71,15 +73,23 @@ function NavItem({ item, collapsed }: { item: NavItemDef; collapsed: boolean }) 
       to={item.to}
       id={item.id}
       className={cn(
-        'flex items-center gap-2.5 text-sm transition-all duration-300 cursor-pointer',
+        'flex items-center gap-2.5 text-sm transition-all duration-300 cursor-pointer relative',
         collapsed ? 'justify-center w-11 h-11 mx-auto rounded-full' : 'px-4 py-3 w-full rounded-full',
         active
           ? 'bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20'
           : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
       )}
     >
-      <span className={cn('shrink-0', active && 'text-primary-foreground')}>{item.icon}</span>
+      <span className={cn('shrink-0 relative', active && 'text-primary-foreground')}>
+        {item.icon}
+        {item.hasBadge && collapsed && (
+          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-sidebar shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" />
+        )}
+      </span>
       {!collapsed && <span className="truncate flex-1 tracking-tight">{item.label}</span>}
+      {!collapsed && item.hasBadge && !active && (
+        <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse mr-1" />
+      )}
       {!collapsed && active && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]" />}
     </Link>
   )
@@ -101,6 +111,7 @@ export function AppSidebarShell() {
   const { data: teamData, switchTeam } = useTeam()
   const [teamPrefs] = useTeamPreferences(teamData?.team?.id)
   const { isDemo, exitDemo } = useDemoMode()
+  const { hasUnread } = useUnreadCoachMessages()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -127,7 +138,7 @@ export function AppSidebarShell() {
         { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
         { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
         { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
-        { to: '/coaches-board', icon: <MessageSquare className="h-4 w-4" />, label: 'Locker Room Talk' },
+        { to: '/coaches-board', icon: <MessageSquare className="h-4 w-4" />, label: 'Locker Room Talk', hasBadge: hasUnread },
       ]
     },
     {

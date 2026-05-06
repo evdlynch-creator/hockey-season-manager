@@ -14,7 +14,10 @@ export function TalkingPointsSidebar() {
 
     // 1. Find struggling concepts
     CONCEPTS.forEach(c => {
-      const rating = analytics.byConcept[c]?.avgRating
+      const summary = analytics.byConcept[c]
+      if (!summary) return
+      
+      const rating = summary.latestAvg
       if (rating !== null && rating < 3.0) {
         results.push({
           type: 'struggle',
@@ -27,7 +30,10 @@ export function TalkingPointsSidebar() {
 
     // 2. Find high potential concepts
     CONCEPTS.forEach(c => {
-      const rating = analytics.byConcept[c]?.avgRating
+      const summary = analytics.byConcept[c]
+      if (!summary) return
+
+      const rating = summary.latestAvg
       if (rating !== null && rating >= 4.0) {
         results.push({
           type: 'strength',
@@ -41,7 +47,30 @@ export function TalkingPointsSidebar() {
     return results.slice(0, 3)
   }, [analytics])
 
-  if (isLoading || points.length === 0) return null
+  if (isLoading) return (
+    <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-5 space-y-3">
+      <div className="h-4 w-24 bg-white/5 rounded animate-pulse" />
+      <div className="space-y-4 pt-4">
+        {[1, 2].map(i => (
+          <div key={i} className="flex gap-3 animate-pulse">
+            <div className="w-6 h-6 rounded-full bg-white/5" />
+            <div className="space-y-2 flex-1">
+              <div className="h-2 w-12 bg-white/5 rounded" />
+              <div className="h-8 w-full bg-white/5 rounded-xl" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  if (!analytics || points.length === 0) return (
+    <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl p-5 text-center space-y-2 opacity-60 italic">
+      <Brain className="w-8 h-8 text-zinc-600 mx-auto" />
+      <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500">No Talking Points</p>
+      <p className="text-[11px] text-zinc-400">Add ratings to practice segments or game reviews to generate coach talking points.</p>
+    </div>
+  )
 
   return (
     <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 overflow-hidden shadow-inner">

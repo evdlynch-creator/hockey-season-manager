@@ -20,6 +20,10 @@ import { ChatHeader } from './chat/ChatHeader'
 import { ChatToolbar } from './chat/ChatToolbar'
 import { MessageBubble } from './chat/MessageBubble'
 import { ChatInput } from './chat/ChatInput'
+import { TrendingAnalyticsSidebar } from './TrendingAnalyticsSidebar'
+import { TalkingPointsSidebar } from './TalkingPointsSidebar'
+import { MiniScheduleSidebar } from './MiniScheduleSidebar'
+import { RematchBriefingSidebar } from './RematchBriefingSidebar'
 
 interface CoachChatProps {
   contextType: CoachMessageContext
@@ -79,11 +83,14 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
     }))
   }
 
-  const handleShareLines = (lines: Record<string, string[]>, note: string, pushToGameId?: string) => {
+  const handleShareLines = (lines: Record<string, string[]>, note: string, pushToGameId?: string, taggedUserId?: string, taggedUserName?: string) => {
     sendMessage(note || 'Proposed new line combinations for brainstorming.', JSON.stringify({
       type: 'line_proposal',
       lines,
-      pushedToGameId: pushToGameId
+      pushedToGameId: pushToGameId,
+      taggedUserId,
+      taggedUserName,
+      timestamp: new Date().toISOString()
     }))
   }
 
@@ -102,62 +109,73 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
   }
 
   return (
-    <Card className={cn("flex flex-col h-[600px] border-border bg-card/30 backdrop-blur-[20px] rounded-[2.5rem] overflow-hidden shadow-2xl", className)}>
-      <ChatHeader 
-        title={title} 
-        isConnected={isConnected} 
-        messageCount={messages.length} 
-      />
+    <div className={cn("flex flex-col lg:flex-row gap-6 h-[750px]", className)}>
+      <Card className="flex-1 flex flex-col border-border bg-card/30 backdrop-blur-[20px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+        <ChatHeader 
+          title={title} 
+          isConnected={isConnected} 
+          messageCount={messages.length} 
+        />
 
-      <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-        <div className="space-y-8">
-          {contextType === 'general' && <ChatEventPrompt />}
-          
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className={cn("flex items-start gap-3", i % 2 === 0 ? "flex-row" : "flex-row-reverse")}>
-                <Skeleton className="w-8 h-8 rounded-full shrink-0" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-12 w-48 rounded-2xl" />
+        <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+          <div className="space-y-8">
+            {contextType === 'general' && <ChatEventPrompt />}
+            
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className={cn("flex items-start gap-3", i % 2 === 0 ? "flex-row" : "flex-row-reverse")}>
+                  <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-12 w-48 rounded-2xl" />
+                  </div>
+                </div>
+              ))
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 opacity-50">
+                <MessageSquare className="w-12 h-12 text-zinc-600" />
+                <div className="space-y-1">
+                  <p className="font-bold uppercase tracking-widest text-xs text-zinc-500">No messages yet</p>
+                  <p className="text-[10px] text-zinc-600 italic">Start the coaching conversation.</p>
                 </div>
               </div>
-            ))
-          ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 opacity-50">
-              <MessageSquare className="w-12 h-12 text-zinc-600" />
-              <div className="space-y-1">
-                <p className="font-bold uppercase tracking-widest text-xs text-zinc-500">No messages yet</p>
-                <p className="text-[10px] text-zinc-600 italic">Start the coaching conversation.</p>
-              </div>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <MessageBubble 
-                key={msg.id} 
-                message={msg} 
-                isOwn={msg.userId === user?.id} 
-                players={players}
-              />
-            ))
-          )}
+            ) : (
+              messages.map((msg) => (
+                <MessageBubble 
+                  key={msg.id} 
+                  message={msg} 
+                  isOwn={msg.userId === user?.id} 
+                  players={players}
+                />
+              ))
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="p-6 bg-zinc-950/40 border-t border-white/5 space-y-4 backdrop-blur-lg">
+          <ChatToolbar 
+            onPracticeClick={() => setPracticeToolOpen(true)}
+            onGameClick={() => setGameToolOpen(true)}
+            onLinesClick={() => setLineToolOpen(true)}
+            onPollClick={() => setPollToolOpen(true)}
+            onMemoClick={() => setVoiceToolOpen(true)}
+          />
+
+          <ChatInput 
+            onSend={(content) => sendMessage(content)} 
+            isSending={isSending} 
+          />
         </div>
-      </ScrollArea>
+      </Card>
 
-      <div className="p-6 bg-zinc-950/40 border-t border-white/5 space-y-4 backdrop-blur-lg">
-        <ChatToolbar 
-          onPracticeClick={() => setPracticeToolOpen(true)}
-          onGameClick={() => setGameToolOpen(true)}
-          onLinesClick={() => setLineToolOpen(true)}
-          onPollClick={() => setPollToolOpen(true)}
-          onMemoClick={() => setVoiceToolOpen(true)}
-        />
-
-        <ChatInput 
-          onSend={(content) => sendMessage(content)} 
-          isSending={isSending} 
-        />
-      </div>
+      {contextType === 'general' && (
+        <div className="w-full lg:w-80 shrink-0 space-y-6 overflow-y-auto pr-2 custom-scrollbar pb-10">
+          <MiniScheduleSidebar />
+          <TrendingAnalyticsSidebar />
+          <TalkingPointsSidebar />
+          <RematchBriefingSidebar />
+        </div>
+      )}
 
       <PracticeLinkTool 
         open={practiceToolOpen} 
@@ -184,6 +202,6 @@ export function CoachChat({ contextType, contextId = null, className, title }: C
         onClose={() => setVoiceToolOpen(false)} 
         onShare={handleShareVoice} 
       />
-    </Card>
+    </div>
   )
 }

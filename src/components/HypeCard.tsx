@@ -185,7 +185,7 @@ export function HypeCard({
   const hype = useMemo(() => buildHype({ nextGame, allGames, allReviews }), [nextGame, allGames, allReviews])
 
   return (
-    <Card className={`border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden rounded-[2rem] shadow-xl shadow-black/40 ${className ?? ''}`}>
+    <Card className={`border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden rounded-[2rem] shadow-xl shadow-black/40 flex flex-col ${className ?? ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
@@ -215,37 +215,40 @@ export function HypeCard({
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        {hype.points.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">
-            Log a few practices and reviews to start generating hype points.
-          </p>
-        ) : (
-          <ul className="space-y-2.5">
-            {hype.points.map((p, i) => {
-              const cfg = ICON_MAP[p.icon]
-              const Icon = cfg.Comp
-              return (
-                <motion.li
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`flex items-start gap-3 rounded-full border ${cfg.ring} ${cfg.bg} p-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-md cursor-default`}
-                >
-                  <div className={`w-9 h-9 rounded-full ${cfg.bg} border ${cfg.ring} flex items-center justify-center shrink-0 shadow-inner`}>
-                    <Icon className={`w-4 h-4 ${cfg.color}`} />
-                  </div>
-                  <p className="text-sm text-foreground leading-snug pt-0.5">{p.text}</p>
-                </motion.li>
-              )
-            })}
-          </ul>
-        )}
+      <CardContent className="flex-1 flex flex-col">
+        <div className="flex-1">
+          {hype.points.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">
+              Log a few practices and reviews to start generating hype points.
+            </p>
+          ) : (
+            <ul className="space-y-2.5">
+              {hype.points.map((p, i) => {
+                const cfg = ICON_MAP[p.icon]
+                const Icon = cfg.Comp
+                return (
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className={`flex items-start gap-3 rounded-full border ${cfg.ring} ${cfg.bg} p-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-md cursor-default`}
+                  >
+                    <div className={`w-9 h-9 rounded-full ${cfg.bg} border ${cfg.ring} flex items-center justify-center shrink-0 shadow-inner`}>
+                      <Icon className={`w-4 h-4 ${cfg.color}`} />
+                    </div>
+                    <p className="text-sm text-foreground leading-snug pt-0.5">{p.text}</p>
+                  </motion.li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+        
         {nextGame && (
           <button
             onClick={() => navigate({ to: '/opponents', search: { opponent: nextGame.opponent } })}
-            className="mt-3 text-[11px] text-primary hover:underline flex items-center gap-1"
+            className="mt-6 text-[11px] text-primary hover:underline flex items-center gap-1 w-fit"
           >
             Full coaching plan vs. {nextGame.opponent}
             <ChevronRight className="w-3 h-3" />

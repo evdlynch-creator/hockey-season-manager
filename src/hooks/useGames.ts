@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { blink } from '../blink/client'
 import { useTeam } from './useTeam'
+import { useAuth } from './useAuth'
 import type { Game, GameReview } from '../types'
 import { DEMO_GAMES, DEMO_REVIEWS, isDemoMode } from './useDemoData'
+import { useMemo } from 'react'
 
 export function useGames() {
   const { data: teamData } = useTeam()
@@ -37,19 +39,52 @@ export function useGame(gameId: string | undefined) {
 }
 
 export function useGameReview(gameId: string | undefined) {
-  return useQuery({
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey: ['game-review', gameId, isDemoMode()],
     queryFn: async () => {
       if (isDemoMode() && gameId?.startsWith('demo-')) {
-        return DEMO_REVIEWS.find(r => r.gameId === gameId) || null
+        return DEMO_REVIEWS.filter(r => r.gameId === gameId)
       }
-      if (!gameId) return null
-      const reviews = await blink.db.gameReviews.list({
+      if (!gameId) return []
+      return await blink.db.gameReviews.list({
         where: { gameId },
-        limit: 1,
       }) as GameReview[]
-      return reviews[0] || null
     },
-    enabled: !!gameId || (isDemoMode() && gameId?.startsWith('demo-')),
+    enabled: !!gameId || (isDemoMode() && !!gameId?.startsWith('demo-')),
   })
+
+  const reviews = query.data || []
+  const myReview = reviews.find(r => r.userId === user?.id)
+
+  const consensus = useMemo(() => {
+    if (reviews.length === 0) return null
+    
+    const count = reviews.length
+    const fields = [
+      'breakoutsRating', 'forecheckRating', 'defensiveZoneRating', 
+      'transitionRating', 'passingRating', 'skatingRating',
+      'zoneEntryRating', 'offensiveZoneRating'
+    ] as const
+
+    const averages: any = {}
+    fields.forEach(f => {
+      const sum = reviews.reduce((acc, r) => acc + (Number(r[f]) || 0), 0)
+      averages[f] = sum / count
+    })
+
+    return {
+      ...averages,
+      count
+    }
+  }, [reviews])
+
+  return {
+    reviews,
+    myReview,
+    consensus,
+    isLoading: query.isLoading
+  }
 }

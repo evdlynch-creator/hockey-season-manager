@@ -68,13 +68,24 @@ export interface Practice {
 export interface PracticeSegment {
   id: string
   practiceId: string
+  userId: string
   type: 'Skating' | 'Skill' | 'Systems' | 'Small Area'
-  name?: string
+  name: string
   primaryConcept: string
   secondaryConcept?: string
   notes?: string
   link?: string
   fileUrl?: string
+  understandingRating?: number
+  executionRating?: number
+  transferRating?: number
+  createdAt: string
+}
+
+export interface PracticeRating {
+  id: string
+  segmentId: string
+  userId: string
   understandingRating?: number
   executionRating?: number
   transferRating?: number

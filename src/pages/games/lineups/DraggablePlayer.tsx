@@ -4,13 +4,81 @@ import { GripVertical } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Player } from '@/types'
 
+interface PlayerCardProps {
+  player: Player
+  isOverlay?: boolean
+  isDragging?: boolean
+  className?: string
+  compact?: boolean
+}
+
+export function PlayerCard({ player, isOverlay, isDragging, className, compact }: PlayerCardProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-center rounded-lg border transition-all duration-300 group relative overflow-hidden",
+        "bg-zinc-900/60 border-white/5 shadow-xl backdrop-blur-md",
+        compact ? "h-[38px]" : "h-[54px] lg:h-[60px]",
+        "w-full min-w-0", // min-w-0 allows flex shrinking
+        isDragging && "opacity-20 scale-95",
+        isOverlay && "shadow-2xl bg-zinc-800 border-primary/50 shadow-primary/20 scale-105 z-50 cursor-grabbing ring-2 ring-primary/40",
+        !isOverlay && !isDragging && "cursor-grab active:cursor-grabbing hover:bg-zinc-800/80 hover:border-white/20 hover:shadow-primary/5",
+        className
+      )}
+    >
+      {/* Jersey Number Box (Scaled Tactical Square) */}
+      <div className={cn(
+        "h-full flex items-center justify-center font-black text-white shrink-0 border-r border-white/10",
+        "bg-gradient-to-br from-zinc-800 to-black",
+        compact ? "w-10 text-sm" : "w-12 lg:w-14 text-lg lg:text-xl"
+      )}>
+        {player.number}
+      </div>
+
+      {/* Player Identity Section */}
+      <div className="flex-1 min-w-0 px-2 lg:px-3 flex flex-col justify-center">
+        <p className={cn(
+          "font-black tracking-tight text-zinc-100 uppercase italic leading-none truncate",
+          compact ? "text-[11px]" : "text-[13px] lg:text-[15px]"
+        )} style={{ fontFamily: 'avega, system-ui, sans-serif' }}>
+          {player.name}
+        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 lg:mt-1 opacity-60">
+          <span className={cn(
+            "text-[7px] lg:text-[8px] font-black uppercase tracking-widest leading-none px-1 py-0.5 rounded",
+            player.position?.toLowerCase().includes('forward') ? "bg-blue-500/20 text-blue-400" :
+            player.position?.toLowerCase().includes('defense') ? "bg-emerald-500/20 text-emerald-400" :
+            "bg-amber-500/20 text-amber-400"
+          )}>
+            {player.position}
+          </span>
+        </div>
+      </div>
+      
+      {!compact && (
+        <div className="flex items-center gap-1 shrink-0 opacity-10 group-hover:opacity-100 transition-opacity pr-2">
+          <GripVertical className="w-4 h-4 text-zinc-500" />
+        </div>
+      )}
+
+      {/* Position Accent Strip */}
+      <div className={cn(
+        "absolute right-0 top-0 bottom-0 w-1",
+        player.position?.toLowerCase().includes('forward') ? "bg-blue-500" :
+        player.position?.toLowerCase().includes('defense') ? "bg-emerald-500" :
+        "bg-amber-500"
+      )} />
+    </div>
+  )
+}
+
 interface DraggablePlayerProps {
   player: Player
   unitId?: string
-  isOverlay?: boolean
+  compact?: boolean
 }
 
-export function DraggablePlayer({ player, unitId, isOverlay }: DraggablePlayerProps) {
+export function DraggablePlayer({ player, unitId, compact }: DraggablePlayerProps) {
   const {
     attributes,
     listeners,
@@ -28,35 +96,13 @@ export function DraggablePlayer({ player, unitId, isOverlay }: DraggablePlayerPr
   })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "flex items-center justify-between p-3 rounded-2xl border bg-white/5 border-white/5 transition-all group",
-        isOverlay && "shadow-2xl bg-zinc-900 border-primary/50 scale-105 z-50 cursor-grabbing",
-        !isOverlay && "cursor-grab active:cursor-grabbing"
-      )}
-      {...attributes}
-      {...listeners}
-    >
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-[10px] shrink-0">
-          {player.number}
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-bold truncate">{player.name}</p>
-          <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter">
-            {player.position}
-          </p>
-        </div>
-      </div>
-      <GripVertical className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400" />
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <PlayerCard player={player} isDragging={isDragging} compact={compact} />
     </div>
   )
 }

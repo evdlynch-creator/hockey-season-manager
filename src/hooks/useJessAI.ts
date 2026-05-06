@@ -29,9 +29,20 @@ export function useJessAI({ messages, sendMessage, contextType, contextId }: Use
     const lastMsg = messages[messages.length - 1]
     if (lastMsg.id === lastProcessedMessageId.current) return
     
+    // Only respond to recent mentions (last 2 minutes) to avoid responding to history on mount
+    const isRecent = isAfter(parseISO(lastMsg.createdAt), subHours(new Date(), 0.033)) // ~2 mins
+    if (!isRecent) {
+      lastProcessedMessageId.current = lastMsg.id
+      return
+    }
+    
     // Check if the message contains @Jess (case insensitive)
     if (lastMsg.userId !== JESS_IDENTITY.userId && lastMsg.content.toLowerCase().includes('@jess')) {
-      handleJessMention(lastMsg)
+      // Small random jitter to reduce race conditions between multiple open tabs
+      const jitter = Math.random() * 2000
+      setTimeout(() => {
+        handleJessMention(lastMsg)
+      }, jitter)
     }
 
     lastProcessedMessageId.current = lastMsg.id
@@ -76,6 +87,31 @@ export function useJessAI({ messages, sendMessage, contextType, contextId }: Use
 
   // ── Helper: Handle Mention ───────────────────────────────────────────────
   async function handleJessMention(message: CoachMessage) {
+    if (!teamId) return
+    
+    // DB Check: Has Jess already responded to THIS specific message ID?
+    // We check the most recent Jess messages for this team
+    const existingResponses = await blink.db.coachMessages.list({
+      where: { 
+        teamId,
+        userId: JESS_IDENTITY.userId
+      },
+      orderBy: { createdAt: 'desc' },
+      limit: 50
+    })
+
+    const alreadyResponded = existingResponses.some(m => {
+      try {
+        const meta = JSON.parse(m.metadata || '{}')
+        return meta.type === 'jess_analysis' && meta.respondedToId === message.id
+      } catch { return false }
+    })
+
+    if (alreadyResponded) {
+      lastProcessedMessageId.current = message.id
+      return
+    }
+
     isGenerating.current = true
     try {
       const now = new Date()
@@ -121,7 +157,10 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
       })
 
       // Send the response as Jess
-      await sendJessMessage(response.text, { type: 'jess_analysis' })
+      await sendJessMessage(response.text, { 
+        type: 'jess_analysis',
+        respondedToId: message.id 
+      })
     } catch (err) {
       console.error('Jess mention failed:', err)
     } finally {
@@ -131,9 +170,19 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
 
   // ── Helper: Game Reminders ───────────────────────────────────────────────
   async function checkAndSendReminder(game: any) {
-    // Check if Jess already sent a reminder for this game ID in this context
-    const alreadySent = messages.some(m => {
-      if (m.userId !== JESS_IDENTITY.userId) return false
+    if (!teamId) return
+
+    // DB Check: Has Jess already sent a reminder for this game ID?
+    const existingMessages = await blink.db.coachMessages.list({
+      where: { 
+        teamId,
+        userId: JESS_IDENTITY.userId
+      },
+      orderBy: { createdAt: 'desc' },
+      limit: 50
+    })
+
+    const alreadySent = existingMessages.some(m => {
       try {
         const meta = JSON.parse(m.metadata || '{}')
         return meta.type === 'jess_reminder' && meta.gameId === game.id
@@ -161,8 +210,19 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
 
   // ── Helper: Game Debriefs ────────────────────────────────────────────────
   async function checkAndSendDebrief(game: any, forced: boolean = false) {
-    const alreadySent = !forced && messages.some(m => {
-      if (m.userId !== JESS_IDENTITY.userId) return false
+    if (!teamId) return
+
+    // DB Check: Has Jess already debriefed this game?
+    const existingMessages = await blink.db.coachMessages.list({
+      where: { 
+        teamId,
+        userId: JESS_IDENTITY.userId
+      },
+      orderBy: { createdAt: 'desc' },
+      limit: 50
+    })
+
+    const alreadySent = !forced && existingMessages.some(m => {
       try {
         const meta = JSON.parse(m.metadata || '{}')
         return meta.type === 'jess_debrief' && meta.gameId === game.id
@@ -236,7 +296,7 @@ The coach said: "${message.content}". Provide a tactical response as Jess. Remem
     await blink.db.coachMessages.create(newMessage)
 
     // 2. Broadcast via realtime (simulate same logic as hook)
-    const channelName = `coach-messages-${teamId}-${contextType}-${contextId || 'general'}`
+    const channelName = `coach-${teamId.slice(-8)}-${contextType.slice(0, 4)}-${contextId ? contextId.slice(-8) : 'gen'}`
     const channel = blink.realtime.channel(channelName)
     await channel.publish('new_message', newMessage)
 

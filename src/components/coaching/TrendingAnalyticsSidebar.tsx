@@ -10,18 +10,35 @@ export function TrendingAnalyticsSidebar() {
   const stats = useMemo(() => {
     if (!analytics) return []
     
-    const gf = analytics.totalGoalsFor / (analytics.games.length || 1)
-    const ga = analytics.totalGoalsAgainst / (analytics.games.length || 1)
-    const winRate = (analytics.wins / (analytics.games.length || 1)) * 100
+    const gameCount = analytics.games.length || 1
+    const gf = (analytics.totalGoalsFor ?? 0) / gameCount
+    const ga = (analytics.totalGoalsAgainst ?? 0) / gameCount
+    const wins = analytics.wins ?? 0
+    const winRate = (wins / gameCount) * 100
 
     return [
       { label: 'Scoring', value: gf.toFixed(1), trend: 'up', icon: <Target className="w-4 h-4" /> },
       { label: 'Defense', value: ga.toFixed(1), trend: 'down', icon: <Activity className="w-4 h-4" /> },
-      { label: 'Win Rate', value: `${Math.round(winRate)}%`, trend: 'neutral', icon: <TrendingUp className="w-4 h-4" /> }
+      { label: 'Win Rate', value: `${Math.round(winRate)}%`, trend: 'neutral', icon: <TrendingUp className="h-4 w-4" /> }
     ]
   }, [analytics])
 
-  if (isLoading || !analytics) return null
+  if (isLoading) return (
+    <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 p-5 space-y-3">
+      <div className="h-4 w-24 bg-white/5 rounded animate-pulse" />
+      <div className="space-y-2">
+        {[1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 rounded-2xl animate-pulse" />)}
+      </div>
+    </div>
+  )
+
+  if (!analytics || analytics.games.length === 0) return (
+    <div className="bg-zinc-950/40 rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl p-5 text-center space-y-2 opacity-60 italic">
+      <BarChart3 className="w-8 h-8 text-zinc-600 mx-auto" />
+      <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500">Intelligence Offline</p>
+      <p className="text-[11px] text-zinc-400">Log games and practice reviews to activate trending analytics.</p>
+    </div>
+  )
 
   return (
     <div className="space-y-4">

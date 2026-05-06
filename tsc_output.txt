@@ -1,2 +1,183 @@
-tsconfig.json(31,5): error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to silence this error.
-  Visit https://aka.ms/ts6 for migration information.
+src/components/coaching/tools/LineBuilderTool.tsx(120,5): error TS2657: JSX expressions must have one parent element.
+src/components/coaching/tools/LineBuilderTool.tsx(129,24): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(129,66): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(132,33): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(132,85): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(133,34): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(133,81): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(134,35): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(134,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(135,17): error TS17002: Expected corresponding JSX closing tag for 'Tabs'.
+src/components/coaching/tools/LineBuilderTool.tsx(136,34): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(136,86): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(137,32): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(137,49): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(138,17): error TS17002: Expected corresponding JSX closing tag for 'DialogContent'.
+src/components/coaching/tools/LineBuilderTool.tsx(139,34): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(139,85): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(140,35): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(140,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/components/coaching/tools/LineBuilderTool.tsx(141,17): error TS17002: Expected corresponding JSX closing tag for 'Dialog'.
+src/components/coaching/tools/LineBuilderTool.tsx(142,34): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(142,35): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(142,35): error TS1005: ')' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(142,86): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(143,25): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(143,35): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(143,61): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(144,15): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(145,13): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(146,11): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(148,26): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(148,27): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(148,69): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(150,28): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(150,29): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(150,56): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(151,20): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(151,30): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(151,68): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(152,21): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(152,31): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(152,120): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(153,24): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(153,32): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(153,127): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(154,15): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(155,37): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(155,38): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(155,117): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(156,22): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(156,32): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(156,48): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(158,36): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(158,37): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(158,114): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(159,19): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(159,21): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(160,36): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(160,37): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(160,117): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(161,19): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(161,21): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(171,37): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(171,38): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(171,166): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(173,42): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(173,43): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(173,54): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(174,32): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(174,42): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(174,85): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(175,32): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(175,42): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(175,147): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(176,27): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(177,42): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(177,43): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(177,110): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(178,29): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(178,49): error TS1005: '{' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(181,41): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(181,42): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(181,51): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(182,33): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(182,38): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(182,47): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(183,33): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(183,43): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(183,178): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(184,33): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(184,42): error TS1136: Property assignment expected.
+src/components/coaching/tools/LineBuilderTool.tsx(184,45): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(184,72): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(186,35): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(186,71): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(186,73): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(187,31): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(188,29): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(189,27): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(190,25): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(191,23): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(191,24): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(192,19): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(193,17): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(194,15): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(195,13): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(198,18): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(198,28): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(198,56): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(199,20): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(199,30): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(199,57): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(201,45): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(201,46): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(201,135): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(202,26): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(202,36): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(202,79): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(203,28): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(203,38): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(203,66): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(204,30): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(205,27): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(205,28): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(205,56): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(206,31): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(206,51): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(206,69): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(207,27): error TS1005: ':' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(207,53): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(207,88): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(208,25): error TS1005: ':' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(208,28): error TS1161: Unterminated regular expression literal.
+src/components/coaching/tools/LineBuilderTool.tsx(209,29): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(209,39): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(209,117): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(210,23): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(211,38): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(211,39): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(211,148): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(213,23): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(214,21): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(215,36): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(215,37): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(215,74): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(217,38): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(217,39): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(217,111): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(218,23): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(218,25): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(224,41): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(224,42): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(224,146): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(226,47): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(226,48): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(226,102): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(228,42): error TS1136: Property assignment expected.
+src/components/coaching/tools/LineBuilderTool.tsx(228,45): error TS1005: ';' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(229,33): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(229,43): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(229,195): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(231,46): error TS1127: Invalid character.
+src/components/coaching/tools/LineBuilderTool.tsx(231,47): error TS1003: Identifier expected.
+src/components/coaching/tools/LineBuilderTool.tsx(231,60): error TS1002: Unterminated string literal.
+src/components/coaching/tools/LineBuilderTool.tsx(232,31): error TS1005: ',' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(233,29): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(234,27): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(235,25): error TS1005: ')' expected.
+src/components/coaching/tools/LineBuilderTool.tsx(235,26): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(236,23): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(236,24): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(237,21): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(238,19): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(239,17): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(239,18): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(239,19): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(240,15): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(276,11): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(277,9): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(290,7): error TS1128: Declaration or statement expected.
+src/components/coaching/tools/LineBuilderTool.tsx(291,5): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(292,3): error TS1109: Expression expected.
+src/components/coaching/tools/LineBuilderTool.tsx(293,1): error TS1128: Declaration or statement expected.

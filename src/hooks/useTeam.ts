@@ -103,9 +103,23 @@ export function useTeam() {
         }
       }
 
-      const allTeams = [...ownedTeams, ...memberTeams].sort((a, b) => 
+      let allTeams = [...ownedTeams, ...memberTeams].sort((a, b) => 
         (b.createdAt || '').localeCompare(a.createdAt || '')
       )
+
+      // If the user has a stored selected team that isn't in their owned/member list yet
+      // (e.g. just accepted an invite), try to fetch it directly so access isn't lost
+      const storedId = getSelectedTeamId()
+      if (storedId && !allTeams.find(t => t.id === storedId)) {
+        try {
+          const directTeam = await blink.db.teams.get(storedId) as Team | null
+          if (directTeam) {
+            allTeams = [...allTeams, directTeam]
+          }
+        } catch (_) {
+          // Ignore — team may not be accessible, fall through to default
+        }
+      }
 
       if (allTeams.length === 0) return { teams: [], team: null, season: null }
 

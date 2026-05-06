@@ -1,22 +1,35 @@
 import { CoachChat } from '@/components/coaching/CoachChat'
+import { CoachMailbox } from '@/components/coaching/CoachMailbox'
 import { PinnedTopic } from '@/components/coaching/PinnedTopic'
 import { NextEventBanner } from '@/components/coaching/NextEventBanner'
 import { TalkingPointsSidebar } from '@/components/coaching/TalkingPointsSidebar'
 import { RematchBriefingSidebar } from '@/components/coaching/RematchBriefingSidebar'
 import { TrendingAnalyticsSidebar } from '@/components/coaching/TrendingAnalyticsSidebar'
 import { MiniScheduleSidebar } from '@/components/coaching/MiniScheduleSidebar'
-import { MessageSquare, Info, Bell, Sparkles, Brain } from 'lucide-react'
-import { Card, CardContent, Button, toast, Badge } from '@blinkdotnew/ui'
+import { MessageSquare, Info, Bell, Sparkles, Brain, Inbox, MessageCircle } from 'lucide-react'
+import { Card, CardContent, Button, toast, Badge, Tabs, TabsList, TabsTrigger } from '@blinkdotnew/ui'
 import { useState, useEffect } from 'react'
+import { useMyPendingProposals } from '@/hooks/useMyPendingProposals'
+import { useUnreadCoachMessages } from '@/hooks/useUnreadCoachMessages'
 
 export default function CoachBoardPage() {
+  const [activeTab, setActiveTab] = useState<'discussion' | 'mailbox'>('discussion')
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
+  const { data: mailboxData } = useMyPendingProposals()
+  const pendingCount = mailboxData?.received?.length || 0
+  const { hasUnread, markSeen } = useUnreadCoachMessages()
 
   useEffect(() => {
     if ('Notification' in window) {
       setNotifPermission(Notification.permission)
     }
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'discussion') {
+      markSeen()
+    }
+  }, [activeTab, markSeen])
 
   const requestPermission = async () => {
     if (!('Notification' in window)) {
@@ -42,45 +55,49 @@ export default function CoachBoardPage() {
             Centralized strategic discussions and team-wide planning.
           </p>
         </div>
-        {notifPermission !== 'granted' && (
-          <Button 
-            onClick={requestPermission} 
-            variant="outline" 
-            className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
-          >
-            <Bell className="w-4 h-4" />
-            Enable Desktop Alerts
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="bg-secondary/20 p-1 rounded-full">
+            <TabsList className="bg-transparent p-0">
+              <TabsTrigger value="discussion" className="rounded-full gap-2 px-6 relative">
+                <MessageCircle className="w-4 h-4" /> Chat
+                {hasUnread && activeTab !== 'discussion' && (
+                  <span className="absolute top-1 right-3 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="mailbox" className="rounded-full gap-2 px-6 relative">
+                <Inbox className="w-4 h-4" /> Mailbox
+                {pendingCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-primary text-[8px] font-black rounded-full">
+                    {pendingCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {notifPermission !== 'granted' && (
+            <Button
+              onClick={requestPermission}
+              variant="outline"
+              className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Bell className="w-4 h-4" />
+              Enable Desktop Alerts
+            </Button>
+          )}
+        </div>
       </div>
 
-      <NextEventBanner />
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-6">
-          <PinnedTopic />
-          <CoachChat contextType="general" title="Strategic Discussion" className="h-[750px]" />
-        </div>
-        <div className="lg:col-span-4 space-y-6">
-          <MiniScheduleSidebar />
-          <RematchBriefingSidebar />
-          <TrendingAnalyticsSidebar />
-          <TalkingPointsSidebar />
-          
-          <div className="bg-primary/5 rounded-[2rem] border border-primary/10 p-6 space-y-3 relative overflow-hidden">
-            <div className="absolute -top-4 -right-4 p-8 opacity-5 text-primary rotate-12">
-              <Brain size={100} />
-            </div>
-            <div className="relative z-10 space-y-3">
-              <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" />
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary italic">Intelligence Engine</h4>
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed italic">
-                Strategic insights are updated in real-time based on game reviews and practice execution data. Use these talking points to align the staff before next session.
-              </p>
-            </div>
-          </div>
+        <div className="lg:col-span-12 space-y-6">
+          {activeTab === 'discussion' ? (
+            <>
+              <PinnedTopic />
+              <CoachChat contextType="general" title="Strategic Discussion" className="h-[750px]" />
+            </>
+          ) : (
+            <CoachMailbox />
+          )}
         </div>
       </div>
     </div>

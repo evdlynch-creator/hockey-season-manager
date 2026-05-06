@@ -1,10 +1,12 @@
-import { format } from 'date-fns'
-import { Brain, Sparkles, AlertCircle, ArrowRight, Users, BarChart3, Mic, ClipboardList, Target } from 'lucide-react'
-import { Badge } from '@blinkdotnew/ui'
+import { format, parseISO } from 'date-fns'
+import { Brain, Sparkles, AlertCircle, ArrowRight, Users, BarChart3, Mic, ClipboardList, Target, Rocket, Calendar, Swords, MessageCircle } from 'lucide-react'
+import { Badge, Button } from '@blinkdotnew/ui'
 import { cn } from '@/lib/utils'
 import { JESS_IDENTITY } from '@/lib/jess-ai'
 import { usePollVotes } from '@/hooks/usePollVotes'
+import { useProposalApproval } from '@/hooks/useProposalApproval'
 import { useNavigate } from '@tanstack/react-router'
+import { useAuth } from '@/hooks/useAuth'
 import type { Player, CoachMessage } from '@/types'
 
 interface MessageBubbleProps {
@@ -19,12 +21,17 @@ function PollCard({ messageId, options, isOwn }: { messageId: string, options: s
 
   return (
     <div className={cn(
-      "rounded-xl border p-3 space-y-3",
-      isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
+      "rounded-2xl border p-4 space-y-4 shadow-xl transition-all duration-300",
+      isOwn ? "bg-white/[0.03] border-white/10" : "bg-emerald-500/[0.03] border-emerald-500/10"
     )}>
-      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
-        <BarChart3 className="w-3 h-3" /> Strategic Poll
-      </p>
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+          <BarChart3 className="w-3.5 h-3.5 text-primary" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-zinc-300">
+          Strategic Poll
+        </p>
+      </div>
       <div className="space-y-2">
         {options.map((opt, i) => {
           const voteCount = results[i] || 0
@@ -35,7 +42,7 @@ function PollCard({ messageId, options, isOwn }: { messageId: string, options: s
             <button
               key={i}
               onClick={() => castVote(i)}
-              className="w-full relative h-9 rounded-lg overflow-hidden border border-white/5 bg-white/5 hover:bg-white/10 transition-all group"
+              className="w-full relative h-11 rounded-xl overflow-hidden border border-white/5 bg-white/5 hover:bg-white/10 transition-all group"
             >
               <div 
                 className={cn(
@@ -44,16 +51,16 @@ function PollCard({ messageId, options, isOwn }: { messageId: string, options: s
                 )}
                 style={{ width: `${percent}%` }}
               />
-              <div className="absolute inset-0 px-3 flex items-center justify-between text-xs">
+              <div className="absolute inset-0 px-4 flex items-center justify-between text-xs">
                 <span className={cn("font-bold truncate pr-4", isSelected && "text-primary")}>{opt}</span>
-                <span className="opacity-50 tabular-nums">{voteCount}</span>
+                <span className="opacity-50 tabular-nums font-black">{voteCount}</span>
               </div>
             </button>
           )
         })}
       </div>
-      <p className="text-[9px] text-center text-zinc-500 uppercase font-black tracking-widest">
-        {totalVotes} total votes
+      <p className="text-[9px] text-center text-zinc-500 uppercase font-black tracking-widest italic">
+        {totalVotes} total staff votes
       </p>
     </div>
   )
@@ -62,11 +69,11 @@ function PollCard({ messageId, options, isOwn }: { messageId: string, options: s
 function VoiceMemoCard({ audioUrl, isOwn }: { audioUrl: string, isOwn: boolean }) {
   return (
     <div className={cn(
-      "rounded-xl border p-2 flex items-center gap-3",
-      isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
+      "rounded-2xl border p-3 flex items-center gap-4 shadow-xl transition-all",
+      isOwn ? "bg-white/[0.03] border-white/10" : "bg-emerald-500/[0.03] border-emerald-500/10"
     )}>
-      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-        <Mic className="w-4 h-4 text-primary" />
+      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 border border-primary/20">
+        <Mic className="w-5 h-5 text-primary" />
       </div>
       <audio src={audioUrl} controls className={cn(
         "h-8 flex-1",
@@ -76,43 +83,169 @@ function VoiceMemoCard({ audioUrl, isOwn }: { audioUrl: string, isOwn: boolean }
   )
 }
 
+function LineProposalCard({ 
+  message, 
+  meta, 
+  isOwn, 
+  players 
+}: { 
+  message: CoachMessage, 
+  meta: any, 
+  isOwn: boolean, 
+  players: Player[] 
+}) {
+  const { user } = useAuth()
+  const { status, submitApproval, isSubmitting, pushToRoster } = useProposalApproval(message.id, meta)
+  
+  const isTagged = meta.taggedUserId === user?.id
+  const hasTagged = !!meta.taggedUserId
+  const isAuthor = message.userId === user?.id
+
+  return (
+    <div className={cn(
+      "rounded-2xl border p-4 space-y-4 shadow-2xl transition-all duration-500",
+      isOwn ? "bg-white/[0.03] border-white/10" : "bg-primary/[0.03] border-primary/20"
+    )}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Users className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 text-zinc-100">
+            Tactical Roster Plan
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {meta.pushedToGameId && (
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[8px] h-4 uppercase font-black rounded-full px-2">
+              <Rocket className="w-2.5 h-2.5 mr-1" /> Deployed
+            </Badge>
+          )}
+          {hasTagged && (
+            <Badge className={cn(
+              "text-[8px] h-4 uppercase font-black rounded-full px-2",
+              status === 'approved' ? "bg-emerald-500/20 text-emerald-400" :
+              status === 'declined' ? "bg-red-500/20 text-red-400" :
+              status === 'changes_requested' ? "bg-amber-500/20 text-amber-400" :
+              "bg-zinc-800 text-zinc-400 border-white/5"
+            )}>
+              {status === 'approved' ? 'Approved' :
+               status === 'declined' ? 'Declined' :
+               status === 'changes_requested' ? 'Changes Requested' :
+               `Awaiting Review`}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids]) => {
+          if (pids.length === 0) return null
+          return (
+            <div key={unit} className="flex items-start gap-3 bg-black/20 p-2.5 rounded-xl border border-white/5 group/unit hover:border-white/10 transition-colors text-left">
+              <span className="text-[9px] font-black uppercase text-zinc-500 w-14 shrink-0 mt-1.5 italic tracking-tighter">{unit}</span>
+              <div className="flex flex-wrap gap-1.5">
+                {pids.map(pid => {
+                  const p = players.find(x => x.id === pid)
+                  return (
+                    <div 
+                      key={pid} 
+                      className={cn(
+                        "text-[10px] h-6 rounded-lg px-2.5 font-bold flex items-center bg-zinc-900 border border-white/5 text-zinc-100 shadow-sm transition-all",
+                        isOwn ? "border-primary/20" : "border-emerald-500/20"
+                      )}
+                    >
+                      <span className="text-primary/70 mr-1.5 font-black">#{p?.number || '??'}</span>
+                      {p?.name.split(' ').pop()}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {isTagged && status === 'pending' && (
+        <div className="pt-2 flex items-center gap-2 border-t border-white/5">
+          <Button 
+            size="sm" 
+            onClick={() => submitApproval('approve')}
+            disabled={isSubmitting}
+            className="h-8 rounded-full text-[9px] font-black uppercase tracking-widest flex-1 bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 gap-1.5 text-white"
+          >
+            <Rocket className="w-3 h-3" /> Approve & Deploy
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onClick={() => submitApproval('request_changes')}
+            disabled={isSubmitting}
+            className="h-8 rounded-full text-[9px] font-black uppercase tracking-widest flex-1 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
+          >
+            Changes
+          </Button>
+        </div>
+      )}
+
+      {status === 'approved' && isAuthor && meta.pushedToGameId && (
+        <div className="pt-2 border-t border-white/5">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={pushToRoster}
+            className="w-full h-8 rounded-full text-[9px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 shadow-lg shadow-emerald-500/5"
+          >
+            <Rocket className="w-3 h-3 mr-2" /> Sync Roster Refresh
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
   const navigate = useNavigate()
   const isJess = message.userId === JESS_IDENTITY.userId
 
   return (
-    <div className={cn("flex items-start gap-4", isOwn ? "flex-row-reverse" : "flex-row")}>
+    <div className={cn("flex items-start gap-4 group/msg", isOwn ? "flex-row-reverse" : "flex-row")}>
       {isJess ? (
         <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10 shrink-0 mt-1 animate-pulse-subtle">
           <Sparkles className="w-5 h-5" />
         </div>
       ) : (
         <div className={cn(
-          "w-10 h-10 rounded-2xl border flex items-center justify-center text-[10px] font-black uppercase shrink-0 shadow-lg",
-          isOwn ? "bg-zinc-100 text-zinc-900 border-white" : "bg-zinc-800 border-white/10 text-zinc-400"
+          "w-10 h-10 rounded-2xl border flex items-center justify-center text-[10px] font-black uppercase shrink-0 shadow-xl transition-all duration-300 group-hover/msg:scale-105",
+          isOwn 
+            ? "bg-gradient-to-br from-zinc-100 to-zinc-300 text-zinc-900 border-white ring-4 ring-white/5" 
+            : "bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400 ring-4 ring-emerald-500/5"
         )}>
           {message.userDisplayName?.slice(0, 2).toUpperCase() || '??'}
         </div>
       )}
       
-      <div className={cn("flex flex-col max-w-[85%]", isOwn ? "items-end" : "items-start")}>
-        <div className="flex items-center gap-2 mb-1.5 px-1">
-          <span className={cn("text-[10px] font-black uppercase tracking-wider italic", isOwn ? "text-primary" : isJess ? "text-indigo-400 font-black" : "text-zinc-500")}>
-            {isOwn ? 'You' : isJess ? 'Jess (AI Staff)' : message.userDisplayName}
+      <div className={cn("flex flex-col max-w-[85%] sm:max-w-[75%]", isOwn ? "items-end text-right" : "items-start text-left")}>
+        <div className="flex items-center gap-2 mb-2 px-1 text-left">
+          <span className={cn(
+            "text-[10px] font-black uppercase tracking-widest italic transition-colors", 
+            isOwn ? "text-primary" : isJess ? "text-indigo-400" : "text-emerald-400"
+          )}>
+            {isOwn ? 'You' : isJess ? 'Jess (AI Analysis)' : message.userDisplayName}
           </span>
-          <span className="text-[9px] text-zinc-600 font-medium uppercase">
+          <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-tighter opacity-60">
             {format(new Date(message.createdAt), 'h:mm a')}
           </span>
         </div>
         <div className={cn(
-          "p-4 rounded-[1.75rem] text-sm leading-relaxed shadow-xl transition-all",
+          "p-4 rounded-[1.75rem] text-sm leading-relaxed shadow-2xl transition-all duration-300 ring-1 text-left",
           isOwn 
-            ? "bg-primary text-primary-foreground rounded-tr-none border border-primary/20" 
+            ? "bg-primary text-primary-foreground rounded-tr-none border-primary/20 ring-primary/10 group-hover/msg:shadow-primary/10" 
             : isJess
-              ? "bg-indigo-950/20 border border-indigo-500/20 text-zinc-100 rounded-tl-none ring-1 ring-indigo-500/10"
-              : "bg-zinc-900/80 border border-white/5 text-zinc-100 rounded-tl-none"
+              ? "bg-indigo-950/20 border border-indigo-500/20 text-zinc-100 rounded-tl-none ring-indigo-500/10 group-hover/msg:shadow-indigo-500/5"
+              : "bg-zinc-900/60 border-white/5 text-zinc-100 rounded-tl-none ring-white/5 group-hover/msg:bg-zinc-900/80"
         )}>
-          <div className={cn(isJess && "italic font-medium")}>
+          <div className={cn("text-left whitespace-pre-wrap", isJess && "italic font-medium leading-relaxed")}>
             {message.content}
           </div>
 
@@ -142,14 +275,14 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                         </p>
                         
                         {isDebrief && meta.summaryData && (
-                          <div className="mt-2 space-y-3">
+                          <div className="mt-2 space-y-3 text-left">
                             <div className="flex items-center justify-between bg-black/40 rounded-lg p-2 border border-white/5">
                               <div className="min-w-0">
                                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Opponent</p>
-                                <p className="text-xs font-black truncate">{meta.summaryData.opponent}</p>
+                                <p className="text-xs font-black truncate uppercase italic">vs. {meta.summaryData.opponent}</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Score</p>
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Final</p>
                                 <p className="text-xs font-black text-indigo-400">{meta.summaryData.score}</p>
                               </div>
                             </div>
@@ -173,9 +306,9 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                         {meta.gameId && (
                           <button 
                             onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                            className="mt-2 text-[10px] font-bold text-indigo-400 hover:underline flex items-center gap-1"
+                            className="mt-2 text-[10px] font-bold text-indigo-400 hover:underline flex items-center gap-1 uppercase tracking-tighter"
                           >
-                            View Game Tape <ArrowRight className="w-3 h-3" />
+                            View Tactical Review <ArrowRight className="w-3 h-3" />
                           </button>
                         )}
                       </div>
@@ -189,21 +322,26 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                   <button 
                     onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
                     className={cn(
-                      "w-full mt-3 flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group/btn",
+                      "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
                       isOwn 
-                        ? "bg-white/10 border-white/20 hover:bg-white/20" 
-                        : "bg-primary/10 border-primary/20 hover:bg-primary/20"
+                        ? "bg-white/10 border-white/10 hover:bg-white/15" 
+                        : "bg-primary/10 border-primary/10 hover:bg-primary/20"
                     )}
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-primary text-primary-foreground">#{meta.practiceIndex || '?'}</Badge>
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Linked Practice • {meta.practiceDate}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Calendar className="w-3 h-3 text-primary" />
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Linked Practice • {meta.practiceDate}</p>
                       </div>
-                      <p className="font-bold text-sm truncate group-hover/btn:translate-x-1 transition-transform">{meta.practiceTitle}</p>
+                      <div className="flex items-center gap-2">
+                        <Badge className="h-4 px-1.5 text-[8px] font-black bg-primary text-primary-foreground border-none rounded-full shrink-0 uppercase tracking-widest italic">#{meta.practiceIndex || '?'}</Badge>
+                        <p className="font-black text-sm uppercase tracking-tight group-hover/btn:translate-x-1 transition-transform text-zinc-100">{meta.practiceTitle}</p>
+                      </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
-                      <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
+                      <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
                     </div>
                   </button>
                 )
@@ -214,72 +352,35 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
                   <button 
                     onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
                     className={cn(
-                      "w-full mt-3 flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group/btn",
+                      "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
                       isOwn 
-                        ? "bg-white/10 border-white/20 hover:bg-white/20" 
-                        : "bg-primary/10 border-primary/20 hover:bg-primary/20"
+                        ? "bg-white/10 border-white/10 hover:bg-white/15" 
+                        : "bg-primary/10 border-primary/10 hover:bg-primary/20"
                     )}
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge className="h-4 px-1.5 text-[8px] font-black uppercase rounded-full bg-primary text-primary-foreground">GAME</Badge>
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Linked Game • {meta.gameDate}</p>
+                    <div className="min-w-0 text-left">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Swords className="w-3 h-3 text-primary" />
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Strategic Reference • {meta.gameDate}</p>
                       </div>
-                      <p className="font-bold text-sm truncate group-hover/btn:translate-x-1 transition-transform">vs. {meta.opponent}</p>
-                      {meta.score && <p className="text-[10px] font-black text-primary/60 uppercase mt-1 tracking-widest leading-none">Result: {meta.score}</p>}
+                      <p className="font-black text-base italic uppercase tracking-tighter group-hover/btn:translate-x-1 transition-transform text-zinc-100">vs. {meta.opponent}</p>
+                      {meta.score && (
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge className="bg-primary/20 text-primary border-none text-[9px] h-4 font-black rounded-full px-2 uppercase tracking-widest">RESULT: {meta.score}</Badge>
+                        </div>
+                      )}
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/5">
-                      <ArrowRight className="w-4 h-4 shrink-0 opacity-40 group-hover/btn:opacity-100 transition-opacity text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
+                      <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
                     </div>
                   </button>
                 )
               }
 
               if (meta.type === 'line_proposal') {
-                return (
-                  <div className={cn(
-                    "rounded-xl border p-3 space-y-3",
-                    isOwn ? "bg-white/5 border-white/10" : "bg-zinc-950/40 border-white/5"
-                  )}>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1.5">
-                        <Users className="w-3 h-3" /> Line Combinations
-                      </p>
-                      {meta.pushedToGameId && (
-                        <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[8px] h-4 uppercase font-black rounded-full">
-                          Deployed
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids]) => {
-                        if (pids.length === 0) return null
-                        return (
-                          <div key={unit} className="flex items-start gap-2">
-                            <span className="text-[9px] font-bold uppercase text-zinc-500 w-12 shrink-0 mt-0.5">{unit}</span>
-                            <div className="flex flex-wrap gap-1">
-                              {pids.map(pid => {
-                                const p = players.find(x => x.id === pid)
-                                return (
-                                  <Badge 
-                                    key={pid} 
-                                    variant="outline" 
-                                    className={cn(
-                                      "text-[9px] h-5 rounded-full px-1.5 font-bold",
-                                      isOwn ? "border-white/20 text-white" : "border-primary/20 text-primary"
-                                    )}
-                                  >
-                                    {p?.name.split(' ').pop()}
-                                  </Badge>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
+                return <LineProposalCard message={message} meta={meta} isOwn={isOwn} players={players} />
               }
 
               if (meta.type === 'strategic_poll') {
@@ -292,33 +393,30 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
 
               if (meta.type === 'post_game_report') {
                 return (
-                  <button 
-                    onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                    className={cn(
-                      "w-full p-4 rounded-xl border transition-all text-left space-y-3",
-                      isOwn 
-                        ? "bg-white/10 border-white/20 hover:bg-white/20" 
-                        : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-amber-500">
-                        <ClipboardList className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Tactical Briefing</span>
+                  <div className="pt-4 space-y-4">
+                    <div className="flex items-center gap-2 text-amber-500 mb-2">
+                      <ClipboardList className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-widest italic">Tactical Briefing</span>
+                      <Badge className="bg-amber-500/20 text-amber-500 border-none text-[8px] h-4 font-black rounded-full uppercase px-2 ml-auto">Finalized</Badge>
+                    </div>
+                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5 space-y-3 shadow-xl">
+                      <div className="space-y-1">
+                        <p className="font-black text-sm uppercase italic tracking-tighter text-zinc-100">vs. {meta.opponent}</p>
+                        <p className="text-[9px] font-black opacity-60 uppercase tracking-widest text-primary">Result: {meta.score}</p>
                       </div>
-                      <Badge className="bg-amber-500/20 text-amber-500 border-none text-[8px] h-4 font-black rounded-full uppercase">Finalized</Badge>
+                      <p className="text-[11px] italic line-clamp-4 opacity-80 border-l-2 border-primary/40 pl-3 leading-relaxed text-zinc-300">
+                        {meta.summary}
+                      </p>
+                      <Button 
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                        className="w-full justify-center gap-2 text-[9px] font-bold uppercase tracking-widest text-amber-500 hover:text-amber-400 hover:bg-amber-500/5 transition-all mt-2 h-8 rounded-full border border-amber-500/20"
+                      >
+                        Open Full Analysis <ArrowRight className="w-3 h-3" />
+                      </Button>
                     </div>
-                    <div className="space-y-1">
-                      <p className="font-bold text-sm">vs. {meta.opponent}</p>
-                      <p className="text-[10px] opacity-60">Result: {meta.score}</p>
-                    </div>
-                    <p className="text-[11px] italic line-clamp-3 opacity-80 border-l-2 border-white/20 pl-3">
-                      {meta.summary}
-                    </p>
-                    <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-amber-500/80 pt-1">
-                      View Full Breakdown <ArrowRight className="w-3 h-3" />
-                    </div>
-                  </button>
+                  </div>
                 )
               }
             } catch (e) {

@@ -26,9 +26,13 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-  TabsContent
+  TabsContent,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle
 } from '@blinkdotnew/ui'
-import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog, Plus, MoreVertical, LayoutGrid } from 'lucide-react'
+import { Users, UserPlus, Trash2, Pencil, Search, Hash, PersonStanding, LayoutList, UserCog, Plus, MoreVertical, LayoutGrid, ChevronRight, Activity } from 'lucide-react'
 import { usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer } from '../hooks/usePlayers'
 import { useTeam } from '../hooks/useTeam'
 import { useTeamPreferences } from '../hooks/usePreferences'
@@ -83,6 +87,7 @@ export default function RosterPage() {
   const [activeTab, setActiveTab] = useState('players')
   
   const [selectedFormationId, setSelectedFormationId] = useState<string | null>(null)
+  const [plannerOpen, setPlannerOpen] = useState(false)
   const [formationDialogOpen, setFormationDialogOpen] = useState(false)
   const [formationEditName, setFormationName] = useState('')
   const [formationEditId, setFormationEditId] = useState<string | null>(null)
@@ -133,6 +138,11 @@ export default function RosterPage() {
     } catch (err: any) {
       toast.error('Failed to save player', { description: err.message })
     }
+  }
+
+  const handleOpenPlanner = (id: string) => {
+    setSelectedFormationId(id)
+    setPlannerOpen(true)
   }
 
   const handleOpenAddFormation = () => {
@@ -276,73 +286,123 @@ export default function RosterPage() {
         </TabsContent>
 
         <TabsContent value="lineups" className="mt-0">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Formation Sidebar */}
-            <div className="w-full md:w-64 space-y-4 shrink-0">
-              <div className="flex items-center justify-between px-2">
-                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">Formations</h3>
-                {canEdit && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleOpenAddFormation}>
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                )}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black uppercase tracking-tight">Tactical Blueprints</h3>
+                <p className="text-xs text-muted-foreground">Reusable line combinations for your season.</p>
               </div>
-              
-              <div className="space-y-1">
-                {formations.length === 0 ? (
-                  <p className="text-[10px] text-zinc-600 italic px-2">No formations yet.</p>
-                ) : (
-                  formations.map(f => (
-                    <div 
-                      key={f.id}
-                      className={cn(
-                        "group flex items-center justify-between p-2 rounded-xl text-sm font-medium transition-all cursor-pointer",
-                        selectedFormationId === f.id 
-                          ? "bg-primary text-primary-foreground" 
-                          : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                      )}
-                      onClick={() => setSelectedFormationId(f.id)}
-                    >
-                      <span className="truncate">{f.name}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 rounded-full">
-                            <MoreVertical className="w-3 h-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleOpenEditFormation(f)}>
-                            <Pencil className="w-3 h-3 mr-2" /> Rename
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-400" onClick={() => deleteFormation.mutate(f.id)}>
-                            <Trash2 className="w-3 h-3 mr-2" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Planner Area */}
-            <div className="flex-1 min-w-0">
-              {selectedFormationId ? (
-                <Card className="border-border bg-card/30 backdrop-blur-sm rounded-[2rem] overflow-hidden p-6 md:p-8">
-                  <LineupPlanner formationId={selectedFormationId} />
-                </Card>
-              ) : (
-                <Card className="border-border bg-card/30 backdrop-blur-sm rounded-[2rem] h-[400px] flex items-center justify-center">
-                  <EmptyState 
-                    icon={<LayoutGrid />} 
-                    title="No Formation Selected" 
-                    description="Select a formation from the sidebar or create a new one to start planning."
-                    action={canEdit ? { label: 'Create First Formation', onClick: handleOpenAddFormation } : undefined}
-                  />
-                </Card>
+              {canEdit && (
+                <Button onClick={handleOpenAddFormation} className="gap-2 rounded-full shadow-lg shadow-primary/10">
+                  <Plus className="w-4 h-4" />
+                  New Blueprint
+                </Button>
               )}
             </div>
+
+            {formations.length === 0 ? (
+              <Card className="border-border/50 bg-sidebar/30 backdrop-blur-sm rounded-[2rem] h-[300px] flex items-center justify-center">
+                <EmptyState 
+                  icon={<LayoutGrid />} 
+                  title="No Blueprints Yet" 
+                  description="Create your first tactical formation to start planning your lines."
+                  action={canEdit ? { label: 'Create First Blueprint', onClick: handleOpenAddFormation } : undefined}
+                />
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {formations.map(f => (
+                  <Card 
+                    key={f.id} 
+                    className="border-border/40 bg-sidebar/30 hover:border-primary/40 transition-all group rounded-[2rem] overflow-hidden cursor-pointer relative"
+                    onClick={() => handleOpenPlanner(f.id)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                          <LayoutGrid className="w-6 h-6" />
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenEditFormation(f); }}>
+                              <Pencil className="w-3 h-3 mr-2" /> Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-400" onClick={(e) => { e.stopPropagation(); deleteFormation.mutate(f.id); }}>
+                              <Trash2 className="w-3 h-3 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="font-black text-lg uppercase tracking-tight truncate group-hover:text-primary transition-colors">{f.name}</h4>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                          <Activity className="w-3 h-3 text-primary/60" />
+                          Active Template
+                        </div>
+                      </div>
+
+                      <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="rounded-full text-[10px] font-black uppercase tracking-widest h-8 px-4 bg-primary/5 hover:bg-primary hover:text-primary-foreground"
+                        >
+                          Launch Builder
+                        </Button>
+                        <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
+
+          <Sheet open={plannerOpen} onOpenChange={setPlannerOpen}>
+            <SheetContent 
+              side="right" 
+              className="w-full sm:max-w-none h-full p-0 border-none bg-zinc-950 flex flex-col"
+            >
+              <div className="sr-only">
+                <SheetHeader>
+                  <SheetTitle>Lineup Planner Builder</SheetTitle>
+                </SheetHeader>
+              </div>
+              <div className="h-full flex flex-col min-h-0">
+                <div className="shrink-0 h-16 border-b border-white/10 flex items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-xl z-50">
+                  <div className="flex items-center gap-4">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setPlannerOpen(false)}
+                      className="rounded-full h-10 w-10 p-0 text-zinc-400 hover:text-white"
+                    >
+                      <ChevronRight className="w-6 h-6 rotate-180" />
+                    </Button>
+                    <div className="h-8 w-px bg-white/10" />
+                    <div>
+                      <h2 className="text-sm font-black uppercase tracking-widest text-white italic">
+                        {formations.find(f => f.id === selectedFormationId)?.name || 'Formation Builder'}
+                      </h2>
+                      <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tighter">Tactical Blueprint Studio</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex-1 overflow-hidden">
+                  {selectedFormationId && (
+                    <LineupPlanner formationId={selectedFormationId} />
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </TabsContent>
 
         <TabsContent value="staff" className="mt-0">
