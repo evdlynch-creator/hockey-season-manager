@@ -9,6 +9,11 @@ import './index.css'
 import { initParticlesEngine } from "@tsparticles/react"
 import { loadSlim } from "@tsparticles/slim"
 
+// Security: Enforce HTTPS for HSTS prerequisite (except on localhost)
+if (typeof window !== 'undefined' && window.location.protocol === 'http:' && !window.location.hostname.includes('localhost')) {
+  window.location.href = window.location.href.replace('http:', 'https:');
+}
+
 const queryClient = new QueryClient()
 
 // Initialize particles engine once
