@@ -11,9 +11,11 @@ import { Card, CardContent, Button, toast, Badge, Tabs, TabsList, TabsTrigger } 
 import { useState, useEffect } from 'react'
 import { useMyPendingProposals } from '@/hooks/useMyPendingProposals'
 import { useUnreadCoachMessages } from '@/hooks/useUnreadCoachMessages'
+import { useSearch } from '@tanstack/react-router'
 
 export default function CoachBoardPage() {
-  const [activeTab, setActiveTab] = useState<'discussion' | 'mailbox'>('discussion')
+  const search = useSearch({ from: '/coaches-board' }) as { tab?: 'discussion' | 'mailbox' }
+  const [activeTab, setActiveTab] = useState<'discussion' | 'mailbox'>(search.tab || 'discussion')
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
   const { data: mailboxData } = useMyPendingProposals()
   const pendingCount = mailboxData?.received?.length || 0
