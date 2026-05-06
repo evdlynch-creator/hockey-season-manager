@@ -82,7 +82,7 @@ export function useDeleteFormation() {
     mutationFn: async (id: string) => {
       // Delete assignments first
       await blink.db.formationAssignments.deleteMany({
-        where: { formationId: id }
+        where: { formationId: { equals: id } }
       })
       // Then delete formation
       return await blink.db.formations.delete(id)
@@ -102,12 +102,14 @@ export function useUpdateFormationAssignments() {
       if (!user) throw new Error('Not authenticated')
 
       // 1. Get existing assignments
-      const existing = (await blink.db.formationAssignments.list({ where: { formationId } })) as FormationAssignment[]
+      const existing = (await blink.db.formationAssignments.list({ 
+        where: { formationId: { equals: formationId } } 
+      })) as FormationAssignment[]
       
       // 2. Delete all existing
       if (existing.length > 0) {
         await blink.db.formationAssignments.deleteMany({
-          where: { formationId }
+          where: { formationId: { equals: formationId } }
         })
       }
 

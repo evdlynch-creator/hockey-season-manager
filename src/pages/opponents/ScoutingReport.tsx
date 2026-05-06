@@ -68,6 +68,10 @@ export function ScoutingReport({ open, onOpenChange, opponentName, stats, insigh
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 rounded-[2rem] border-border/50 bg-zinc-950 print:bg-white print:text-black print:max-w-none print:h-auto print:static print:border-none">
+        <div className="sr-only">
+          <DialogTitle>Opponent Scouting Report: {opponentName}</DialogTitle>
+          <DialogDescription>Tactical analysis and head-to-head history for {opponentName}</DialogDescription>
+        </div>
         {/* Actions Bar - Hidden on print */}
         <div className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5 p-4 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
