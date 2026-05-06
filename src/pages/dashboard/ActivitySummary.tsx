@@ -95,81 +95,82 @@ export const ActivitySummary = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
       <motion.div variants={staggerItem} className="md:col-span-2 h-full">
+        <HypeCard
+          nextGame={upcomingGames[0] ?? null}
+          allGames={analyticsGames}
+          allReviews={analyticsReviews}
+          className="h-full"
+        />
+      </motion.div>
+
+      <motion.div variants={staggerItem}>
         <Card className="border-border/50 bg-zinc-950/40 backdrop-blur-sm rounded-[2rem] shadow-xl shadow-black/30 h-full overflow-hidden relative group">
-          <CardHeader className="pb-2 p-6">
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/20">
-                  <Inbox className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold tracking-tight text-foreground">Coach's Mailbox</h3>
-                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mt-0.5">Tactical Approvals & Staff Comms</p>
-                </div>
+              <div className="flex items-center gap-2">
+                <Inbox className="w-4 h-4 text-primary" />
+                Coach's Mailbox
               </div>
               {pending.length > 0 && (
-                <Badge className="bg-primary text-primary-foreground text-[9px] font-black h-5 px-3 rounded-full animate-pulse">
-                  {pending.length} ACTION REQUIRED
+                <Badge className="bg-primary text-primary-foreground text-[9px] font-black h-5 px-2 rounded-full animate-pulse">
+                  {pending.length} NEW
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col h-[calc(100%-6rem)] p-6 pt-2">
+          <CardContent className="flex flex-col h-[calc(100%-4rem)]">
             <div className="flex-1 space-y-3 min-h-0 overflow-hidden mb-6">
               {mailboxLoading ? (
                 <div className="space-y-3">
-                  <div className="h-16 w-full bg-white/5 rounded-2xl animate-pulse" />
-                  <div className="h-16 w-full bg-white/5 rounded-2xl animate-pulse" />
-                  <div className="h-16 w-full bg-white/5 rounded-2xl animate-pulse" />
+                  <div className="h-12 w-full bg-white/5 rounded-2xl animate-pulse" />
+                  <div className="h-12 w-full bg-white/5 rounded-2xl animate-pulse" />
                 </div>
               ) : pending.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-3xl bg-zinc-900 flex items-center justify-center text-zinc-700 shadow-inner">
-                    <CheckCircle2 className="w-8 h-8" />
+                <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-700">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-widest text-zinc-400">Mailbox Clear</p>
-                    <p className="text-xs text-zinc-600 mt-1 max-w-[200px]">No pending tactical proposals or strategy reviews need your attention.</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Mailbox Clear</p>
+                    <p className="text-[10px] text-zinc-600">No pending staff approvals</p>
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  {pending.slice(0, 5).map((item) => (
-                    <div 
-                      key={item.id}
-                      onClick={() => navigate({ to: '/coaches-board', search: (prev) => ({ ...prev, tab: 'mailbox' }) as any })}
-                      className="p-4 rounded-[1.5rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-primary/20 transition-all cursor-pointer group/item relative"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                          {item.userDisplayName || 'Staff member'}
-                        </span>
-                        <span className="text-[9px] text-zinc-500 ml-auto font-medium">
-                          {format(parseISO(item.createdAt), 'MMM d, h:mm a')}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed pl-5 font-medium italic">
-                        "{item.content}"
-                      </p>
+                pending.slice(0, 3).map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => navigate({ to: '/coaches-board' })}
+                    className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] transition-all cursor-pointer group/item"
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary truncate">
+                        {item.userDisplayName || 'Staff'}
+                      </span>
+                      <span className="text-[8px] text-zinc-600 ml-auto">
+                        {format(parseISO(item.createdAt), 'h:mm a')}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
+                      {item.content}
+                    </p>
+                  </div>
+                ))
               )}
             </div>
 
             <Button 
-              onClick={() => navigate({ to: '/coaches-board', search: (prev) => ({ ...prev, tab: 'mailbox' }) as any })}
+              onClick={() => navigate({ to: '/coaches-board' })}
               variant="default"
-              className="w-full rounded-full gap-2 text-[11px] font-black uppercase tracking-widest italic h-12 shadow-xl shadow-primary/20"
+              className="w-full rounded-full gap-2 text-[10px] font-black uppercase tracking-widest italic h-10 shadow-lg shadow-primary/20"
             >
-              <Mail className="w-4 h-4" />
-              Open Coaching Command Center
-              <ChevronRight className="w-4 h-4" />
+              <Mail className="w-3.5 h-3.5" />
+              View Full Mailbox
+              <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </CardContent>
 
-          {/* Rematch Overlay Dialog remains the same */}
+          {/* Rematch Overlay Dialog */}
           <Dialog open={showRematch} onOpenChange={setShowRematch}>
             <DialogContent className="sm:max-w-lg bg-zinc-950/90 backdrop-blur-xl border-white/10 rounded-[2rem]">
               <DialogHeader>
@@ -242,15 +243,6 @@ export const ActivitySummary = ({
             </DialogContent>
           </Dialog>
         </Card>
-      </motion.div>
-
-      <motion.div variants={staggerItem} className="md:col-span-1 h-full">
-        <HypeCard
-          nextGame={upcomingGames[0] ?? null}
-          allGames={analyticsGames}
-          allReviews={analyticsReviews}
-          className="h-full"
-        />
       </motion.div>
     </div>
   )

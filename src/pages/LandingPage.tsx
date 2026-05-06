@@ -51,7 +51,7 @@ export default function LandingPage() {
   }, [mouseX, mouseY, isDashboardHovered])
 
   const handleLogin = () => {
-    blink.auth.login(window.location.origin)
+    blink.auth.login(window.location.href)
   }
 
   const spotlightGradient = useTransform(

@@ -1,30 +1,28 @@
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect, useRef } from 'react'
 import { blink } from '../blink/client'
+import { BlinkUser } from '@blinkdotnew/sdk'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-/**
- * Standard hook for accessing auth state throughout the application.
- * Wraps @blinkdotnew/react useBlinkAuth to ensure consistent synchronized state.
- */
 export function useAuth() {
-  const { user, isLoading, isAuthenticated } = useBlinkAuth()
-  
-  // Diagnostic logging for auth state transitions
-  if (typeof window !== 'undefined' && !import.meta.env.PROD) {
-    console.debug('[Auth] State Update:', { 
-      isLoading, 
-      isAuthenticated, 
-      userId: user?.id,
-      url: window.location.href 
-    })
-  }
+  const [user, setUser] = useState<BlinkUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const lastUserIdRef = useRef<string | null>(null)
 
-  return { user, isLoading, isAuthenticated }
+  useEffect(() => {
+    const unsubscribe = blink.auth.onAuthStateChanged((state) => {
+      const nextId = state.user?.id ?? null
+      if (nextId !== lastUserIdRef.current) {
+        lastUserIdRef.current = nextId
+        setUser(state.user ?? null)
+      }
+      if (!state.isLoading) setIsLoading(false)
+    })
+    return unsubscribe
+  }, [])
+
+  return { user, isLoading, isAuthenticated: !!user }
 }
 
-/**
- * Hook for updating user profile data.
- */
 export function useUpdateUser() {
   const queryClient = useQueryClient()
 
@@ -33,8 +31,8 @@ export function useUpdateUser() {
       await blink.auth.updateMe(patch)
     },
     onSuccess: () => {
-      // Invalidate relevant queries to pick up profile changes
-      queryClient.invalidateQueries({ queryKey: ['team'] })
+      queryClient.invalidateQueries({ queryKey: ['team'] }) // team query usually includes user info or dependencies
+      // Force refresh of auth state if needed, but onAuthStateChanged should pick it up
     },
   })
 }

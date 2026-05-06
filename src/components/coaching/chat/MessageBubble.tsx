@@ -7,7 +7,6 @@ import { usePollVotes } from '@/hooks/usePollVotes'
 import { useProposalApproval } from '@/hooks/useProposalApproval'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/useAuth'
-import { useMemo } from 'react'
 import type { Player, CoachMessage } from '@/types'
 
 interface MessageBubbleProps {
@@ -104,63 +103,60 @@ function LineProposalCard({
 
   return (
     <div className={cn(
-      "rounded-[2.5rem] p-6 space-y-6 transition-all duration-500 overflow-hidden relative",
-      isOwn 
-        ? "bg-black/20 border border-white/10 backdrop-blur-md shadow-[inset_0_0_20px_rgba(0,0,0,0.1)]" 
-        : "bg-zinc-950/40 border border-white/5 backdrop-blur-md shadow-2xl"
+      "rounded-2xl border p-4 space-y-4 shadow-2xl transition-all duration-500",
+      isOwn ? "bg-white/[0.03] border-white/10" : "bg-primary/[0.03] border-primary/20"
     )}>
-      {/* Subtle Glow */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-[50px] pointer-events-none rounded-full opacity-50" />
-      
-      <div className="flex items-center justify-between relative z-10">
-        <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 shrink-0">
-          <Users className="w-4 h-4 text-primary" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Users className="w-3.5 h-3.5 text-primary" />
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 text-zinc-100">
+            Tactical Roster Plan
+          </p>
         </div>
-        
-        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-100/90 text-center flex-1">
-          Tactical Roster Plan
-        </h4>
-
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           {meta.pushedToGameId && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-              <Rocket className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Deployed</span>
-            </div>
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[8px] h-4 uppercase font-black rounded-full px-2">
+              <Rocket className="w-2.5 h-2.5 mr-1" /> Deployed
+            </Badge>
           )}
-          {hasTagged && !meta.pushedToGameId && (
+          {hasTagged && (
             <Badge className={cn(
-              "text-[8px] h-5 uppercase font-black rounded-full px-2.5 border-none",
-              status === 'approved' ? "bg-emerald-500 text-white" :
-              status === 'declined' ? "bg-red-500 text-white" :
-              status === 'changes_requested' ? "bg-amber-500 text-black" :
-              "bg-zinc-800 text-zinc-400"
+              "text-[8px] h-4 uppercase font-black rounded-full px-2",
+              status === 'approved' ? "bg-emerald-500/20 text-emerald-400" :
+              status === 'declined' ? "bg-red-500/20 text-red-400" :
+              status === 'changes_requested' ? "bg-amber-500/20 text-amber-400" :
+              "bg-zinc-800 text-zinc-400 border-white/5"
             )}>
               {status === 'approved' ? 'Approved' :
                status === 'declined' ? 'Declined' :
-               status === 'changes_requested' ? 'Changes' :
-               `Pending`}
+               status === 'changes_requested' ? 'Changes Requested' :
+               `Awaiting Review`}
             </Badge>
           )}
         </div>
       </div>
 
-      <div className="space-y-3 relative z-10">
-        {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids], idx) => {
+      <div className="grid grid-cols-1 gap-3">
+        {Object.entries(meta.lines as Record<string, string[]>).map(([unit, pids]) => {
           if (pids.length === 0) return null
           return (
-            <div key={unit} className="flex items-center gap-4 bg-zinc-950/60 p-3.5 rounded-[1.75rem] border border-white/5 group/unit hover:bg-zinc-950 transition-all duration-300 shadow-lg">
-              <span className="text-[9px] font-black uppercase text-primary/50 w-12 shrink-0 italic tracking-tighter pl-1">Line {idx + 1}</span>
-              <div className="flex flex-wrap gap-2">
+            <div key={unit} className="flex items-start gap-3 bg-black/20 p-2.5 rounded-xl border border-white/5 group/unit hover:border-white/10 transition-colors text-left">
+              <span className="text-[9px] font-black uppercase text-zinc-500 w-14 shrink-0 mt-1.5 italic tracking-tighter">{unit}</span>
+              <div className="flex flex-wrap gap-1.5">
                 {pids.map(pid => {
                   const p = players.find(x => x.id === pid)
                   return (
                     <div 
                       key={pid} 
-                      className="h-10 rounded-full px-4 bg-black border border-white/5 flex items-center shadow-2xl transition-all hover:scale-105 active:scale-95 group-hover/unit:border-primary/30"
+                      className={cn(
+                        "text-[10px] h-6 rounded-lg px-2.5 font-bold flex items-center bg-zinc-900 border border-white/5 text-zinc-100 shadow-sm transition-all",
+                        isOwn ? "border-primary/20" : "border-emerald-500/20"
+                      )}
                     >
-                      <span className="text-primary text-[10px] font-black mr-2.5">#{p?.number || '??'}</span>
-                      <span className="text-sm font-bold text-zinc-100">{p?.name.split(' ').pop()}</span>
+                      <span className="text-primary/70 mr-1.5 font-black">#{p?.number || '??'}</span>
+                      {p?.name.split(' ').pop()}
                     </div>
                   )
                 })}
@@ -171,36 +167,36 @@ function LineProposalCard({
       </div>
 
       {isTagged && status === 'pending' && (
-        <div className="pt-4 flex items-center gap-3 border-t border-white/10 relative z-10">
+        <div className="pt-2 flex items-center gap-2 border-t border-white/5">
           <Button 
             size="sm" 
             onClick={() => submitApproval('approve')}
             disabled={isSubmitting}
-            className="h-11 rounded-full text-[10px] font-black uppercase tracking-widest flex-1 bg-emerald-600 hover:bg-emerald-500 shadow-xl shadow-emerald-500/20 gap-2 text-white"
+            className="h-8 rounded-full text-[9px] font-black uppercase tracking-widest flex-1 bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 gap-1.5 text-white"
           >
-            <Rocket className="w-4 h-4" /> Approve & Deploy
+            <Rocket className="w-3 h-3" /> Approve & Deploy
           </Button>
           <Button 
             size="sm" 
             variant="ghost"
             onClick={() => submitApproval('request_changes')}
             disabled={isSubmitting}
-            className="h-11 rounded-full text-[10px] font-black uppercase tracking-widest px-8 bg-white/5 text-zinc-300 hover:bg-white/10"
+            className="h-8 rounded-full text-[9px] font-black uppercase tracking-widest flex-1 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
           >
             Changes
           </Button>
         </div>
       )}
 
-      {status === 'approved' && isAuthor && !meta.pushedToGameId && (
-        <div className="pt-4 border-t border-white/10 relative z-10">
+      {status === 'approved' && isAuthor && meta.pushedToGameId && (
+        <div className="pt-2 border-t border-white/5">
           <Button 
             size="sm" 
             variant="outline"
             onClick={pushToRoster}
-            className="w-full h-11 rounded-full text-[10px] font-black uppercase tracking-widest border-primary/40 text-primary hover:bg-primary/10 shadow-lg"
+            className="w-full h-8 rounded-full text-[9px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 shadow-lg shadow-emerald-500/5"
           >
-            <Rocket className="w-4 h-4 mr-2.5" /> Sync Roster Refresh
+            <Rocket className="w-3 h-3 mr-2" /> Sync Roster Refresh
           </Button>
         </div>
       )}
@@ -211,17 +207,6 @@ function LineProposalCard({
 export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
   const navigate = useNavigate()
   const isJess = message.userId === JESS_IDENTITY.userId
-
-  const meta = useMemo(() => {
-    if (!message.metadata) return null
-    try {
-      return JSON.parse(message.metadata)
-    } catch (e) {
-      return null
-    }
-  }, [message.metadata])
-
-  const isProposal = meta?.type === 'line_proposal'
 
   return (
     <div className={cn("flex items-start gap-4 group/msg", isOwn ? "flex-row-reverse" : "flex-row")}>
@@ -260,183 +245,183 @@ export function MessageBubble({ message, isOwn, players }: MessageBubbleProps) {
               ? "bg-indigo-950/20 border border-indigo-500/20 text-zinc-100 rounded-tl-none ring-indigo-500/10 group-hover/msg:shadow-indigo-500/5"
               : "bg-zinc-900/60 border-white/5 text-zinc-100 rounded-tl-none ring-white/5 group-hover/msg:bg-zinc-900/80"
         )}>
-          <div className={cn(
-            "text-left whitespace-pre-wrap", 
-            isJess && "italic font-medium leading-relaxed",
-            isProposal && "text-base font-black uppercase tracking-tight italic"
-          )}>
+          <div className={cn("text-left whitespace-pre-wrap", isJess && "italic font-medium leading-relaxed")}>
             {message.content}
           </div>
 
-          {meta && (() => {
-            if (meta.type === 'jess_analysis' || meta.type === 'jess_debrief' || meta.type === 'jess_reminder') {
-              const isHigh = meta.priority === 'high'
-              const isDebrief = meta.type === 'jess_debrief'
+          {message.metadata && (() => {
+            try {
+              const meta = JSON.parse(message.metadata)
+              
+              if (meta.type === 'jess_analysis' || meta.type === 'jess_debrief' || meta.type === 'jess_reminder') {
+                const isHigh = meta.priority === 'high'
+                const isDebrief = meta.type === 'jess_debrief'
 
-              return (
-                <div className={cn(
-                  "mt-3 p-3 rounded-xl border flex flex-col gap-3",
-                  isHigh ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/5 border-white/10"
-                )}>
-                  <div className="flex items-start gap-3">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                      isHigh ? "bg-indigo-500/20 text-indigo-400" : "bg-white/10 text-zinc-400"
-                    )}>
-                      {meta.type === 'jess_reminder' ? <AlertCircle className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                return (
+                  <div className={cn(
+                    "mt-3 p-3 rounded-xl border flex flex-col gap-3",
+                    isHigh ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/5 border-white/10"
+                  )}>
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                        isHigh ? "bg-indigo-500/20 text-indigo-400" : "bg-white/10 text-zinc-400"
+                      )}>
+                        {meta.type === 'jess_reminder' ? <AlertCircle className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">
+                          {meta.type === 'jess_analysis' ? 'Tactical Insight' : meta.type === 'jess_reminder' ? 'Strategic Alert' : 'Post-Game Debrief'}
+                        </p>
+                        
+                        {isDebrief && meta.summaryData && (
+                          <div className="mt-2 space-y-3 text-left">
+                            <div className="flex items-center justify-between bg-black/40 rounded-lg p-2 border border-white/5">
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Opponent</p>
+                                <p className="text-xs font-black truncate uppercase italic">vs. {meta.summaryData.opponent}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Final</p>
+                                <p className="text-xs font-black text-indigo-400">{meta.summaryData.score}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60 flex items-center gap-1.5">
+                                <Target className="w-2.5 h-2.5" /> Tactical Highlights
+                              </p>
+                              <div className="space-y-1">
+                                {meta.summaryData.tacticalHighlights.map((h: string, idx: number) => (
+                                  <div key={idx} className="flex items-start gap-2 text-[11px] text-zinc-300 leading-tight">
+                                    <div className="w-1 h-1 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                                    <span>{h}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {meta.gameId && (
+                          <button 
+                            onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                            className="mt-2 text-[10px] font-bold text-indigo-400 hover:underline flex items-center gap-1 uppercase tracking-tighter"
+                          >
+                            View Tactical Review <ArrowRight className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">
-                        {meta.type === 'jess_analysis' ? 'Tactical Insight' : meta.type === 'jess_reminder' ? 'Strategic Alert' : 'Post-Game Debrief'}
-                      </p>
-                      
-                      {isDebrief && meta.summaryData && (
-                        <div className="mt-2 space-y-3 text-left">
-                          <div className="flex items-center justify-between bg-black/40 rounded-lg p-2 border border-white/5">
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Opponent</p>
-                              <p className="text-xs font-black truncate uppercase italic">vs. {meta.summaryData.opponent}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Final</p>
-                              <p className="text-xs font-black text-indigo-400">{meta.summaryData.score}</p>
-                            </div>
-                          </div>
+                  </div>
+                )
+              }
 
-                          <div className="space-y-1.5">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60 flex items-center gap-1.5">
-                              <Target className="w-2.5 h-2.5" /> Tactical Highlights
-                            </p>
-                            <div className="space-y-1">
-                              {meta.summaryData.tacticalHighlights.map((h: string, idx: number) => (
-                                <div key={idx} className="flex items-start gap-2 text-[11px] text-zinc-300 leading-tight">
-                                  <div className="w-1 h-1 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
-                                  <span>{h}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+              if (meta.type === 'practice_link') {
+                return (
+                  <button 
+                    onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
+                    className={cn(
+                      "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
+                      isOwn 
+                        ? "bg-white/10 border-white/10 hover:bg-white/15" 
+                        : "bg-primary/10 border-primary/10 hover:bg-primary/20"
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Calendar className="w-3 h-3 text-primary" />
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Linked Practice • {meta.practiceDate}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="h-4 px-1.5 text-[8px] font-black bg-primary text-primary-foreground border-none rounded-full shrink-0 uppercase tracking-widest italic">#{meta.practiceIndex || '?'}</Badge>
+                        <p className="font-black text-sm uppercase tracking-tight group-hover/btn:translate-x-1 transition-transform text-zinc-100">{meta.practiceTitle}</p>
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
+                      <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
+                    </div>
+                  </button>
+                )
+              }
+
+              if (meta.type === 'game_link') {
+                return (
+                  <button 
+                    onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                    className={cn(
+                      "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
+                      isOwn 
+                        ? "bg-white/10 border-white/10 hover:bg-white/15" 
+                        : "bg-primary/10 border-primary/10 hover:bg-primary/20"
+                    )}
+                  >
+                    <div className="min-w-0 text-left">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Swords className="w-3 h-3 text-primary" />
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Strategic Reference • {meta.gameDate}</p>
+                      </div>
+                      <p className="font-black text-base italic uppercase tracking-tighter group-hover/btn:translate-x-1 transition-transform text-zinc-100">vs. {meta.opponent}</p>
+                      {meta.score && (
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge className="bg-primary/20 text-primary border-none text-[9px] h-4 font-black rounded-full px-2 uppercase tracking-widest">RESULT: {meta.score}</Badge>
                         </div>
                       )}
-
-                      {meta.gameId && (
-                        <button 
-                          onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                          className="mt-2 text-[10px] font-bold text-indigo-400 hover:underline flex items-center gap-1 uppercase tracking-tighter"
-                        >
-                          View Tactical Review <ArrowRight className="w-3 h-3" />
-                        </button>
-                      )}
                     </div>
-                  </div>
-                </div>
-              )
-            }
+                    <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
+                      <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
+                    </div>
+                  </button>
+                )
+              }
 
-            if (meta.type === 'practice_link') {
-              return (
-                <button 
-                  onClick={() => navigate({ to: '/practices/$practiceId', params: { practiceId: meta.practiceId } })}
-                  className={cn(
-                    "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
-                    isOwn 
-                      ? "bg-white/10 border-white/10 hover:bg-white/15" 
-                      : "bg-primary/10 border-primary/10 hover:bg-primary/20"
-                  )}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Calendar className="w-3 h-3 text-primary" />
+              if (meta.type === 'line_proposal') {
+                return <LineProposalCard message={message} meta={meta} isOwn={isOwn} players={players} />
+              }
+
+              if (meta.type === 'strategic_poll') {
+                return <PollCard messageId={message.id} options={meta.options} isOwn={isOwn} />
+              }
+
+              if (meta.type === 'voice_memo') {
+                return <VoiceMemoCard audioUrl={meta.audioUrl} isOwn={isOwn} />
+              }
+
+              if (meta.type === 'post_game_report') {
+                return (
+                  <div className="pt-4 space-y-4">
+                    <div className="flex items-center gap-2 text-amber-500 mb-2">
+                      <ClipboardList className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-widest italic">Tactical Briefing</span>
+                      <Badge className="bg-amber-500/20 text-amber-500 border-none text-[8px] h-4 font-black rounded-full uppercase px-2 ml-auto">Finalized</Badge>
+                    </div>
+                    <div className="bg-black/30 p-4 rounded-2xl border border-white/5 space-y-3 shadow-xl">
+                      <div className="space-y-1">
+                        <p className="font-black text-sm uppercase italic tracking-tighter text-zinc-100">vs. {meta.opponent}</p>
+                        <p className="text-[9px] font-black opacity-60 uppercase tracking-widest text-primary">Result: {meta.score}</p>
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Linked Practice • {meta.practiceDate}</p>
+                      <p className="text-[11px] italic line-clamp-4 opacity-80 border-l-2 border-primary/40 pl-3 leading-relaxed text-zinc-300">
+                        {meta.summary}
+                      </p>
+                      <Button 
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
+                        className="w-full justify-center gap-2 text-[9px] font-bold uppercase tracking-widest text-amber-500 hover:text-amber-400 hover:bg-amber-500/5 transition-all mt-2 h-8 rounded-full border border-amber-500/20"
+                      >
+                        Open Full Analysis <ArrowRight className="w-3 h-3" />
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="h-4 px-1.5 text-[8px] font-black bg-primary text-primary-foreground border-none rounded-full shrink-0 uppercase tracking-widest italic">#{meta.practiceIndex || '?'}</Badge>
-                      <p className="font-black text-sm uppercase tracking-tight group-hover/btn:translate-x-1 transition-transform text-zinc-100">{meta.practiceTitle}</p>
-                    </div>
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
-                    <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
-                  </div>
-                </button>
-              )
+                )
+              }
+            } catch (e) {
+              return null
             }
-
-            if (meta.type === 'game_link') {
-              return (
-                <button 
-                  onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                  className={cn(
-                    "w-full mt-4 flex items-center justify-between p-4 rounded-2xl border transition-all text-left group/btn shadow-lg",
-                    isOwn 
-                      ? "bg-white/10 border-white/10 hover:bg-white/15" 
-                      : "bg-primary/10 border-primary/10 hover:bg-primary/20"
-                  )}
-                >
-                  <div className="min-w-0 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Swords className="w-3 h-3 text-primary" />
-                      </div>
-                      <p className="text-[9px] font-black uppercase tracking-widest opacity-60 text-zinc-300">Strategic Reference • {meta.gameDate}</p>
-                    </div>
-                    <p className="font-black text-base italic uppercase tracking-tighter group-hover/btn:translate-x-1 transition-transform text-zinc-100">vs. {meta.opponent}</p>
-                    {meta.score && (
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge className="bg-primary/20 text-primary border-none text-[9px] h-4 font-black rounded-full px-2 uppercase tracking-widest">RESULT: {meta.score}</Badge>
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shrink-0 border border-white/5 group-hover/btn:border-primary/30 transition-all">
-                    <ArrowRight className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all text-primary" />
-                  </div>
-                </button>
-              )
-            }
-
-            if (meta.type === 'line_proposal') {
-              return <LineProposalCard message={message} meta={meta} isOwn={isOwn} players={players} />
-            }
-
-            if (meta.type === 'strategic_poll') {
-              return <PollCard messageId={message.id} options={meta.options} isOwn={isOwn} />
-            }
-
-            if (meta.type === 'voice_memo') {
-              return <VoiceMemoCard audioUrl={meta.audioUrl} isOwn={isOwn} />
-            }
-
-            if (meta.type === 'post_game_report') {
-              return (
-                <div className="pt-4 space-y-4">
-                  <div className="flex items-center gap-2 text-amber-500 mb-2">
-                    <ClipboardList className="w-4 h-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest italic">Tactical Briefing</span>
-                    <Badge className="bg-amber-500/20 text-amber-500 border-none text-[8px] h-4 font-black rounded-full uppercase px-2 ml-auto">Finalized</Badge>
-                  </div>
-                  <div className="bg-black/30 p-4 rounded-2xl border border-white/5 space-y-3 shadow-xl">
-                    <div className="space-y-1">
-                      <p className="font-black text-sm uppercase italic tracking-tighter text-zinc-100">vs. {meta.opponent}</p>
-                      <p className="text-[9px] font-black opacity-60 uppercase tracking-widest text-primary">Result: {meta.score}</p>
-                    </div>
-                    <p className="text-[11px] italic line-clamp-4 opacity-80 border-l-2 border-primary/40 pl-3 leading-relaxed text-zinc-300">
-                      {meta.summary}
-                    </p>
-                    <Button 
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => navigate({ to: '/games/$gameId', params: { gameId: meta.gameId } })}
-                      className="w-full justify-center gap-2 text-[9px] font-bold uppercase tracking-widest text-amber-500 hover:text-amber-400 hover:bg-amber-500/5 transition-all mt-2 h-8 rounded-full border border-amber-500/20"
-                    >
-                      Open Full Analysis <ArrowRight className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              )
-            }
-
-            return null
           })()}
         </div>
       </div>
