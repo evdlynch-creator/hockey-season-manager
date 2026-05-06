@@ -41,5 +41,5 @@ publicDir = "dist"
 [userenv]
 
 [userenv.shared]
-VITE_BLINK_PROJECT_ID = "inside-edge-manager-hieawjx4"
-VITE_BLINK_PUBLISHABLE_KEY = "blnk_pk_cemmmzZ6AirFlvxh01BDtOe56_EByr8w"
+VITE_BLINK_PROJECT_ID = ""
+VITE_BLINK_PUBLISHABLE_KEY = ""
