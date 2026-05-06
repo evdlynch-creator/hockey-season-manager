@@ -5,6 +5,5 @@ export const blink = createClient({
   publishableKey: import.meta.env.VITE_BLINK_PUBLISHABLE_KEY || 'blnk_pk_cJpfpBNGg6PlOjdD6tzwKIJbjL0eh6CN',
   auth: {
     mode: 'managed',
-    authUrl: typeof window !== 'undefined' ? window.location.origin : undefined,
   },
 })

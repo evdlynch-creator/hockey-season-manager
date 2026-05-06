@@ -27,10 +27,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BlinkProvider
         projectId={import.meta.env.VITE_BLINK_PROJECT_ID || 'blue-line-iq-qpy3h1ap'}
         publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY || 'blnk_pk_cJpfpBNGg6PlOjdD6tzwKIJbjL0eh6CN'}
-        auth={{ 
-          mode: 'managed',
-          authUrl: window.location.origin,
-        }}
+        auth={{ mode: 'managed' }}
       >
         <BlinkAuthProvider>
           <BlinkUIProvider theme="glass" darkMode="dark">
