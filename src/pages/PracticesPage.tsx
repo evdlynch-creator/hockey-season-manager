@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -150,12 +150,34 @@ function CreatePracticeDialog({
   open,
   onClose,
   seasonId,
-}: { open: boolean; onClose: () => void; seasonId: string }) {
+  initialValues,
+}: { 
+  open: boolean; 
+  onClose: () => void; 
+  seasonId: string;
+  initialValues?: Partial<CreateForm>
+}) {
   const queryClient = useQueryClient()
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CreateForm>({
     resolver: zodResolver(createSchema),
-    defaultValues: { status: 'scheduled', title: '', date: '', time: '', notes: '', isRecurring: false, daysOfWeek: [] },
+    defaultValues: { 
+      status: 'scheduled', 
+      title: initialValues?.title || '', 
+      date: initialValues?.date || '', 
+      time: '', 
+      notes: initialValues?.notes || '', 
+      isRecurring: false, 
+      daysOfWeek: [] 
+    },
   })
+
+  useEffect(() => {
+    if (initialValues && open) {
+      if (initialValues.title) setValue('title', initialValues.title)
+      if (initialValues.notes) setValue('notes', initialValues.notes)
+      if (initialValues.date) setValue('date', initialValues.date)
+    }
+  }, [initialValues, open, setValue])
 
   const statusVal = watch('status')
   const isRecurring = watch('isRecurring')
@@ -320,7 +342,8 @@ const TABS = ['all', 'scheduled', 'completed', 'reviewed'] as const
 type TabValue = typeof TABS[number]
 
 export default function PracticesPage() {
-  const [createOpen, setCreateOpen] = useState(false)
+  const search = useSearch({ from: '/practices' }) as any
+  const [createOpen, setCreateOpen] = useState(!!search?.autoTitle)
   const [tab, setTab] = useState<TabValue>('all')
   const queryClient = useQueryClient()
   const { data: teamData } = useTeam()
@@ -427,7 +450,16 @@ export default function PracticesPage() {
         ))}
       </Tabs>
 
-      <CreatePracticeDialog open={createOpen} onClose={() => setCreateOpen(false)} seasonId={seasonId} />
+      <CreatePracticeDialog 
+        open={createOpen} 
+        onClose={() => setCreateOpen(false)} 
+        seasonId={seasonId} 
+        initialValues={search?.autoTitle ? {
+          title: search.autoTitle,
+          notes: search.autoNotes,
+          date: format(new Date(), 'yyyy-MM-dd')
+        } : undefined}
+      />
     </div>
   )
 }
