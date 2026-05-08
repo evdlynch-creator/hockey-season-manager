@@ -102,6 +102,10 @@ export async function simulateScenario({
     prompt,
   })
 
+  if (!partialObjectStream) {
+    throw new Error('Failed to initialize simulation stream. Please check your connection or sign in again.')
+  }
+
   let lastEventCount = 0
   for await (const partial of partialObjectStream) {
     if (partial.events && partial.events.length > lastEventCount) {

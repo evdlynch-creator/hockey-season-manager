@@ -36,11 +36,13 @@ import { useFormations } from '@/hooks/useFormations'
 import { blink } from '@/blink/client'
 import { useNavigate } from '@tanstack/react-router'
 import { useTeam } from '@/hooks/useTeam'
+import { useAuth } from '@/hooks/useAuth'
 import { CONCEPTS, Lineup, GameReview, PracticeSegment } from '@/types'
 import { simulateScenario, SimulationEvent, SimulationResult } from '@/lib/simulation-engine'
 
 export default function SimulationPage() {
   const navigate = useNavigate()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { data: teamData } = useTeam()
   const { data: games = [], isLoading: gamesLoading } = useGames()
   const { data: allPlayers = [] } = usePlayers()
@@ -59,7 +61,7 @@ export default function SimulationPage() {
   }>({ reviews: [], practices: [] })
 
   useEffect(() => {
-    if (selectedGameId) {
+    if (selectedGameId && isAuthenticated) {
       const fetchHistory = async () => {
         try {
           const [reviews, practices] = await Promise.all([
@@ -70,17 +72,29 @@ export default function SimulationPage() {
             reviews: reviews as GameReview[], 
             practices: practices as PracticeSegment[] 
           })
-        } catch (e) {
-          console.error('Failed to fetch historical data', e)
+        } catch (e: any) {
+          const isAuthError =
+            e?.details?.originalError?.name === 'BlinkAuthError' ||
+            e?.message?.includes('401') ||
+            e?.message?.includes('Unauthorized')
+          
+          if (!isAuthError) {
+            console.error('Failed to fetch historical data', e)
+          }
         }
       }
       fetchHistory()
     }
-  }, [selectedGameId])
+  }, [selectedGameId, isAuthenticated])
 
   const handleStartSim = async () => {
     if (!selectedGameId) {
       toast.error('Select a game/lineup first')
+      return
+    }
+
+    if (!isAuthenticated) {
+      blink.auth.login(window.location.href)
       return
     }
 
@@ -102,10 +116,28 @@ export default function SimulationPage() {
       setResult(simResult)
       toast.success('Simulation complete')
     } catch (e: any) {
+      const isAuthError =
+        e?.details?.originalError?.name === 'BlinkAuthError' ||
+        e?.message?.includes('401') ||
+        e?.message?.includes('Unauthorized')
+      
+      if (isAuthError) {
+        blink.auth.login(window.location.href)
+        return
+      }
+      
       toast.error('Simulation failed', { description: e.message })
     } finally {
       setIsSimulating(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Activity className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
