@@ -49,15 +49,32 @@ export function useGameReview(gameId: string | undefined) {
         return DEMO_REVIEWS.filter(r => r.gameId === gameId)
       }
       if (!gameId) return []
-      return await blink.db.gameReviews.list({
+      const results = await blink.db.gameReviews.list({
         where: { gameId },
-      }) as GameReview[]
+      }) as any[]
+
+      // Normalize results to ensure camelCase keys for the UI
+      return results.map(r => ({
+        ...r,
+        userId: r.userId || r.user_id,
+        gameId: r.gameId || r.game_id,
+        breakoutsRating: r.breakoutsRating || r.breakouts_rating,
+        forecheckRating: r.forecheckRating || r.forecheck_rating,
+        defensiveZoneRating: r.defensiveZoneRating || r.defensive_zone_rating,
+        transitionRating: r.transitionRating || r.transition_rating,
+        passingRating: r.passingRating || r.passing_rating,
+        skatingRating: r.skatingRating || r.skating_rating,
+        zoneEntryRating: r.zoneEntryRating || r.zone_entry_rating,
+        offensiveZoneRating: r.offensiveZoneRating || r.offensive_zone_rating,
+        opponentNotes: r.opponentNotes || r.opponent_notes,
+        createdAt: r.createdAt || r.created_at
+      })) as GameReview[]
     },
     enabled: !!gameId || (isDemoMode() && !!gameId?.startsWith('demo-')),
   })
 
   const reviews = query.data || []
-  const myReview = reviews.find(r => r.userId === user?.id)
+  const myReview = reviews.find(r => (r.userId || (r as any).user_id) === user?.id)
 
   const consensus = useMemo(() => {
     if (reviews.length === 0) return null

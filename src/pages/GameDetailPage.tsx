@@ -148,9 +148,11 @@ export default function GameDetailPage() {
 
       // Always re-fetch the latest review for this user to avoid stale state
       const latestReviews = await blink.db.gameReviews.list({ where: { gameId } }) as any[]
-      const latestMyReview = latestReviews.find((r: any) => r.userId === user.id)
+      // Check both userId and user_id to be safe with SDK case conversion in list results
+      const latestMyReview = latestReviews.find((r: any) => (r.userId || r.user_id) === user.id)
 
       if (latestMyReview) {
+        // Only update fields that should change — avoid sending userId/gameId in update
         await blink.db.gameReviews.update(latestMyReview.id, { summary })
       } else {
         await blink.db.gameReviews.create({
@@ -161,7 +163,14 @@ export default function GameDetailPage() {
           createdAt: new Date().toISOString(),
         })
       }
-      await blink.db.games.update(gameId, { status: 'reviewed' })
+      
+      // Updating the game status might fail with 403 if the current coach is not the owner 
+      // of the game record. We wrap this to not block the report save.
+      try {
+        await blink.db.games.update(gameId, { status: 'reviewed' })
+      } catch (e) {
+        console.warn('Could not update global game status (likely permission restriction), but report was saved:', e)
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', gameId] })
@@ -200,7 +209,12 @@ export default function GameDetailPage() {
       const latestMyReview = latestReviews.find((r: any) => (r.userId || r.user_id) === user.id)
 
       if (latestMyReview) {
-        await blink.db.gameReviews.update(latestMyReview.id, payload)
+        // Only update fields that should change — avoid sending userId/gameId in update to avoid 403 on protected fields
+        await blink.db.gameReviews.update(latestMyReview.id, {
+          ...cleanRatings,
+          notes: notes || '',
+          opponentNotes: opponentNotes || '',
+        })
       } else {
         await blink.db.gameReviews.create({
           id: crypto.randomUUID(),
