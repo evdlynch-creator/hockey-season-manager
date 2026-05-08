@@ -34,6 +34,7 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
+  Target,
   Settings,
   UserCog,
   LogOut,
