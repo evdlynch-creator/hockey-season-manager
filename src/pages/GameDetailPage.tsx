@@ -144,32 +144,35 @@ export default function GameDetailPage() {
     mutationFn: async (summary: string) => {
       const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
+      if (!summary?.trim()) throw new Error('Report summary is empty')
 
-      if (myReview) {
-        await blink.db.gameReviews.update(myReview.id, { summary })
+      // Always re-fetch the latest review for this user to avoid stale state
+      const latestReviews = await blink.db.gameReviews.list({ where: { gameId } }) as any[]
+      const latestMyReview = latestReviews.find((r: any) => r.userId === user.id)
+
+      if (latestMyReview) {
+        await blink.db.gameReviews.update(latestMyReview.id, { summary })
       } else {
-        // Check for any existing review by this user before creating
-        const existing = await blink.db.gameReviews.list({ where: { gameId, userId: user.id } }) as any[]
-        if (existing.length > 0) {
-          await blink.db.gameReviews.update(existing[0].id, { summary })
-        } else {
-          await blink.db.gameReviews.create({
-            id: crypto.randomUUID(),
-            gameId,
-            userId: user.id,
-            summary,
-            createdAt: new Date().toISOString(),
-          })
-        }
+        await blink.db.gameReviews.create({
+          id: crypto.randomUUID(),
+          gameId,
+          userId: user.id,
+          summary,
+          createdAt: new Date().toISOString(),
+        })
       }
       await blink.db.games.update(gameId, { status: 'reviewed' })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', gameId] })
       queryClient.invalidateQueries({ queryKey: ['game-review', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['games'] })
       toast.success('Post-game report shared to staff board')
     },
-    onError: (e: Error) => toast.error('Failed to save report', { description: e.message }),
+    onError: (e: Error) => {
+      console.error('[saveReport] Failed:', e)
+      toast.error('Failed to save report', { description: e.message })
+    },
   })
 
   const saveReview = useMutation({

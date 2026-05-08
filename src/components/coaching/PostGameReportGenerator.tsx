@@ -75,16 +75,25 @@ export function PostGameReportGenerator({ game, review, onSave }: PostGameReport
   }
 
   const handleFinalize = () => {
+    if (!summary.trim()) {
+      toast.error('No report to save. Generate a report first.')
+      return
+    }
     onSave(summary)
     
-    // Share to Locker Room Talk
-    sendMessage(`The Post-Game Report for the game vs ${game.opponent} is now finalized.`, JSON.stringify({
-      type: 'post_game_report',
-      gameId: game.id,
-      opponent: game.opponent,
-      score: `${game.goalsFor}-${game.goalsAgainst}`,
-      summary: summary.slice(0, 200) + '...'
-    }))
+    // Share to Locker Room Talk — fire and forget, never block save
+    try {
+      sendMessage(`The Post-Game Report for the game vs ${game.opponent} is now finalized.`, JSON.stringify({
+        type: 'post_game_report',
+        gameId: game.id,
+        opponent: game.opponent,
+        score: `${game.goalsFor}-${game.goalsAgainst}`,
+        summary: summary.slice(0, 200) + '...'
+      }))
+    } catch (err) {
+      // Non-critical — don't block the save
+      console.warn('Could not broadcast report to locker room:', err)
+    }
   }
 
   return (

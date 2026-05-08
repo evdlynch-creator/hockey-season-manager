@@ -110,7 +110,10 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
   // Send message mutation
   const sendMessage = useMutation({
     mutationFn: async ({ content, metadata }: { content: string, metadata?: string }) => {
-      if (!user?.id || !teamId) throw new Error('Missing auth or team')
+      if (!user?.id || !teamId) {
+        console.warn('[sendMessage] Skipped — missing auth or team context')
+        return null
+      }
 
       const newMessage: CoachMessage = {
         id: crypto.randomUUID(),
@@ -143,6 +146,7 @@ export function useCoachMessages(contextType: CoachMessageContext, contextId: st
       return newMessage
     },
     onSuccess: (newMessage) => {
+      if (!newMessage) return
       setMessages(prev => {
         if (prev.find(m => m.id === newMessage.id)) return prev
         return [...prev, newMessage]
