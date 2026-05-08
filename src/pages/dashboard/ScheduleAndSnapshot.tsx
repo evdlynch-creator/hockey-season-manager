@@ -111,10 +111,10 @@ export const ScheduleAndSnapshot = ({
               </p>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-full bg-secondary/40 border border-border/40 p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-full bg-secondary/40 border border-border/40 p-4 sm:p-3">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Record</p>
-                    <div className="mt-1 flex items-baseline gap-1.5">
+                    <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
                       <span className="text-xl font-bold tabular-nums text-emerald-400"><AnimatedCounter value={snapshotW} /></span>
                       <span className="text-xs text-muted-foreground">W</span>
                       <span className="text-xl font-bold tabular-nums text-red-400"><AnimatedCounter value={snapshotL} /></span>

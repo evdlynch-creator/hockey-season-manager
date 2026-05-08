@@ -121,7 +121,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-[clamp(2.5rem,8vw,4.5rem)] font-black tracking-tight mb-6 leading-[clamp(3rem,9vw,5rem)] relative"
+              className="text-[clamp(1.8rem,8vw,4.5rem)] font-black tracking-tight mb-6 leading-[clamp(2.2rem,9vw,5rem)] relative"
             >
               Master Your Season with <br />
               <span className="relative inline-block">

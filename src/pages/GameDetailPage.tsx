@@ -142,18 +142,25 @@ export default function GameDetailPage() {
 
   const saveReport = useMutation({
     mutationFn: async (summary: string) => {
+      const user = await blink.auth.me()
+      if (!user) throw new Error('Not authenticated')
+
       if (myReview) {
         await blink.db.gameReviews.update(myReview.id, { summary })
       } else {
-        const user = await blink.auth.me()
-        if (!user) throw new Error('Not authenticated')
-        await blink.db.gameReviews.create({
-          id: crypto.randomUUID(),
-          gameId,
-          userId: user.id,
-          summary,
-          createdAt: new Date().toISOString(),
-        })
+        // Check for any existing review by this user before creating
+        const existing = await blink.db.gameReviews.list({ where: { gameId, userId: user.id } }) as any[]
+        if (existing.length > 0) {
+          await blink.db.gameReviews.update(existing[0].id, { summary })
+        } else {
+          await blink.db.gameReviews.create({
+            id: crypto.randomUUID(),
+            gameId,
+            userId: user.id,
+            summary,
+            createdAt: new Date().toISOString(),
+          })
+        }
       }
       await blink.db.games.update(gameId, { status: 'reviewed' })
     },
@@ -170,12 +177,18 @@ export default function GameDetailPage() {
       const user = await blink.auth.me()
       if (!user) throw new Error('Not authenticated')
 
+      // Strip undefined rating values — Blink SDK rejects undefined fields
+      const cleanRatings: Record<string, number> = {}
+      for (const [k, v] of Object.entries(ratings)) {
+        if (v !== undefined && v !== null) cleanRatings[k] = v
+      }
+
       const payload = {
-        ...ratings,
-        notes,
-        opponentNotes,
+        ...cleanRatings,
+        notes: notes || '',
+        opponentNotes: opponentNotes || '',
         userId: user.id,
-        gameId
+        gameId,
       }
       
       if (myReview) {

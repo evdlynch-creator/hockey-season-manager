@@ -69,7 +69,7 @@ export const ConceptTrends = ({ teamData, analytics, onNavigateToConcepts }: Con
               className="py-4"
             />
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {sorted.map((s: any) => {
                 const isPriority = priorityList.includes(s.concept)
                 const trendUp = s.trend > 0.2
