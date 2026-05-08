@@ -194,8 +194,13 @@ export default function GameDetailPage() {
         gameId,
       }
       
-      if (myReview) {
-        await blink.db.gameReviews.update(myReview.id, payload)
+      // Always re-fetch to ensure we are updating the correct record and avoid 403/409 issues
+      const latestReviews = await blink.db.gameReviews.list({ where: { gameId } }) as any[]
+      // Check both userId and user_id to be safe with SDK case conversion in list results
+      const latestMyReview = latestReviews.find((r: any) => (r.userId || r.user_id) === user.id)
+
+      if (latestMyReview) {
+        await blink.db.gameReviews.update(latestMyReview.id, payload)
       } else {
         await blink.db.gameReviews.create({
           id: crypto.randomUUID(),
@@ -203,7 +208,14 @@ export default function GameDetailPage() {
           createdAt: new Date().toISOString(),
         })
       }
-      await blink.db.games.update(gameId, { status: 'reviewed' })
+
+      // Updating the game status might fail with 403 if the current coach is not the owner 
+      // of the game record (e.g. Assistant Coach). We wrap this to not block the review save.
+      try {
+        await blink.db.games.update(gameId, { status: 'reviewed' })
+      } catch (e) {
+        console.warn('Could not update global game status (likely permission restriction), but review was saved:', e)
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', gameId] })
