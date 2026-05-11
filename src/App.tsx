@@ -28,7 +28,6 @@ import TrendsPage from './pages/TrendsPage'
 import OpponentsPage from './pages/OpponentsPage'
 import SettingsPage from './pages/SettingsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
-import SimulationPage from './pages/SimulationPage'
 
 import RosterPage from './pages/RosterPage'
 import DrillLibraryPage from './pages/DrillLibraryPage'
@@ -122,12 +121,6 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 })
 
-const simulationRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/simulation',
-  component: SimulationPage,
-})
-
 const rosterRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/roster',
@@ -162,7 +155,6 @@ const routeTree = rootRoute.addChildren([
   rosterRoute,
   drillsRoute,
   coachBoardRoute,
-  simulationRoute,
   settingsRoute
 ])
 const router = createRouter({ routeTree })

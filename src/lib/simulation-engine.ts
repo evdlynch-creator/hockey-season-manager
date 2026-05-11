@@ -1,29 +1,24 @@
 import { blink } from '@/blink/client'
-import { z } from 'zod'
 import type { Player, Lineup, GameReview, PracticeSegment } from '@/types'
 
-export const SimulationEventSchema = z.object({
-  id: z.string(),
-  timestamp: z.number(), // Match clock seconds
-  type: z.enum(['possession', 'shot', 'goal', 'penalty', 'turnover', 'check', 'tactical_move']),
-  description: z.string(),
-  involvedPlayerIds: z.array(z.string()),
-  outcome: z.enum(['success', 'failure', 'neutral']),
-  impactRating: z.number().min(1).max(5),
-})
+export interface SimulationEvent {
+  id: string
+  timestamp: number // Match clock seconds
+  type: 'possession' | 'shot' | 'goal' | 'penalty' | 'turnover' | 'check' | 'tactical_move'
+  description: string
+  involvedPlayerIds: string[]
+  outcome: 'success' | 'failure' | 'neutral'
+  impactRating: number // 1-5
+}
 
-export type SimulationEvent = z.infer<typeof SimulationEventSchema>
-
-export const SimulationResultSchema = z.object({
-  scoreFor: z.number(),
-  scoreAgainst: z.number(),
-  summary: z.string(),
-  keyTakeaway: z.string(),
-  drillSuggestions: z.array(z.string()), // Names of concepts to focus on
-  confidenceScore: z.number().min(0).max(1),
-})
-
-export type SimulationResult = z.infer<typeof SimulationResultSchema>
+export interface SimulationResult {
+  scoreFor: number
+  scoreAgainst: number
+  summary: string
+  keyTakeaway: string
+  drillSuggestions: string[] // Names of concepts to focus on
+  confidenceScore: number // 0-1
+}
 
 export interface SimulationParams {
   lineup: Lineup[]
@@ -36,13 +31,48 @@ export interface SimulationParams {
   }
 }
 
+const SIMULATION_SCHEMA = {
+  type: 'object',
+  properties: {
+    events: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          timestamp: { type: 'number' },
+          type: { type: 'string', enum: ['possession', 'shot', 'goal', 'penalty', 'turnover', 'check', 'tactical_move'] },
+          description: { type: 'string' },
+          involvedPlayerIds: { type: 'array', items: { type: 'string' } },
+          outcome: { type: 'string', enum: ['success', 'failure', 'neutral'] },
+          impactRating: { type: 'number' }
+        },
+        required: ['id', 'timestamp', 'type', 'description', 'involvedPlayerIds', 'outcome', 'impactRating']
+      }
+    },
+    result: {
+      type: 'object',
+      properties: {
+        scoreFor: { type: 'number' },
+        scoreAgainst: { type: 'number' },
+        summary: { type: 'string' },
+        keyTakeaway: { type: 'string' },
+        drillSuggestions: { type: 'array', items: { type: 'string' } },
+        confidenceScore: { type: 'number' }
+      },
+      required: ['scoreFor', 'scoreAgainst', 'summary', 'keyTakeaway', 'drillSuggestions', 'confidenceScore']
+    }
+  },
+  required: ['events']
+}
+
 export async function simulateScenario({
   lineup,
   players,
   concept,
   scenario,
   historicalData,
-}: SimulationParams, onEvent: (event: SimulationEvent) => void) {
+}: SimulationParams, onEvent: (event: SimulationEvent) => void): Promise<SimulationResult | null> {
   const playersMap = Object.fromEntries(players.map(p => [p.id, p]))
   
   // Format data for AI context
@@ -54,19 +84,19 @@ export async function simulateScenario({
   }, {} as Record<string, string[]>)
 
   const tacticalContext = historicalData.reviews.slice(0, 5).map(r => ({
-    date: r.created_at,
+    date: r.createdAt,
     notes: r.notes,
     ratings: {
-      breakouts: r.breakouts_rating,
-      forecheck: r.forecheck_rating,
-      defensive: r.defensive_zone_rating,
+      breakouts: r.breakoutsRating,
+      forecheck: r.forecheckRating,
+      defensive: r.defensiveZoneRating,
     }
   }))
 
   const practiceContext = historicalData.practices.slice(0, 5).map(p => ({
     name: p.name,
-    concept: p.primary_concept,
-    rating: p.execution_rating,
+    concept: p.primaryConcept,
+    rating: p.executionRating,
   }))
 
   const prompt = `
@@ -92,26 +122,19 @@ export async function simulateScenario({
     4. Provide a final result summary including score and drill suggestions.
   `
 
-  // We use streamObject to get structured events in real-time
-  const { partialObjectStream } = await blink.ai.streamObject({
-    model: 'google/gemini-3-flash',
-    schema: z.object({
-      events: z.array(SimulationEventSchema),
-      result: SimulationResultSchema.optional(),
-    }),
-    prompt,
-  })
-
-  if (!partialObjectStream) {
-    throw new Error('Failed to initialize simulation stream. Please check your connection or sign in again.')
-  }
-
   let lastEventCount = 0
-  for await (const partial of partialObjectStream) {
+  let finalResult: SimulationResult | null = null
+
+  await blink.ai.streamObject({
+    model: 'google/gemini-3-flash',
+    schema: SIMULATION_SCHEMA as any,
+    prompt,
+  }, (partial: any) => {
     if (partial.events && partial.events.length > lastEventCount) {
       const newEvents = partial.events.slice(lastEventCount)
-      newEvents.forEach(e => {
-        if (e && e.description && e.type) {
+      newEvents.forEach((e: any) => {
+        // Only report if it has the core fields
+        if (e && e.id && e.description && e.type) {
           onEvent(e as SimulationEvent)
         }
       })
@@ -119,9 +142,9 @@ export async function simulateScenario({
     }
     
     if (partial.result && partial.result.summary) {
-      return partial.result as SimulationResult
+      finalResult = partial.result as SimulationResult
     }
-  }
+  })
 
-  return null
+  return finalResult
 }

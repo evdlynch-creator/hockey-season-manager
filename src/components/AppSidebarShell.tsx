@@ -34,7 +34,6 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
-  Target,
   Settings,
   UserCog,
   LogOut,
@@ -138,7 +137,6 @@ export function AppSidebarShell() {
         { to: '/', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', id: 'tour-dashboard' },
         { to: '/analytics', icon: <BarChart3 className="h-4 w-4" />, label: 'Analytics', id: 'tour-analytics' },
         { to: '/concepts', icon: <Activity className="h-4 w-4" />, label: 'Concepts', id: 'tour-concepts' },
-        { to: '/simulation', icon: <Target className="h-4 w-4" />, label: 'Tactical Simulator' },
         { to: '/trends', icon: <TrendingUp className="h-4 w-4" />, label: 'Trends', id: 'tour-trends' },
         { to: '/coaches-board', icon: <MessageSquare className="h-4 w-4" />, label: 'Locker Room Talk', hasBadge: hasUnread },
       ]
